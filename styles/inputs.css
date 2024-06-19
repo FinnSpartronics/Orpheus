@@ -1,0 +1,20 @@
+button, input {
+    height: 1.2rem;
+    padding: 0 1rem 0 1rem;
+    font-size: .8rem;
+    font-family: "Lato", sans-serif;
+    margin: 0 .1rem;
+    background: var(--bg);
+    color: var(--font);
+    border: 1px solid var(--font);
+    border-radius: .25rem;
+    transition: 200ms;
+}
+button:hover, input:hover, input:focus {
+    background-color: var(--highlight);
+    border-radius: .4rem;
+}
+button:disabled, input:disabled {
+    background-color: var(--line);
+    border-radius: 4px;
+}

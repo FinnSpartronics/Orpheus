@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"/>
+    <link rel="stylesheet" href="styles/main.css"/>
+    <link rel="stylesheet" href="styles/inputs.css"/>
+    <link rel="stylesheet" href="styles/table.css"/>
+    <script src="scripts/script.js" defer></script>
+</head>
+<body>
+
+    <div class="sticky-header">
+        <div class="hscroll">
+            <button id="top_csv">Import .csv</button>
+            <button id="top_mapping" disabled>Import mapping</button>
+            <button id="top_setapi">Set API Key</button>
+            <button id="top_load_event">Load Event</button>
+            <button id="top_theme">Toggle Theme</button>
+        </div>
+
+        <err class="hidden"></err>
+
+        <h1>FRC Scouting Tool</h1>
+
+        <input id="teamsearch" type="text" placeholder="Team #" size="6" maxlength="5" pattern="\d">
+        <button id="teamsearch_btn">Search</button>
+
+        <br/> <br/>
+
+        <div class="row table-head b">
+            <span id="select_star" class="material-symbols-outlined ar filled" onclick="star_toggle()">
+              star
+            </span>
+            <div class="icon" title="Icon Placeholder"></div>
+            <div id="select_team_number" class="data smol highlighted top" onclick="set_sort('team-number')">Team #</div>
+            <div class="data smol">Av. Speaker Notes Scored</div>
+            <div class="data smol">Av. Amp Notes Scored</div>
+            <div id="select_win_rate" class="data smol" onclick="set_sort('win-rate')">Win Rate</div>
+            <div class="data smol">Av. TeleOp Points</div>
+        </div>
+    </div>
+
+    <div class="table">
+
+    </div>
+</body>
+</html>
