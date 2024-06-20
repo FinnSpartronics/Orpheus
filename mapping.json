@@ -1,0 +1,19 @@
+{
+  "team": "Team Number",
+  "notes": "Other thoughts/Summary",
+  "scouter": "Your Name",
+  "mapping_version": 1,
+  "averages": {
+    "Rating": "Overall subjective ranking",
+    "Bot Rating": "Bot rating",
+    "Drive Rating": "Drive team rating"
+  },
+  "calculated": {
+    "Total Amp Notes": ["Auto Amp Notes Scored", "+", "Amp notes scored"]
+  },
+  "calculated_averages": {
+    "Av. Amp Notes": ["Auto Amp Notes Scored", "+", "Amp notes scored"],
+    "Winrate": ["Result", "=", "Win"],
+    "Av. Points": [[[["Auto Speaker Notes Scored", "*", 5], "+", ["Non amplified speaker notes scored", "*", 2]], "+", [["Auto Amp Notes Scored", "*", 2], "+", "Amp notes scored"]], "+", ["Amplified speaker notes scored", "*", 5]]
+  }
+}
