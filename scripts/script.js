@@ -10,6 +10,7 @@ const MISSING_LOGO = "https://frc-cdn.firstinspires.org/eventweb_frc/ProgramLogo
 const THEME = "scouting_4915_theme"
 
 let event_data
+let scouting_data
 let team_data = {}
 
 let theme = 0
@@ -19,13 +20,17 @@ let usingStar = true
 
 let loading = 0
 
-let columns = ["Win_Rate", "Team_Number", "Name"]
+let columns = ["Team_Number", "Name"]
 let selectedSort = "Team_Number"
 let sortDirection = 1
 
 document.querySelector("#top_setapi").onclick = function() {
     let x = prompt("What is your TBA API key? 'get' to get it, leave blank to skip")
     if (x === "get") alert(window.localStorage.getItem(TBA_KEY))
+    else if (x === "clear") {
+        window.localStorage.removeItem(TBA_KEY)
+        window.location.reload()
+    }
     else if (x !== "") {
         window.localStorage.setItem(TBA_KEY, x);
         window.location.reload()
@@ -34,6 +39,10 @@ document.querySelector("#top_setapi").onclick = function() {
 document.querySelector("#top_load_event").onclick = function() {
     let x = prompt("event")
     if (x === "get") alert(window.localStorage.getItem(EVENT))
+    else if (x === "clear") {
+        window.localStorage.removeItem(EVENT)
+        window.location.reload()
+    }
     else if (x !== "") {
         window.localStorage.setItem(EVENT, x.toLowerCase());
         loadEvent()
@@ -47,19 +56,22 @@ document.querySelector("#top_theme").onclick = function() {
     updateTheme()
 }
 document.querySelector("#top_csv").onclick = function() {
-    let fileInput = document.createElement("input")
-    fileInput.type = "file"
-    fileInput.accept = ".csv"
-    fileInput.addEventListener("change", (e) => {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            csvToJson(e.target.result)
-        }
-        reader.readAsText(e.target.files[0]);
-
-        regenList()
+    loadFile(".csv", (result) => {
+        let json = csvToJson(result)
+        scouting_data = json
     })
-    fileInput.click()
+}
+document.querySelector("#top_json").onclick = function() {
+    loadFile(".json", (result) => {
+        scouting_data = JSON.parse(result)
+        console.log(scouting_data)
+    })
+}
+document.querySelector("#top_mapping").onclick = function() {
+    loadFile(".json", (result) => {
+        let json = JSON.parse(result)
+        console.log(json)
+    })
 }
 
 function updateTheme() {
@@ -92,6 +104,25 @@ function loadEvent() {
     })
 }
 
+
+function setHeader() {
+    let header = document.querySelector(".table-head")
+    while (header.children.length > 2) header.children[header.children.length-1].remove()
+    for (let column of columns) {
+        let el = document.createElement("div")
+        el.id = "select_" + column
+        el.classList.add("data")
+        el.classList.add("smol")
+        if (column === selectedSort) {
+            el.classList.add("highlighted")
+            if (sortDirection === 1) el.classList.add("top")
+            if (sortDirection === -1) el.classList.add("bottom")
+        }
+        el.addEventListener("click", () => changeSort(column))
+        el.innerText = column.replaceAll("_", " ")
+        header.appendChild(el)
+    }
+}
 function element(team) {
     let el = document.createElement("div")
     el.className = "row"
@@ -141,26 +172,9 @@ function sort(team) {
 
     let index = arr.indexOf(team)
     if (sortDirection === -1) index = 10000 - index
-    return ((starred.includes(team) && usingStar) ? -Math.pow(10,10) : 0) + index
-}
 
-function setHeader() {
-    let header = document.querySelector(".table-head")
-    while (header.children.length > 2) header.children[header.children.length-1].remove()
-    for (let column of columns) {
-        let el = document.createElement("div")
-        el.id = "select_" + column
-        el.classList.add("data")
-        el.classList.add("smol")
-        if (column === selectedSort) {
-            el.classList.add("highlighted")
-            if (sortDirection === 1) el.classList.add("top")
-            if (sortDirection === -1) el.classList.add("bottom")
-        }
-        el.addEventListener("click", () => changeSort(column))
-        el.innerText = column.replaceAll("_", " ")
-        header.appendChild(el)
-    }
+    let starOffset = ((starred.includes(team) && usingStar) ? -Math.pow(10,9) : 0)
+    return starOffset + (index)
 }
 function changeSort(to) {
     if (selectedSort === to) sortDirection *= -1
@@ -179,6 +193,28 @@ function changeSort(to) {
 
     regenList()
 }
+function star(i) {
+    if (starred.includes(i)) starred.splice(starred.indexOf(i),1)
+    else starred.push(i)
+
+    regenList()
+}
+function star_toggle() {
+    usingStar = !usingStar
+    document.querySelector("#select_star").classList.toggle("filled")
+    regenList()
+}
+
+function clearList() {
+    while (document.querySelector(".table").children.length > 0) {
+        document.querySelector(".table").children[0].remove()
+    }
+}
+function regenList() {
+    clearList()
+    for (let team of Object.keys(team_data)) element(team)
+}
+
 
 async function load(sub, onload) {
     loading++
@@ -194,27 +230,16 @@ async function load(sub, onload) {
         onload(data)
     })
 }
-
-function clearList() {
-    while (document.querySelector(".table").children.length > 0) {
-        document.querySelector(".table").children[0].remove()
-    }
-}
-function regenList() {
-    clearList()
-    for (let team of Object.keys(team_data)) element(team)
-}
-
-function star(i) {
-    if (starred.includes(i)) starred.splice(starred.indexOf(i),1)
-    else starred.push(i)
-
-    regenList()
-}
-function star_toggle() {
-    usingStar = !usingStar
-    document.querySelector("#select_star").classList.toggle("filled")
-    regenList()
+function loadFile(accept, listener) {
+    let fileInput = document.createElement("input")
+    fileInput.type = "file"
+    fileInput.accept = accept
+    fileInput.addEventListener("change", (e) => {
+        const reader = new FileReader();
+        reader.onload = (e) => listener(e.target.result)
+        reader.readAsText(e.target.files[0]);
+    })
+    fileInput.click()
 }
 
 function checkLoading() {
@@ -290,6 +315,5 @@ function csvToJson(csv) {
         } else current = current + char
     }
 
-    console.log(json)
     return json
 }
