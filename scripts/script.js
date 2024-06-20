@@ -14,21 +14,14 @@ let team_data = {}
 
 let theme = 0
 
-let starred = [4915]
+let starred = ['4915']
 let usingStar = true
-let sorting = 0
 
 let loading = 0
 
-document.querySelector("#teamsearch").onkeydown = search_keydown
-document.querySelector("#teamsearch_btn").onclick = search
-function search_keydown(e) {
-    if (/^\D$/.test(e.key)) e.preventDefault();
-    if (e.key === "Enter") search()
-}
-function search() {
-    console.log("Searching for " + document.querySelector("#teamsearch").value)
-}
+let columns = ["Win_Rate", "Team_Number", "Name"]
+let selectedSort = "Team_Number"
+let sortDirection = 1
 
 document.querySelector("#top_setapi").onclick = function() {
     let x = prompt("What is your TBA API key? 'get' to get it, leave blank to skip")
@@ -83,118 +76,108 @@ updateTheme()
 
 function loadEvent() {
     loading++
-    clearList()
     load("event/" + YEAR + window.localStorage.getItem(EVENT) + "/teams", function(data) {
         event_data = data
         for (let team of data) {
-            create(team.team_number)
+            team_data[team.team_number] = {}
+            team_data[team.team_number].Team_Number = team.team_number
+            team_data[team.team_number].Name = team.nickname
+            team_data[team.team_number].TBA = team
+            team_data[team.team_number].Icon = "https://api.frc-colors.com/internal/team/" + team.team_number + "/avatar.png"
+            element(team.team_number)
+            regenList()
         }
         loading--
         checkLoading()
     })
 }
 
-function create(team) {
-    let a = document.createElement('div')
-    a.innerHTML = `
-      <div class="row" id="${team}">
-        <span class="material-symbols-outlined ar" id="star${team}" onclick="star(${team})">
-          star
-        </span>
-        
-        <img src="https://api.frc-colors.com/internal/team/${team}/avatar.png" alt="Icon" class="icon" id="icon-${team}">
-        <div class="data" id="name-${team}">${team}</div>
-        
-        <div class="data"> </div>
-        <div class="data"> </div>
-        <div class="data" id="win${team}"> % </div>
-        
-      </div>
-    `
-
-    team_data[team] = {}
-
-    loading++
-    load("team/frc"+team, function(data) {
-        document.querySelector("#icon-"+team).title = data.nickname
-        document.querySelector("#name-"+team).title = data.nickname
-
-        team_data[team]["overall"] = data
-
-        loading--
-        checkLoading()
-    })
-
-    loading++
-    load("team/frc"+team+"/event/" + YEAR + window.localStorage.getItem(EVENT) + "/matches", function(data) {
-        let wins = 0
-        let losses = 0
-        for (let match of data) {
-            let winning = match.winning_alliance
-            let alliance = match.alliances.blue.team_keys.includes("frc"+team) ? "blue" : "red"
-            if (winning === alliance) wins++
-            else losses++
-        }
-        document.querySelector("#win"+team).innerHTML = (Math.round(((wins/(wins+losses))*1000))/10) + "%"
-
-        team_data[team]["matches"] = data
-
-        loading--
-        checkLoading()
-    })
-
-    let img = new Image()
-    img.onerror = () => { document.querySelector("#icon-"+team).src = MISSING_LOGO }
-    img.src = `https://api.frc-colors.com/internal/team/${team}/avatar.png`
-
-    let elem = a.children[0]
-
-    document.querySelector(".table").append(elem)
-
-    sort(team, elem)
-}
 function element(team) {
-    let a = document.createElement('div')
-    a.innerHTML = `
-  <div class="row" id="${team}">
-    <span class="material-symbols-outlined ar" id="star${team}" onclick="star(${team})">
-      star
-    </span>
-    
-    <img src="https://api.frc-colors.com/internal/team/${team}/avatar.png" alt="Icon" class="icon" id="icon-${team}">
-    <div class="data" id="name-${team}">${team}</div>
-    
-    <div class="data"> </div>
-    <div class="data"> </div>
-    <div class="data" id="win${team}"> % </div>
-    <div class="data"> ${team_data[team]["points"]} </div>
-    
-  </div>
-  `
+    let el = document.createElement("div")
+    el.className = "row"
+    el.id = team
 
-    let elem = a.children[0]
+    let starEl = document.createElement("span")
+    starEl.className = "material-symbols-outlined ar"
+    if (starred.includes(team)) starEl.classList.add("filled")
+    starEl.onclick = () => star(team)
+    starEl.innerText = "star"
+    el.appendChild(starEl)
 
-    elem.querySelector("#icon-"+team).title = team_data[team].overall.nickname
-    elem.querySelector("#name-"+team).title = team_data[team].overall.nickname
-
-    let wins = 0
-    let losses = 0
-
-    for (match of team_data[team]["matches"]) {
-        let winning = match.winning_alliance
-        let alliance = match.alliances.blue.team_keys.includes("frc"+team) ? "blue" : "red"
-        if (winning === alliance) wins++
-        else losses++
+    let iconEl = document.createElement("img")
+    iconEl.src = team_data[team].Icon
+    iconEl.alt = "Icon"
+    iconEl.className = "icon"
+    iconEl.id = "icon-" + team
+    iconEl.onerror = () => {
+        team_data[team].Icon = MISSING_LOGO
+        iconEl.src = MISSING_LOGO
     }
-    elem.querySelector("#win"+team).innerHTML = (Math.round(((wins/(wins+losses))*1000))/10) + "%"
+    el.appendChild(iconEl)
 
-    let img = new Image()
-    img.onerror = () => { elem.querySelector("#icon-"+team).src = MISSING_LOGO }
-    img.src = `https://api.frc-colors.com/internal/team/${team}/avatar.png`
+    for (let column of columns) {
+        let columnEl = document.createElement("div")
+        columnEl.className = "data"
+        columnEl.innerText = team_data[team][column] === undefined ? "" : team_data[team][column]
+        if ((""+team_data[team][column]).length > 10) columnEl.style.fontSize = Math.max(1.2 - ((.025) * ((""+team_data[team][column]).length-10)), .7) + "rem"
+        el.appendChild(columnEl)
+    }
 
-    document.querySelector(".table").append(elem)
+    document.querySelector(".table").appendChild(el)
 
-    sort(team,elem)
+    el.style.order = sort(team)
+}
+
+function sort(team) {
+    let arr = []
+    for (let i of Object.keys(team_data)) {
+        arr.push(i)
+    }
+    arr.sort(function(a, b) {
+        if (team_data[a][selectedSort].toString().toLowerCase() < team_data[b][selectedSort].toString().toLowerCase()) return -1
+        if (team_data[a][selectedSort].toString().toLowerCase() > team_data[b][selectedSort].toString().toLowerCase()) return 1
+        return 0
+    })
+
+    let index = arr.indexOf(team)
+    if (sortDirection === -1) index = 10000 - index
+    return ((starred.includes(team) && usingStar) ? -Math.pow(10,10) : 0) + index
+}
+
+function setHeader() {
+    let header = document.querySelector(".table-head")
+    while (header.children.length > 2) header.children[header.children.length-1].remove()
+    for (let column of columns) {
+        let el = document.createElement("div")
+        el.id = "select_" + column
+        el.classList.add("data")
+        el.classList.add("smol")
+        if (column === selectedSort) {
+            el.classList.add("highlighted")
+            if (sortDirection === 1) el.classList.add("top")
+            if (sortDirection === -1) el.classList.add("bottom")
+        }
+        el.addEventListener("click", () => changeSort(column))
+        el.innerText = column.replaceAll("_", " ")
+        header.appendChild(el)
+    }
+}
+function changeSort(to) {
+    if (selectedSort === to) sortDirection *= -1
+    else {
+        selectedSort = to
+        sortDirection = 1
+    }
+
+    for (let el of document.getElementsByClassName("highlighted")) el.classList.remove("highlighted")
+    for (let el of document.getElementsByClassName("top")) el.classList.remove("top")
+    for (let el of document.getElementsByClassName("bottom")) el.classList.remove("bottom")
+
+    document.querySelector("#select_" + to).classList.add("highlighted")
+    if (sortDirection === 1) document.querySelector("#select_" + to).classList.add("top")
+    if (sortDirection === -1) document.querySelector("#select_" + to).classList.add("bottom")
+
+    regenList()
 }
 
 async function load(sub, onload) {
@@ -219,7 +202,7 @@ function clearList() {
 }
 function regenList() {
     clearList()
-    for (team of Object.keys(team_data)) element(team)
+    for (let team of Object.keys(team_data)) element(team)
 }
 
 function star(i) {
@@ -232,64 +215,6 @@ function star_toggle() {
     usingStar = !usingStar
     document.querySelector("#select_star").classList.toggle("filled")
     regenList()
-}
-
-/* Default is 0
-0 - Team # Low to High
-1 - Team # High to Low
-2 - Team Name A-Z
-3 - Team Name Z-A
-4 - Win Rate High to Low
-5 - Win Rate Low to High
-*/
-function sort(team, elem) {
-    let order = Math.floor(team/1000)
-    elem.style.order = order;
-    if (starred.includes(parseInt(team)) && usingStar) {
-        elem.style.order = -100+order;
-        elem.children[0].classList.add("filled")
-    } else {
-        elem.style.order = sort_(team)
-        if (sort_(team) < 0) console.log(team)
-    }
-}
-function sort_(team) {
-    switch(sorting) {
-        case 0: return team
-        case 1: return 1000000-team
-        case 4: return 1000+Math.floor(100-(100*winRate(team)))
-        case 5: return 1000+Math.floor((100*winRate(team)))
-    }
-}
-
-function set_sort(to) {
-    document.getElementsByClassName("highlighted")[0].classList.remove("highlighted")
-    if (to === "team-number") set_sort_("#select_team_number", 0, 1)
-    else if (to === "win-rate") set_sort_("#select_win_rate", 4, 5)
-    regenList()
-}
-
-function set_sort_(id, top, bottom) {
-    if (sorting === top) sorting = bottom
-    else sorting = top
-    document.querySelector(id).classList.add("highlighted")
-    document.querySelector(id).classList.remove("bottom")
-    document.querySelector(id).classList.remove("top")
-    if (sorting === top) document.querySelector(id).classList.add("top")
-    else document.querySelector(id).classList.add("bottom")
-}
-
-function winRate(team) {
-    let wins = 0
-    let losses = 0
-
-    for (match of team_data[team]["matches"]) {
-        let winning = match.winning_alliance
-        let alliance = match.alliances.blue.team_keys.includes("frc"+team) ? "blue" : "red"
-        if (winning === alliance) wins++
-        else losses++
-    }
-    return wins/losses
 }
 
 function checkLoading() {
@@ -314,6 +239,8 @@ if (window.localStorage.getItem(EVENT) == null || window.localStorage.getItem(EV
     loading = 0
     loadEvent()
 }
+
+setHeader()
 
 function csvToJson(csv) {
     let rawFields = csv.split("\n")[0]
@@ -346,7 +273,6 @@ function csvToJson(csv) {
     current = ""
     let currentMatch = {}
     inQuote = false
-    console.log(str)
     for (let char of str) {
         if (char === '"') inQuote = !inQuote
         if (char === ',' && !inQuote) {
@@ -364,5 +290,6 @@ function csvToJson(csv) {
         } else current = current + char
     }
 
+    console.log(json)
     return json
 }

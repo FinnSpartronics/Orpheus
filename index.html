@@ -16,7 +16,7 @@
             <button id="top_csv">Import .csv</button>
             <button id="top_mapping" disabled>Import mapping</button>
             <button id="top_setapi">Set API Key</button>
-            <button id="top_load_event">Load Event</button>
+            <button id="top_load_event">Set Event</button>
             <button id="top_theme">Toggle Theme</button>
         </div>
 
@@ -24,8 +24,8 @@
 
         <h1>FRC Scouting Tool</h1>
 
-        <input id="teamsearch" type="text" placeholder="Team #" size="6" maxlength="5" pattern="\d">
-        <button id="teamsearch_btn">Search</button>
+        <input disabled id="teamsearch" type="text" placeholder="Team #" size="6" maxlength="5" pattern="\d">
+        <button disabled id="teamsearch_btn">Search</button>
 
         <br/> <br/>
 
@@ -34,6 +34,7 @@
               star
             </span>
             <div class="icon" title="Icon Placeholder"></div>
+
             <div id="select_team_number" class="data smol highlighted top" onclick="set_sort('team-number')">Team #</div>
             <div class="data smol">Av. Speaker Notes Scored</div>
             <div class="data smol">Av. Amp Notes Scored</div>

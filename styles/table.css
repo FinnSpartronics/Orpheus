@@ -41,13 +41,21 @@ div.icon {
     font-style: normal;
     font-size: 1.2rem;
     color: var(--font);
-    min-width: 120px;
-    max-width: 120px;
+    width: 120px;
     display: flex;
     justify-content: center;
     align-items: center;
     height: 4rem;
     border-radius: 8px;
+
+    text-align: center;
+
+    inline-size: 114px;
+    text-overflow: ellipsis;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    white-space: normal;
+    overflow: hidden;
 }
 .data.smol {
     font-size: .8rem;
