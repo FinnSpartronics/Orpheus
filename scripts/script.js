@@ -25,6 +25,9 @@ let columns = ["Team_Number", "Name"]
 let selectedSort = "Team_Number"
 let sortDirection = 1
 
+let rounding = 3
+rounding = Math.pow(10, rounding)
+
 document.querySelector("#top_setapi").onclick = function() {
     let x = prompt("What is your TBA API key? 'get' to get it, leave blank to skip")
     if (x === "get") alert(window.localStorage.getItem(TBA_KEY))
@@ -74,6 +77,10 @@ document.querySelector("#top_mapping").onclick = function() {
     loadFile(".json", (result) => {
         mapping = JSON.parse(result)
         document.querySelector("#top_processdata").disabled = !(scouting_data !== undefined && mapping !== undefined)
+        for (let x of Object.keys(mapping["averages"])) columns.push(x.replaceAll(" ", "_"))
+        for (let x of Object.keys(mapping["calculated"])) columns.push(x.replaceAll(" ", "_"))
+        for (let x of Object.keys(mapping["calculated_averages"])) columns.push(x.replaceAll(" ", "_"))
+        setHeader()
     })
 }
 document.querySelector("#top_processdata").onclick = function() {
@@ -107,19 +114,19 @@ document.querySelector("#top_processdata").onclick = function() {
             for (let av of Object.keys(data[i]["averages"])) {
                 let total = 0
                 for (let x of data[i]["averages"][av]) total += x
-                team_data[i][av] = total/data[i]["averages"][av].length
+                team_data[i][av] = Math.round((total/data[i]["averages"][av].length)*rounding)/rounding
             }
 
             for (let cav of Object.keys(data[i]["calculated_averages"])) {
                 let total = 0
                 for (let x of data[i]["calculated_averages"][cav]) total += x
-                team_data[i][cav] = total/data[i]["calculated_averages"][cav].length
+                team_data[i][cav] = Math.round((total/data[i]["calculated_averages"][cav].length)*rounding)/rounding
             }
 
             for (let calc of Object.keys(data[i]["calculated"])) team_data[i][calc] = data[i]["calculated"][calc]
         }
     }
-    console.log(team_data)
+    regenList()
 }
 function evaluate(i, exp) {
     let a = exp[0]
@@ -141,7 +148,7 @@ function evaluate(i, exp) {
         case "-": return a - b
         case "*": return a * b
         case "/": return a / b
-        case "=": return a == b ? 1 : 0
+        case "=": return i[exp[0]] == exp[2] ? 1 : 0
     }
 }
 
@@ -181,7 +188,7 @@ function setHeader() {
     while (header.children.length > 2) header.children[header.children.length-1].remove()
     for (let column of columns) {
         let el = document.createElement("div")
-        el.id = "select_" + column
+        el.id = "select_" + column.replaceAll(".", "")
         el.classList.add("data")
         el.classList.add("smol")
         if (column === selectedSort) {
@@ -258,9 +265,9 @@ function changeSort(to) {
     for (let el of document.getElementsByClassName("top")) el.classList.remove("top")
     for (let el of document.getElementsByClassName("bottom")) el.classList.remove("bottom")
 
-    document.querySelector("#select_" + to).classList.add("highlighted")
-    if (sortDirection === 1) document.querySelector("#select_" + to).classList.add("top")
-    if (sortDirection === -1) document.querySelector("#select_" + to).classList.add("bottom")
+    document.querySelector("#select_" + to.replaceAll(".","")).classList.add("highlighted")
+    if (sortDirection === 1) document.querySelector("#select_" + to.replaceAll(".","")).classList.add("top")
+    if (sortDirection === -1) document.querySelector("#select_" + to.replaceAll(".","")).classList.add("bottom")
 
     regenList()
 }
