@@ -12,6 +12,7 @@ const THEME = "scouting_4915_theme"
 let event_data
 let scouting_data
 let team_data = {}
+let mapping
 
 let theme = 0
 
@@ -59,19 +60,89 @@ document.querySelector("#top_csv").onclick = function() {
     loadFile(".csv", (result) => {
         let json = csvToJson(result)
         scouting_data = json
+        document.querySelector("#top_processdata").disabled = !(scouting_data !== undefined && mapping !== undefined)
     })
 }
 document.querySelector("#top_json").onclick = function() {
     loadFile(".json", (result) => {
         scouting_data = JSON.parse(result)
         console.log(scouting_data)
+        document.querySelector("#top_processdata").disabled = !(scouting_data !== undefined && mapping !== undefined)
     })
 }
 document.querySelector("#top_mapping").onclick = function() {
     loadFile(".json", (result) => {
-        let json = JSON.parse(result)
-        console.log(json)
+        mapping = JSON.parse(result)
+        document.querySelector("#top_processdata").disabled = !(scouting_data !== undefined && mapping !== undefined)
     })
+}
+document.querySelector("#top_processdata").onclick = function() {
+    let data = {}
+    for (let i of scouting_data) {
+        let team = i[mapping["team"]]
+        if (typeof team_data[team] !== undefined) {
+            if (typeof data[team] === "undefined") data[team] = {"averages": {}, "calculated": {}, "calculated_averages": {}}
+            for (let average of Object.keys(mapping["averages"])) {
+                let averageKey = average.replaceAll(" ", "_")
+                if (typeof data[team]["averages"][averageKey] === "undefined") data[team]["averages"][averageKey] = []
+
+                let x = i[mapping["averages"][average]]
+                if (typeof x !== "number") x = parseFloat(x)
+                data[team]["averages"][averageKey].push(x)
+            }
+            for (let calculated of Object.keys(mapping["calculated"])) {
+                let calculatedKey = calculated.replaceAll(" ", "_")
+                if (typeof data[team]["calculated"][calculatedKey] === "undefined") data[team]["calculated"][calculatedKey] = 0
+                data[team]["calculated"][calculatedKey] += evaluate(i, mapping["calculated"][calculated])
+            }
+            for (let calculated of Object.keys(mapping["calculated_averages"])) {
+                let calculatedKey = calculated.replaceAll(" ", "_")
+                if (typeof data[team]["calculated_averages"][calculatedKey] === "undefined") data[team]["calculated_averages"][calculatedKey] = []
+                data[team]["calculated_averages"][calculatedKey].push(evaluate(i, mapping["calculated_averages"][calculated]))
+            }
+        }
+    }
+    for (let i of Object.keys(data)) {
+        if (typeof team_data[i] != "undefined") {
+            for (let av of Object.keys(data[i]["averages"])) {
+                let total = 0
+                for (let x of data[i]["averages"][av]) total += x
+                team_data[i][av] = total/data[i]["averages"][av].length
+            }
+
+            for (let cav of Object.keys(data[i]["calculated_averages"])) {
+                let total = 0
+                for (let x of data[i]["calculated_averages"][cav]) total += x
+                team_data[i][cav] = total/data[i]["calculated_averages"][cav].length
+            }
+
+            for (let calc of Object.keys(data[i]["calculated"])) team_data[i][calc] = data[i]["calculated"][calc]
+        }
+    }
+    console.log(team_data)
+}
+function evaluate(i, exp) {
+    let a = exp[0]
+    let op = exp[1]
+    let b = exp[2]
+
+    if (typeof a === "object") a = evaluate(i, a)
+    else if (typeof a === "string") a = i[a]
+    a = parseFloat(a)
+    if (isNaN(a)) a = 0
+
+    if (typeof b === "object") b = evaluate(i, b)
+    else if (typeof b === "string") b = i[b]
+    b = parseFloat(b)
+    if (isNaN(b)) b = 0
+
+    switch (op) {
+        case "+": return a + b
+        case "-": return a - b
+        case "*": return a * b
+        case "/": return a / b
+        case "=": return a == b ? 1 : 0
+    }
 }
 
 function updateTheme() {
@@ -276,7 +347,7 @@ function csvToJson(csv) {
     for (let char of rawFields) {
         if (char === '"') inQuote = !inQuote
         else if (char === ',' && !inQuote) {
-            fields.push(current)
+            fields.push(current.trim())
             current = ""
         } else current = current + char
     }
