@@ -238,21 +238,31 @@ function element(team) {
 }
 
 function sort(team) {
-    let arr = []
-    for (let i of Object.keys(team_data)) {
-        arr.push(i)
-    }
-    arr.sort(function(a, b) {
-        if (team_data[a][selectedSort].toString().toLowerCase() < team_data[b][selectedSort].toString().toLowerCase()) return -1
-        if (team_data[a][selectedSort].toString().toLowerCase() > team_data[b][selectedSort].toString().toLowerCase()) return 1
-        return 0
-    })
-
-    let index = arr.indexOf(team)
-    if (sortDirection === -1) index = 10000 - index
-
     let starOffset = ((starred.includes(team) && usingStar) ? -Math.pow(10,9) : 0)
-    return starOffset + (index)
+    if (typeof team_data[Object.keys(team_data)[0]][selectedSort] == "string") {
+        let arr = []
+        for (let i of Object.keys(team_data)) {
+            arr.push(i)
+        }
+        arr.sort(function(a, b) {
+            if (team_data[a][selectedSort].toString().toLowerCase() < team_data[b][selectedSort].toString().toLowerCase()) return -1
+            if (team_data[a][selectedSort].toString().toLowerCase() > team_data[b][selectedSort].toString().toLowerCase()) return 1
+            return 0
+        })
+
+        let index = arr.indexOf(team)
+        if (sortDirection === -1) index = 10000 - index
+
+        return starOffset + (index)
+    } else { // Number
+        let max = -100000
+        for (let x of Object.keys(team_data))
+            if (team_data[x][selectedSort] >= max) max = team_data[x][selectedSort]
+
+        let index = isNaN(team_data[team][selectedSort]) ? 0 : team_data[team][selectedSort] /max
+        if (sortDirection === 1) index = 1-index
+        return starOffset + Math.floor(1000*index)
+    }
 }
 function changeSort(to) {
     if (selectedSort === to) sortDirection *= -1
