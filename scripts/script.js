@@ -59,31 +59,26 @@ document.querySelector("#top_theme").onclick = function() {
     window.localStorage.setItem(THEME, ""+theme)
     updateTheme()
 }
-document.querySelector("#top_csv").onclick = function() {
-    loadFile(".csv", (result) => {
-        let json = csvToJson(result)
-        scouting_data = json
-        document.querySelector("#top_processdata").disabled = !(scouting_data !== undefined && mapping !== undefined)
-    })
-}
-document.querySelector("#top_json").onclick = function() {
-    loadFile(".json", (result) => {
-        scouting_data = JSON.parse(result)
-        console.log(scouting_data)
-        document.querySelector("#top_processdata").disabled = !(scouting_data !== undefined && mapping !== undefined)
+document.querySelector("#top_data").onclick = function() {
+    loadFile(".csv,.json", (result, filetype) => {
+        if (filetype === "csv")
+            scouting_data = csvToJson(result)
+        else if (filetype === "json")
+            scouting_data = JSON.parse(result)
+        if (mapping !== undefined) processData()
     })
 }
 document.querySelector("#top_mapping").onclick = function() {
     loadFile(".json", (result) => {
         mapping = JSON.parse(result)
-        document.querySelector("#top_processdata").disabled = !(scouting_data !== undefined && mapping !== undefined)
         for (let x of Object.keys(mapping["averages"])) columns.push(x.replaceAll(" ", "_"))
         for (let x of Object.keys(mapping["calculated"])) columns.push(x.replaceAll(" ", "_"))
         for (let x of Object.keys(mapping["calculated_averages"])) columns.push(x.replaceAll(" ", "_"))
         setHeader()
+        if (scouting_data !== undefined) processData()
     })
 }
-document.querySelector("#top_processdata").onclick = function() {
+function processData() {
     let data = {}
     for (let i of scouting_data) {
         let team = i[mapping["team"]]
@@ -324,7 +319,10 @@ function loadFile(accept, listener) {
     fileInput.accept = accept
     fileInput.addEventListener("change", (e) => {
         const reader = new FileReader();
-        reader.onload = (e) => listener(e.target.result)
+        reader.onload = (loadEvent) => {
+            listener(loadEvent.target.result, filename.split('.').pop().toLowerCase())
+        }
+        let filename = e.target.files[0].name
         reader.readAsText(e.target.files[0]);
     })
     fileInput.click()
