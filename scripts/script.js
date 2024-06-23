@@ -1,13 +1,15 @@
-// https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200
-// https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
+let year
+const version = 0.1
 
-//https://api.frc-colors.com/internal/team/4915/avatar.png for logos
-
+let YEAR = "scouting_4915_year"
 const TBA_KEY  = "scouting_4915_apikey"
 const EVENT  = "scouting_4915_event"
-const YEAR = 2024
-const MISSING_LOGO = "https://frc-cdn.firstinspires.org/eventweb_frc/ProgramLogos/FIRSTicon_RGB_withTM.png"
+const SCOUTING_DATA  = "scouting_4915_scouting_data"
+const MAPPING  = "scouting_4915_mapping"
 const THEME = "scouting_4915_theme"
+const LOCAL_STORAGE_KEYS = [YEAR, TBA_KEY, EVENT, SCOUTING_DATA, MAPPING, THEME]
+
+const MISSING_LOGO = "https://frc-cdn.firstinspires.org/eventweb_frc/ProgramLogos/FIRSTicon_RGB_withTM.png"
 
 let event_data
 let scouting_data
@@ -16,7 +18,7 @@ let mapping
 
 let theme = 0
 
-let starred = ['4915']
+let starred = []
 let usingStar = true
 
 let loading = 0
@@ -66,19 +68,47 @@ document.querySelector("#top_data").onclick = function() {
         else if (filetype === "json")
             scouting_data = JSON.parse(result)
         if (mapping !== undefined) processData()
+        window.localStorage.setItem(SCOUTING_DATA, JSON.stringify(scouting_data))
     })
 }
 document.querySelector("#top_mapping").onclick = function() {
     loadFile(".json", (result) => {
         mapping = JSON.parse(result)
-        for (let x of Object.keys(mapping["averages"])) columns.push(x.replaceAll(" ", "_"))
-        for (let x of Object.keys(mapping["calculated"])) columns.push(x.replaceAll(" ", "_"))
-        for (let x of Object.keys(mapping["calculated_averages"])) columns.push(x.replaceAll(" ", "_"))
-        setHeader()
         if (scouting_data !== undefined) processData()
+        window.localStorage.setItem(MAPPING, JSON.stringify(mapping))
     })
 }
+document.querySelector("#top_year").onclick = function() {
+    let x = prompt("Change year").trim()
+    if (x === "get") alert(window.localStorage.getItem(YEAR))
+    else if (x !== "") {
+        window.localStorage.setItem(YEAR, x);
+        window.location.reload()
+    }
+}
+document.querySelector("#foot_clearLocalStorage").onclick = function() {
+    let tmp = []
+    LOCAL_STORAGE_KEYS.forEach((i) => tmp.push(i.replace("scouting_4915_", "")))
+    if (confirm("This will clear the following: " + tmp)) {
+        for (let i of LOCAL_STORAGE_KEYS) window.localStorage.removeItem(i)
+        window.location.reload()
+    }
+}
+document.querySelector("#foot_clearDataMappings").onclick = function() {
+    if (confirm("Are you sure? This is irreversible")) {
+        window.localStorage.removeItem(SCOUTING_DATA)
+        window.localStorage.removeItem(MAPPING)
+        window.location.reload()
+    }
+}
+function handleMapping() {
+    for (let x of Object.keys(mapping["averages"])) columns.push(x.replaceAll(" ", "_"))
+    for (let x of Object.keys(mapping["calculated"])) columns.push(x.replaceAll(" ", "_"))
+    for (let x of Object.keys(mapping["calculated_averages"])) columns.push(x.replaceAll(" ", "_"))
+    setHeader()
+}
 function processData() {
+    handleMapping()
     let data = {}
     for (let i of scouting_data) {
         let team = i[mapping["team"]]
@@ -157,11 +187,10 @@ function updateTheme() {
     if (theme === 0) document.querySelector(":root").classList = ""
     if (theme === 1) document.querySelector(":root").classList = "dark"
 }
-updateTheme()
 
 function loadEvent() {
     loading++
-    load("event/" + YEAR + window.localStorage.getItem(EVENT) + "/teams", function(data) {
+    load("event/" + year + window.localStorage.getItem(EVENT) + "/teams", function(data) {
         event_data = data
         for (let team of data) {
             team_data[team.team_number] = {}
@@ -176,7 +205,6 @@ function loadEvent() {
         checkLoading()
     })
 }
-
 
 function setHeader() {
     let header = document.querySelector(".table-head")
@@ -298,7 +326,6 @@ function regenList() {
     for (let team of Object.keys(team_data)) element(team)
 }
 
-
 async function load(sub, onload) {
     loading++
     let url = (`https://www.thebluealliance.com/api/v3/${sub}?X-TBA-Auth-Key=${window.localStorage.getItem(TBA_KEY)}`);
@@ -312,6 +339,15 @@ async function load(sub, onload) {
     }).then(data => {
         onload(data)
     })
+}
+function checkLoading() {
+    if (loading === 0) {
+        document.querySelector("err").classList = "hidden"
+        if (scouting_data !== undefined && mapping !== undefined) processData()
+    } else {
+        document.querySelector("err").classList = ""
+        document.querySelector("err").innerHTML = "Loading Data... Do not touch anything"
+    }
 }
 function loadFile(accept, listener) {
     let fileInput = document.createElement("input")
@@ -327,31 +363,6 @@ function loadFile(accept, listener) {
     })
     fileInput.click()
 }
-
-function checkLoading() {
-    if (loading === 0) {
-        document.querySelector("err").classList = "hidden"
-    } else {
-        document.querySelector("err").classList = ""
-        document.querySelector("err").innerHTML = "Loading Data... Do not touch anything"
-    }
-}
-
-if (window.localStorage.getItem(TBA_KEY) == null || window.localStorage.getItem(TBA_KEY).trim() === "") {
-    document.querySelector("err").classList = ""
-    document.querySelector("err").innerHTML = "No API Key"
-}
-if (window.localStorage.getItem(EVENT) == null || window.localStorage.getItem(EVENT).trim() === "") {
-    document.querySelector("err").classList = ""
-    document.querySelector("err").innerHTML = (document.querySelector("err").innerHTML + " No Event").trim()
-} else {
-    loading = 1
-    checkLoading()
-    loading = 0
-    loadEvent()
-}
-
-setHeader()
 
 function csvToJson(csv) {
     let rawFields = csv.split("\n")[0]
@@ -403,3 +414,39 @@ function csvToJson(csv) {
 
     return json
 }
+
+year = window.localStorage.getItem(YEAR)
+if (year === null || year < 1992) {
+    window.localStorage.setItem(YEAR, new Date().getFullYear().toString())
+    window.location.reload()
+}
+document.querySelector("#top_year").innerText = year
+
+scouting_data = window.localStorage.getItem(SCOUTING_DATA)
+scouting_data = scouting_data == null ? undefined : JSON.parse(scouting_data)
+mapping = window.localStorage.getItem(MAPPING)
+mapping = mapping == null ? undefined : JSON.parse(mapping)
+
+updateTheme()
+
+let versionElement = document.createElement("span")
+versionElement.innerText = "v"+version
+document.querySelector(".sticky-header").children[0].appendChild(versionElement)
+
+// Final Stuff
+if (window.localStorage.getItem(TBA_KEY) == null || window.localStorage.getItem(TBA_KEY).trim() === "") {
+    document.querySelector("err").classList = ""
+    document.querySelector("err").innerHTML = "No API Key"
+}
+if (window.localStorage.getItem(EVENT) == null || window.localStorage.getItem(EVENT).trim() === "") {
+    document.querySelector("err").classList = ""
+    document.querySelector("err").innerHTML = (document.querySelector("err").innerHTML + " No Event").trim()
+} else {
+    loading = 1
+    checkLoading()
+    loading = 0
+    loadEvent()
+}
+
+setHeader()
+

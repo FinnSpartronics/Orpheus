@@ -72,6 +72,9 @@ div.icon {
 .data.bottom {
     align-items: end;
 }
+.data.dragging {
+    position: absolute;
+}
 
 h1 {
     margin: 0;

@@ -1,0 +1,40 @@
+@import url('https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,100;0,300;0,400;0,700;0,900;1,100;1,300;1,400;1,700;1,900&display=swap');
+
+.material-symbols-outlined {
+    font-variation-settings:
+            'FILL' 0,
+            'wght' 400,
+            'GRAD' 0,
+            'opsz' 48;
+    margin-right: 2px;
+}
+.filled {
+    font-variation-settings:
+            'FILL' 1,
+            'wght' 400,
+            'GRAD' 0,
+            'opsz' 48;
+    color: var(--star);
+    -webkit-text-stroke-width: 1px;
+    -webkit-text-stroke-color: var(--font);
+}
+
+:root {
+    --bg: rgb(247, 247, 247);
+    --line: rgb(214, 214, 214);
+    --font: rgb(31,31,31);
+    --highlight: rgb(222, 237, 250);
+    --star: rgb(247, 232, 59);
+}
+:root.dark {
+    --bg: rgb(53, 55, 59);
+    --line: rgb(122, 122, 122);
+    --font: rgb(220, 220, 220);
+    --highlight: rgb(144, 161, 176);
+    --star: var(--font);
+}
+
+* {
+    color: var(--font);
+    transition: color 200ms, background-color 200ms;
+}
