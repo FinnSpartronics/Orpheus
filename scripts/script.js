@@ -23,8 +23,12 @@ let usingStar = true
 
 let loading = 0
 
+let showTeamIcons = true
+
 const defaultColumns = ["Team_Number", "Name", "Winrate"]
 let columns = defaultColumns
+const hiddenColumns = ["TBA", "Icon"]
+
 let selectedSort = "Team_Number"
 let sortDirection = 1
 
@@ -85,7 +89,6 @@ function loadEvent() {
             team_data[team.team_number].Icon = "https://api.frc-colors.com/internal/team/" + team.team_number + "/avatar.png"
             loading++
             load("team/frc" + team.team_number + "/event/" + year + window.localStorage.getItem(EVENT) + "/matches", function(data) {
-                console.log(data)
                 loading--
                 checkLoading()
                 let matchesWon = 0
@@ -336,11 +339,12 @@ function updateTheme() {
     }
     if (theme === 0) document.querySelector(":root").classList = ""
     if (theme === 1) document.querySelector(":root").classList = "dark"
+    if (theme === 2) document.querySelector(":root").classList = "spartronics_theme"
     window.localStorage.setItem(THEME, ""+theme)
 }
 // Theme toggle button
 document.querySelector("#top_theme").onclick = function() {
-    window.localStorage.setItem(THEME, ""+Math.abs(theme-1))
+    window.localStorage.setItem(THEME, ""+((theme + 1) % 3))
     updateTheme()
 }
 //#endregion
@@ -349,7 +353,13 @@ document.querySelector("#top_theme").onclick = function() {
 // Sets the table header
 function setHeader() {
     let header = document.querySelector(".table-head")
-    while (header.children.length > 2) header.children[header.children.length-1].remove()
+    while (header.children.length > 1) header.children[header.children.length-1].remove()
+    if (showTeamIcons) {
+        let iconPlaceholder = document.createElement("div")
+        iconPlaceholder.classList.add("icon")
+        iconPlaceholder.title = "Icon Placeholder"
+        header.appendChild(iconPlaceholder)
+    }
     for (let column of columns) {
         let el = document.createElement("div")
         el.id = "select_" + column.replaceAll(".", "")
@@ -379,16 +389,18 @@ function element(team) {
     starEl.innerText = "star"
     el.appendChild(starEl)
 
-    let iconEl = document.createElement("img")
-    iconEl.src = team_data[team].Icon
-    iconEl.alt = "Icon"
-    iconEl.className = "icon"
-    iconEl.id = "icon-" + team
-    iconEl.onerror = () => {
-        team_data[team].Icon = MISSING_LOGO
-        iconEl.src = MISSING_LOGO
+    if (showTeamIcons) {
+        let iconEl = document.createElement("img")
+        iconEl.src = team_data[team].Icon
+        iconEl.alt = "Icon"
+        iconEl.className = "icon"
+        iconEl.id = "icon-" + team
+        iconEl.onerror = () => {
+            team_data[team].Icon = MISSING_LOGO
+            iconEl.src = MISSING_LOGO
+        }
+        el.appendChild(iconEl)
     }
-    el.appendChild(iconEl)
 
     for (let column of columns) {
         let columnEl = document.createElement("div")
@@ -413,6 +425,12 @@ function clearTable() {
 function regenTable() {
     clearTable()
     for (let team of Object.keys(team_data)) element(team)
+}
+//#endregion
+
+//#region Column Changing
+function getColumns() {
+
 }
 //#endregion
 
@@ -528,6 +546,7 @@ scouting_data = scouting_data == null ? undefined : JSON.parse(scouting_data)
 mapping = window.localStorage.getItem(MAPPING)
 mapping = mapping == null ? undefined : JSON.parse(mapping)
 
+setHeader()
 updateTheme()
 
 let versionElement = document.createElement("span")
