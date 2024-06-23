@@ -121,17 +121,22 @@ function processData() {
 
                 let x = i[mapping["averages"][average]]
                 if (typeof x !== "number") x = parseFloat(x)
-                data[team]["averages"][averageKey].push(x)
+                if (!isNaN(x))
+                    data[team]["averages"][averageKey].push(x)
             }
             for (let calculated of Object.keys(mapping["calculated"])) {
                 let calculatedKey = calculated.replaceAll(" ", "_")
                 if (typeof data[team]["calculated"][calculatedKey] === "undefined") data[team]["calculated"][calculatedKey] = 0
-                data[team]["calculated"][calculatedKey] += evaluate(i, mapping["calculated"][calculated])
+                let e = evaluate(i, mapping["calculated"][calculated])
+                if (!isNaN(e))
+                    data[team]["calculated"][calculatedKey] += e
             }
             for (let calculated of Object.keys(mapping["calculated_averages"])) {
                 let calculatedKey = calculated.replaceAll(" ", "_")
                 if (typeof data[team]["calculated_averages"][calculatedKey] === "undefined") data[team]["calculated_averages"][calculatedKey] = []
-                data[team]["calculated_averages"][calculatedKey].push(evaluate(i, mapping["calculated_averages"][calculated]))
+                let e = evaluate(i, mapping["calculated_averages"][calculated])
+                if (!isNaN(e))
+                    data[team]["calculated_averages"][calculatedKey].push(e)
             }
         }
     }
@@ -162,12 +167,12 @@ function evaluate(i, exp) {
     if (typeof a === "object") a = evaluate(i, a)
     else if (typeof a === "string") a = i[a]
     a = parseFloat(a)
-    if (isNaN(a)) a = 0
+    if (isNaN(a)) return NaN
 
     if (typeof b === "object") b = evaluate(i, b)
     else if (typeof b === "string") b = i[b]
     b = parseFloat(b)
-    if (isNaN(b)) b = 0
+    if (isNaN(b)) return NaN
 
     switch (op) {
         case "+": return a + b
