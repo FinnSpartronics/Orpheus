@@ -23,7 +23,8 @@ let usingStar = true
 
 let loading = 0
 
-let columns = ["Team_Number", "Name"]
+const defaultColumns = ["Team_Number", "Name", "Winrate"]
+let columns = defaultColumns
 let selectedSort = "Team_Number"
 let sortDirection = 1
 
@@ -34,6 +35,9 @@ let keyboardControls = true
 
 let year
 const version = 0.1
+
+const tieValue = 0.5
+
 //#endregion
 
 //#region API Key, Event Loading, Year setting
@@ -79,12 +83,29 @@ function loadEvent() {
             team_data[team.team_number].Name = team.nickname
             team_data[team.team_number].TBA = team
             team_data[team.team_number].Icon = "https://api.frc-colors.com/internal/team/" + team.team_number + "/avatar.png"
-            element(team.team_number)
+            loading++
+            load("team/frc" + team.team_number + "/event/" + year + window.localStorage.getItem(EVENT) + "/matches", function(data) {
+                console.log(data)
+                loading--
+                checkLoading()
+                let matchesWon = 0
+                for (let match of data)
+                    matchesWon += checkTeamWonMatch(match, team.team_number)
+                team_data[team.team_number]["Winrate"] = Math.round(rounding*(matchesWon/data.length))/rounding
+                regenTable()
+            })
             regenTable()
         }
         loading--
         checkLoading()
     })
+}
+function checkTeamWonMatch(match, team) {
+    team = "frc" + team
+    if (match["winning_alliance"] === "") return tieValue
+    let alliance = "red"
+    if (match["alliances"]["blue"]["team_keys"].includes(team)) alliance = "blue"
+    return alliance === match["winning_alliance"]
 }
 //#endregion
 
@@ -160,7 +181,7 @@ document.querySelector("#top_mapping").onclick = function() {
 }
 // Adds all of the columns from the mapping to the columns list
 function handleMapping() {
-    columns = ["Team_Number", "Name"] // Clears columns to avoid duplicates
+    columns = defaultColumns // Clears columns to avoid duplicates
     for (let x of Object.keys(mapping["averages"])) columns.push(x.replaceAll(" ", "_"))
     for (let x of Object.keys(mapping["calculated"])) columns.push(x.replaceAll(" ", "_"))
     for (let x of Object.keys(mapping["calculated_averages"])) columns.push(x.replaceAll(" ", "_"))
