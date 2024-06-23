@@ -36,6 +36,7 @@ let year
 const version = 0.1
 //#endregion
 
+//#region API Key, Event Loading, Year setting
 document.querySelector("#top_setapi").onclick = function() {
     let x = prompt("What is your TBA API key? 'get' to get it, leave blank to skip")
     if (x === "get") alert(window.localStorage.getItem(TBA_KEY))
@@ -68,6 +69,25 @@ document.querySelector("#top_year").onclick = function() {
         window.location.reload()
     }
 }
+function loadEvent() {
+    loading++
+    load("event/" + year + window.localStorage.getItem(EVENT) + "/teams", function(data) {
+        event_data = data
+        for (let team of data) {
+            team_data[team.team_number] = {}
+            team_data[team.team_number].Team_Number = team.team_number
+            team_data[team.team_number].Name = team.nickname
+            team_data[team.team_number].TBA = team
+            team_data[team.team_number].Icon = "https://api.frc-colors.com/internal/team/" + team.team_number + "/avatar.png"
+            element(team.team_number)
+            regenTable()
+        }
+        loading--
+        checkLoading()
+    })
+}
+//#endregion
+
 document.querySelector("#foot_clearLocalStorage").onclick = function() {
     let tmp = []
     LOCAL_STORAGE_KEYS.forEach((i) => tmp.push(i.replace("scouting_4915_", "")))
@@ -76,6 +96,8 @@ document.querySelector("#foot_clearLocalStorage").onclick = function() {
         window.location.reload()
     }
 }
+
+//#region Keyboard Controls
 document.querySelector("#top_keyboard").onclick = function() {
     keyboardControls = !keyboardControls
     document.querySelector("#top_keyboard").innerText = "Keyboard Controls: " + (keyboardControls ? "Enabled" : "Disabled")
@@ -110,6 +132,7 @@ document.addEventListener("keydown", (e) => {
     setHeader()
     regenTable()
 })
+//#endregion
 
 //#region Data and Mappings
 // Import data button
@@ -229,6 +252,56 @@ document.querySelector("#foot_clearDataMappings").onclick = function() {
         window.location.reload()
     }
 }
+function csvToJson(csv) {
+    let rawFields = csv.split("\n")[0]
+
+    let fields = []
+    let inQuote = false
+    let current = ""
+    for (let char of rawFields) {
+        if (char === '"') inQuote = !inQuote
+        else if (char === ',' && !inQuote) {
+            fields.push(current.trim())
+            current = ""
+        } else current = current + char
+    }
+    fields.push(current)
+
+    let str = ""
+    inQuote = false
+    for (let substring of csv.split("\n").slice(1)) {
+        for (let char of substring) {
+            str = str + char
+            if (char === '"') inQuote = !inQuote
+        }
+        if (!inQuote) str = str + ","
+        str = str + "\n"
+        //inQuote = false
+    }
+
+    let json = []
+    current = ""
+    let currentMatch = {}
+    inQuote = false
+    for (let char of str) {
+        if (char === '"') inQuote = !inQuote
+        if (char === ',' && !inQuote) {
+            current = current.trim()
+            if (current.startsWith('"')) current = current.substring(1)
+            if (current.endsWith('"')) current = current.substring(0, current.length - 1)
+            current = current.replaceAll('""', '"')
+            currentMatch[fields[Object.keys(currentMatch).length]] = current.trim()
+
+            current = ""
+            if (Object.keys(currentMatch).length === fields.length) {
+                json.push(currentMatch)
+                currentMatch = {}
+            }
+        } else current = current + char
+    }
+
+    return json
+}
 //#endregion
 
 //#region Theme
@@ -250,24 +323,6 @@ document.querySelector("#top_theme").onclick = function() {
     updateTheme()
 }
 //#endregion
-
-function loadEvent() {
-    loading++
-    load("event/" + year + window.localStorage.getItem(EVENT) + "/teams", function(data) {
-        event_data = data
-        for (let team of data) {
-            team_data[team.team_number] = {}
-            team_data[team.team_number].Team_Number = team.team_number
-            team_data[team.team_number].Name = team.nickname
-            team_data[team.team_number].TBA = team
-            team_data[team.team_number].Icon = "https://api.frc-colors.com/internal/team/" + team.team_number + "/avatar.png"
-            element(team.team_number)
-            regenTable()
-        }
-        loading--
-        checkLoading()
-    })
-}
 
 //#region Table
 // Sets the table header
@@ -438,57 +493,6 @@ function loadFile(accept, listener) {
     fileInput.click()
 }
 //#endregion
-
-function csvToJson(csv) {
-    let rawFields = csv.split("\n")[0]
-
-    let fields = []
-    let inQuote = false
-    let current = ""
-    for (let char of rawFields) {
-        if (char === '"') inQuote = !inQuote
-        else if (char === ',' && !inQuote) {
-            fields.push(current.trim())
-            current = ""
-        } else current = current + char
-    }
-    fields.push(current)
-
-    let str = ""
-    inQuote = false
-    for (let substring of csv.split("\n").slice(1)) {
-        for (let char of substring) {
-            str = str + char
-            if (char === '"') inQuote = !inQuote
-        }
-        if (!inQuote) str = str + ","
-        str = str + "\n"
-        //inQuote = false
-    }
-
-    let json = []
-    current = ""
-    let currentMatch = {}
-    inQuote = false
-    for (let char of str) {
-        if (char === '"') inQuote = !inQuote
-        if (char === ',' && !inQuote) {
-            current = current.trim()
-            if (current.startsWith('"')) current = current.substring(1)
-            if (current.endsWith('"')) current = current.substring(0, current.length - 1)
-            current = current.replaceAll('""', '"')
-            currentMatch[fields[Object.keys(currentMatch).length]] = current.trim()
-
-            current = ""
-            if (Object.keys(currentMatch).length === fields.length) {
-                json.push(currentMatch)
-                currentMatch = {}
-            }
-        } else current = current + char
-    }
-
-    return json
-}
 
 //#region Init
 year = window.localStorage.getItem(YEAR)
