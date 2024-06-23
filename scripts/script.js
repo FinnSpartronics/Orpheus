@@ -60,27 +60,6 @@ document.querySelector("#top_load_event").onclick = function() {
         loadEvent()
     }
 }
-document.querySelector("#top_theme").onclick = function() {
-    theme = Math.abs(theme-1)
-    updateTheme()
-}
-document.querySelector("#top_data").onclick = function() {
-    loadFile(".csv,.json", (result, filetype) => {
-        if (filetype === "csv")
-            scouting_data = csvToJson(result)
-        else if (filetype === "json")
-            scouting_data = JSON.parse(result)
-        if (mapping !== undefined) processData()
-        window.localStorage.setItem(SCOUTING_DATA, JSON.stringify(scouting_data))
-    })
-}
-document.querySelector("#top_mapping").onclick = function() {
-    loadFile(".json", (result) => {
-        mapping = JSON.parse(result)
-        if (scouting_data !== undefined) processData()
-        window.localStorage.setItem(MAPPING, JSON.stringify(mapping))
-    })
-}
 document.querySelector("#top_year").onclick = function() {
     let x = prompt("Change year").trim()
     if (x === "get") alert(window.localStorage.getItem(YEAR))
@@ -94,13 +73,6 @@ document.querySelector("#foot_clearLocalStorage").onclick = function() {
     LOCAL_STORAGE_KEYS.forEach((i) => tmp.push(i.replace("scouting_4915_", "")))
     if (confirm("This will clear the following: " + tmp)) {
         for (let i of LOCAL_STORAGE_KEYS) window.localStorage.removeItem(i)
-        window.location.reload()
-    }
-}
-document.querySelector("#foot_clearDataMappings").onclick = function() {
-    if (confirm("Are you sure? This is irreversible")) {
-        window.localStorage.removeItem(SCOUTING_DATA)
-        window.localStorage.removeItem(MAPPING)
         window.location.reload()
     }
 }
@@ -136,9 +108,33 @@ document.addEventListener("keydown", (e) => {
         e.preventDefault()
     }
     setHeader()
-    regenList()
+    regenTable()
 })
 
+//#region Data and Mappings
+// Import data button
+document.querySelector("#top_data").onclick = function() {
+    loadFile(".csv,.json", (result, filetype) => {
+        if (filetype === "csv") scouting_data = csvToJson(result) // Converts CSV to JSON
+        else if (filetype === "json") scouting_data = JSON.parse(result) // Parses json
+        else {
+            let type = prompt("What is the filetype? (csv/json)").toLowerCase().trim()
+            if (type === "csv") scouting_data = csvToJson(result) // Converts CSV to JSON
+            else if (type === "json") scouting_data = JSON.parse(result) // Parses json
+            else return // If none of the above, then can't process data
+        }
+        if (mapping !== undefined) processData()
+        window.localStorage.setItem(SCOUTING_DATA, JSON.stringify(scouting_data))
+    })
+}
+// Import mapping button
+document.querySelector("#top_mapping").onclick = function() {
+    loadFile(".json", (result) => {
+        mapping = JSON.parse(result)
+        if (scouting_data !== undefined) processData()
+        window.localStorage.setItem(MAPPING, JSON.stringify(mapping))
+    })
+}
 // Adds all of the columns from the mapping to the columns list
 function handleMapping() {
     columns = ["Team_Number", "Name"] // Clears columns to avoid duplicates
@@ -199,7 +195,7 @@ function processData() {
             for (let calc of Object.keys(data[i]["calculated"])) team_data[i][calc] = data[i]["calculated"][calc]
         }
     }
-    regenList()
+    regenTable()
 }
 // Evaluates an expression
 function evaluate(i, exp) {
@@ -225,7 +221,17 @@ function evaluate(i, exp) {
         case "=": return i[exp[0]] == exp[2] ? 1 : 0
     }
 }
+// Adds button functionality to clear mappings and scouting data
+document.querySelector("#foot_clearDataMappings").onclick = function() {
+    if (confirm("Are you sure? This is irreversible")) {
+        window.localStorage.removeItem(SCOUTING_DATA)
+        window.localStorage.removeItem(MAPPING)
+        window.location.reload()
+    }
+}
+//#endregion
 
+//#region Theme
 // Updates the theme in document and handles theme in localStorage
 function updateTheme() {
     theme = parseInt(window.localStorage.getItem(THEME))
@@ -238,6 +244,12 @@ function updateTheme() {
     if (theme === 1) document.querySelector(":root").classList = "dark"
     window.localStorage.setItem(THEME, ""+theme)
 }
+// Theme toggle button
+document.querySelector("#top_theme").onclick = function() {
+    window.localStorage.setItem(THEME, ""+Math.abs(theme-1))
+    updateTheme()
+}
+//#endregion
 
 function loadEvent() {
     loading++
@@ -250,13 +262,15 @@ function loadEvent() {
             team_data[team.team_number].TBA = team
             team_data[team.team_number].Icon = "https://api.frc-colors.com/internal/team/" + team.team_number + "/avatar.png"
             element(team.team_number)
-            regenList()
+            regenTable()
         }
         loading--
         checkLoading()
     })
 }
 
+//#region Table
+// Sets the table header
 function setHeader() {
     let header = document.querySelector(".table-head")
     while (header.children.length > 2) header.children[header.children.length-1].remove()
@@ -274,8 +288,9 @@ function setHeader() {
         el.innerText = column.replaceAll("_", " ")
         header.appendChild(el)
     }
-    regenList()
+    regenTable()
 }
+// Creates the element for a row in the table for the given team
 function element(team) {
     let el = document.createElement("div")
     el.className = "row"
@@ -312,7 +327,20 @@ function element(team) {
 
     el.style.order = sort(team)
 }
+// Clears the table
+function clearTable() {
+    while (document.querySelector(".table").children.length > 0) {
+        document.querySelector(".table").children[0].remove()
+    }
+}
+// Regenerates the table
+function regenTable() {
+    clearTable()
+    for (let team of Object.keys(team_data)) element(team)
+}
+//#endregion
 
+//#region Sorting and Stars
 function sort(team) {
     let starOffset = ((starred.includes(team) && usingStar) ? -Math.pow(10,9) : 0)
     if (typeof team_data[Object.keys(team_data)[0]][selectedSort] == "string") {
@@ -355,30 +383,23 @@ function changeSort(to) {
     if (sortDirection === 1) document.querySelector("#select_" + to.replaceAll(".","")).classList.add("top")
     if (sortDirection === -1) document.querySelector("#select_" + to.replaceAll(".","")).classList.add("bottom")
 
-    regenList()
+    regenTable()
 }
 function star(i) {
     if (starred.includes(i)) starred.splice(starred.indexOf(i),1)
     else starred.push(i)
 
-    regenList()
+    regenTable()
 }
 function star_toggle() {
     usingStar = !usingStar
     document.querySelector("#select_star").classList.toggle("filled")
-    regenList()
+    regenTable()
 }
+//#endregion
 
-function clearList() {
-    while (document.querySelector(".table").children.length > 0) {
-        document.querySelector(".table").children[0].remove()
-    }
-}
-function regenList() {
-    clearList()
-    for (let team of Object.keys(team_data)) element(team)
-}
-
+//#region File and API loading functions
+// Loads data from TheBlueAlliance
 async function load(sub, onload) {
     loading++
     let url = (`https://www.thebluealliance.com/api/v3/${sub}?X-TBA-Auth-Key=${window.localStorage.getItem(TBA_KEY)}`)
@@ -416,6 +437,7 @@ function loadFile(accept, listener) {
     })
     fileInput.click()
 }
+//#endregion
 
 function csvToJson(csv) {
     let rawFields = csv.split("\n")[0]
@@ -468,6 +490,7 @@ function csvToJson(csv) {
     return json
 }
 
+//#region Init
 year = window.localStorage.getItem(YEAR)
 if (year === null || year < 1992) {
     window.localStorage.setItem(YEAR, new Date().getFullYear().toString())
@@ -486,7 +509,6 @@ let versionElement = document.createElement("span")
 versionElement.innerText = "v"+version
 document.querySelector(".sticky-header").children[0].appendChild(versionElement)
 
-// Final Stuff
 if (window.localStorage.getItem(TBA_KEY) == null || window.localStorage.getItem(TBA_KEY).trim() === "") {
     document.querySelector("err").classList = ""
     document.querySelector("err").innerHTML = "No API Key"
@@ -500,3 +522,4 @@ if (window.localStorage.getItem(EVENT) == null || window.localStorage.getItem(EV
     loading = 0
     loadEvent()
 }
+//#endregion
