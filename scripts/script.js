@@ -30,6 +30,8 @@ let sortDirection = 1
 let rounding = 3
 rounding = Math.pow(10, rounding)
 
+let keyboardControls = true
+
 document.querySelector("#top_setapi").onclick = function() {
     let x = prompt("What is your TBA API key? 'get' to get it, leave blank to skip")
     if (x === "get") alert(window.localStorage.getItem(TBA_KEY))
@@ -101,6 +103,40 @@ document.querySelector("#foot_clearDataMappings").onclick = function() {
         window.location.reload()
     }
 }
+document.querySelector("#top_keyboard").onclick = function() {
+    keyboardControls = !keyboardControls
+    document.querySelector("#top_keyboard").innerText = "Keyboard Controls: " + (keyboardControls ? "Enabled" : "Disabled")
+}
+document.addEventListener("keydown", (e) => {
+    if (!keyboardControls) return
+    let key = e.key.toLowerCase()
+    if (key === "d" || key === "arrowright") {
+        let currentIndex = columns.indexOf(selectedSort)
+        if (currentIndex !== columns.length-1) {
+            if (e.shiftKey) {
+                    columns[currentIndex] = columns[currentIndex+1]
+                    columns[currentIndex+1] = selectedSort
+            } else changeSort(columns[currentIndex+1])
+        }
+        e.preventDefault()
+    }
+    if (key === "a" || key === "arrowleft") {
+        let currentIndex = columns.indexOf(selectedSort)
+        if (currentIndex !== 0) {
+            if (e.shiftKey) {
+                columns[currentIndex] = columns[currentIndex-1]
+                columns[currentIndex-1] = selectedSort
+            } else changeSort(columns[currentIndex-1])
+        }
+        e.preventDefault()
+    }
+    if (key === " ") {
+        sortDirection *= -1
+        e.preventDefault()
+    }
+    setHeader()
+    regenList()
+})
 
 function handleMapping() {
     for (let x of Object.keys(mapping["averages"])) columns.push(x.replaceAll(" ", "_"))
