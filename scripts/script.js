@@ -121,43 +121,6 @@ document.querySelector("#foot_clearLocalStorage").onclick = function() {
     }
 }
 
-//#region Keyboard Controls
-document.querySelector("#top_keyboard").onclick = function() {
-    keyboardControls = !keyboardControls
-    document.querySelector("#top_keyboard").innerText = "Keyboard Controls: " + (keyboardControls ? "Enabled" : "Disabled")
-}
-document.addEventListener("keydown", (e) => {
-    if (!keyboardControls) return
-    let key = e.key.toLowerCase()
-    if (key === "d" || key === "arrowright") {
-        let currentIndex = columns.indexOf(selectedSort)
-        if (currentIndex !== columns.length-1) {
-            if (e.shiftKey) {
-                    columns[currentIndex] = columns[currentIndex+1]
-                    columns[currentIndex+1] = selectedSort
-            } else changeSort(columns[currentIndex+1])
-        }
-        e.preventDefault()
-    }
-    if (key === "a" || key === "arrowleft") {
-        let currentIndex = columns.indexOf(selectedSort)
-        if (currentIndex !== 0) {
-            if (e.shiftKey) {
-                columns[currentIndex] = columns[currentIndex-1]
-                columns[currentIndex-1] = selectedSort
-            } else changeSort(columns[currentIndex-1])
-        }
-        e.preventDefault()
-    }
-    if (key === " ") {
-        sortDirection *= -1
-        e.preventDefault()
-    }
-    setHeader()
-    regenTable()
-})
-//#endregion
-
 //#region Data and Mappings
 // Import data button
 document.querySelector("#top_data").onclick = function() {
@@ -428,10 +391,159 @@ function regenTable() {
 }
 //#endregion
 
-//#region Column Changing
+//#region Column Changing, Keyboard Controls
 function getColumns() {
-
+    let validColumns = []
+    for (let col of Object.keys(team_data[Object.keys(team_data)[0]]))
+        if (!hiddenColumns.includes(col)) validColumns.push(col)
+    return validColumns
 }
+let columnEditButton = document.querySelector("#top_columns")
+columnEditButton.onclick = function() {
+    document.querySelector(".edit-columns").show()
+    setColumnEditPanel()
+}
+function setColumnEditPanel() {
+    let columnEditPanel = document.querySelector(".edit-columns")
+    columnEditPanel.style.top = columnEditButton.getBoundingClientRect().bottom + "px"
+    columnEditPanel.style.left = columnEditButton.getBoundingClientRect().left + "px"
+    columnEditPanel.innerHTML = ""
+
+    let button = document.createElement("button")
+    button.innerText = "Close"
+    button.addEventListener("click", () => columnEditPanel.close())
+    columnEditPanel.appendChild(button)
+    columnEditPanel.appendChild(document.createElement("margin"))
+
+    let iconCheckbox = document.createElement("input")
+    iconCheckbox.type = "checkbox"
+    iconCheckbox.id = "checkbox_enableIcons"
+    iconCheckbox.checked = showTeamIcons
+    iconCheckbox.addEventListener("change", () => {
+        showTeamIcons = iconCheckbox.checked
+        setHeader()
+    })
+    let iconCheckboxLabel = document.createElement("label")
+    iconCheckboxLabel.innerText = "Team Icons"
+    iconCheckboxLabel.setAttribute("for", iconCheckbox.id)
+
+    let icon = document.createElement("div")
+    icon.appendChild(iconCheckbox)
+    icon.appendChild(iconCheckboxLabel)
+    columnEditPanel.appendChild(icon)
+    columnEditPanel.appendChild(document.createElement("margin"))
+
+    let list = document.createElement("div")
+    list.class = "list"
+    for (let col of getColumns()) {
+        let order = document.createElement("input")
+        order.type = "number"
+        order.id = "order_"+col.replaceAll(".","")
+        order.disabled = columns.includes(col) ? "" : "true"
+        order.addEventListener("change", (e) => {
+            order.value = ""+(columns.indexOf(col)+(columns.indexOf(col)-parseInt(order.value)))
+            changeColumnOrder(col)
+        })
+        order.value = "" + (columns.includes(col) ? (columns.indexOf(col)) : "-1")
+
+        let checkbox = document.createElement("input")
+        checkbox.type = "checkbox"
+        checkbox.id = "checkbox_"+col.replaceAll(".","")
+        checkbox.checked = columns.includes(col) ? "true" : ""
+        checkbox.addEventListener("change", () => toggleColumn(col))
+
+        let label = document.createElement("label")
+        label.setAttribute("for", checkbox.id)
+        label.innerText = col.replaceAll("_", " ")
+
+        let el = document.createElement("div")
+        el.classList.add("columnEditItem")
+        el.appendChild(order)
+        el.appendChild(checkbox)
+        el.appendChild(label)
+        el.style.order = order.value === "-1" ? "1000" : order.value
+        list.appendChild(el)
+    }
+    columnEditPanel.appendChild(list)
+
+    columnEditPanel.appendChild(document.createElement("margin"))
+
+    let selectAllButton = document.createElement("button")
+    selectAllButton.innerText = "Select All"
+    selectAllButton.addEventListener("click", () => {
+        columns = getColumns()
+        setColumnEditPanel()
+        setHeader()
+    })
+    columnEditPanel.appendChild(selectAllButton)
+
+    let deselectAllButton = document.createElement("button")
+    deselectAllButton.innerText = "Deselect All"
+    deselectAllButton.addEventListener("click", () => {
+        columns = []
+        setColumnEditPanel()
+        setHeader()
+    })
+    columnEditPanel.appendChild(deselectAllButton)
+}
+function toggleColumn(col) {
+    if (columns.includes(col))
+        columns.splice(columns.indexOf(col),1)
+    else columns.push(col)
+    setHeader()
+    setColumnEditPanel()
+}
+function changeColumnOrder(col) {
+    console.log(col)
+    let current = columns.indexOf(col)
+    let target = (Math.max(Math.min((parseInt(document.querySelector("#order_"+col.replaceAll(".","")).value)), columns.length-1), 0))
+    let direction = Math.sign(target-current)
+    console.log(current, target, direction)
+    while (columns.indexOf(col) !== target) {
+        let i = columns.indexOf(col)
+        columns[i] = columns[i+direction] + ""
+        columns[i+direction] = col + ""
+    }
+
+    setHeader()
+    setColumnEditPanel()
+}
+
+document.querySelector("#top_keyboard").onclick = function() {
+    keyboardControls = !keyboardControls
+    document.querySelector("#top_keyboard").innerText = "Keyboard Controls: " + (keyboardControls ? "Enabled" : "Disabled")
+}
+document.addEventListener("keydown", (e) => {
+    if (!keyboardControls) return
+    let key = e.key.toLowerCase()
+    if (key === "d" || key === "arrowright") {
+        let currentIndex = columns.indexOf(selectedSort)
+        if (currentIndex !== columns.length-1) {
+            if (e.shiftKey) {
+                columns[currentIndex] = columns[currentIndex+1]
+                columns[currentIndex+1] = selectedSort
+            } else changeSort(columns[currentIndex+1])
+        }
+        e.preventDefault()
+    }
+    if (key === "a" || key === "arrowleft") {
+        let currentIndex = columns.indexOf(selectedSort)
+        if (currentIndex !== 0) {
+            if (e.shiftKey) {
+                columns[currentIndex] = columns[currentIndex-1]
+                columns[currentIndex-1] = selectedSort
+            } else changeSort(columns[currentIndex-1])
+        }
+        e.preventDefault()
+    }
+    if (key === " ") {
+        sortDirection *= -1
+        e.preventDefault()
+    }
+    setHeader()
+    regenTable()
+    setColumnEditPanel()
+})
 //#endregion
 
 //#region Sorting and Stars

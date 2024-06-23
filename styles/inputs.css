@@ -22,3 +22,47 @@ button:disabled, input:disabled {
 input::placeholder {
     color: var(--disabled)
 }
+
+.edit-columns[open] {
+    position: fixed;
+    margin: 0;
+    width: 250px;
+    max-height: min(500px, 50vh);
+    outline: 0;
+    display: flex;
+    flex-direction: column;
+    border: 1px solid var(--line);
+    background-color: var(--bg);
+    padding: 1rem;
+}
+.edit-columns list {
+    display: flex;
+    flex-direction: column;
+}
+.edit-columns margin {
+    min-height: .5rem;
+    margin: 0;
+}
+.edit-columns:focus {
+    outline: 0;
+}
+.edit-columns input[type="number"] {
+    width: 40px;
+    border-radius: 0;
+    display: flex;
+    justify-content: space-between;
+    padding: 0;
+}
+.edit-columns input[type="number"]::-webkit-inner-spin-button, .edit-columns input[type="number"]::-webkit-outer-spin-button {
+    margin-left: -0px;
+}
+.edit-columns input[type="checkbox"] {
+    width: 1rem;
+    height: 1rem;
+}
+.columnEditItem {
+    display: flex;
+    flex-direction: row;
+    justify-content: left;
+    align-items: center;
+}
