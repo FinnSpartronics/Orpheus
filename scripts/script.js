@@ -167,12 +167,12 @@ function evaluate(i, exp) {
     if (typeof a === "object") a = evaluate(i, a)
     else if (typeof a === "string") a = i[a]
     a = parseFloat(a)
-    if (isNaN(a)) return NaN
+    if (isNaN(a) && op !== "=") return NaN
 
     if (typeof b === "object") b = evaluate(i, b)
     else if (typeof b === "string") b = i[b]
     b = parseFloat(b)
-    if (isNaN(b)) return NaN
+    if (isNaN(b) && op !== "=") return NaN
 
     switch (op) {
         case "+": return a + b
