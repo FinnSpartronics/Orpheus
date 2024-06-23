@@ -101,6 +101,7 @@ document.querySelector("#foot_clearDataMappings").onclick = function() {
         window.location.reload()
     }
 }
+
 function handleMapping() {
     for (let x of Object.keys(mapping["averages"])) columns.push(x.replaceAll(" ", "_"))
     for (let x of Object.keys(mapping["calculated"])) columns.push(x.replaceAll(" ", "_"))
@@ -252,6 +253,7 @@ function element(team) {
         columnEl.className = "data"
         columnEl.innerText = team_data[team][column] === undefined ? "" : team_data[team][column]
         if ((""+team_data[team][column]).length > 10) columnEl.style.fontSize = Math.max(1.2 - ((.025) * ((""+team_data[team][column]).length-10)), .7) + "rem"
+        if (columnEl.innerText.toString() === "NaN") columnEl.classList.add("NaN")
         el.appendChild(columnEl)
     }
 
@@ -449,4 +451,3 @@ if (window.localStorage.getItem(EVENT) == null || window.localStorage.getItem(EV
 }
 
 setHeader()
-

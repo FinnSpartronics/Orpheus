@@ -23,15 +23,21 @@
     --bg: rgb(247, 247, 247);
     --line: rgb(214, 214, 214);
     --font: rgb(31,31,31);
+    --fontNaN: rgb(198, 167, 167);
     --highlight: rgb(222, 237, 250);
     --star: rgb(247, 232, 59);
+    --icon_bg: white;
+    --disabled: rgb(162,162,162);
 }
 :root.dark {
     --bg: rgb(53, 55, 59);
     --line: rgb(122, 122, 122);
-    --font: rgb(220, 220, 220);
-    --highlight: rgb(144, 161, 176);
+    --font: rgb(220,220,220);
+    --fontNaN: rgb(122, 80, 80);
+    --highlight: rgb(121, 103, 126);
     --star: var(--font);
+    --icon_bg: var(--bg);
+    --disabled: rgb(70,70,70);
 }
 
 * {
