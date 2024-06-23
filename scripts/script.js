@@ -1,6 +1,4 @@
-let year
-const version = 0.1
-
+//#region Local Storage Keys
 let YEAR = "scouting_4915_year"
 const TBA_KEY  = "scouting_4915_apikey"
 const EVENT  = "scouting_4915_event"
@@ -8,7 +6,9 @@ const SCOUTING_DATA  = "scouting_4915_scouting_data"
 const MAPPING  = "scouting_4915_mapping"
 const THEME = "scouting_4915_theme"
 const LOCAL_STORAGE_KEYS = [YEAR, TBA_KEY, EVENT, SCOUTING_DATA, MAPPING, THEME]
+//#endregion
 
+//#region Variables
 const MISSING_LOGO = "https://frc-cdn.firstinspires.org/eventweb_frc/ProgramLogos/FIRSTicon_RGB_withTM.png"
 
 let event_data
@@ -32,6 +32,10 @@ rounding = Math.pow(10, rounding)
 
 let keyboardControls = true
 
+let year
+const version = 0.1
+//#endregion
+
 document.querySelector("#top_setapi").onclick = function() {
     let x = prompt("What is your TBA API key? 'get' to get it, leave blank to skip")
     if (x === "get") alert(window.localStorage.getItem(TBA_KEY))
@@ -40,7 +44,7 @@ document.querySelector("#top_setapi").onclick = function() {
         window.location.reload()
     }
     else if (x !== "") {
-        window.localStorage.setItem(TBA_KEY, x);
+        window.localStorage.setItem(TBA_KEY, x)
         window.location.reload()
     }
 }
@@ -52,15 +56,12 @@ document.querySelector("#top_load_event").onclick = function() {
         window.location.reload()
     }
     else if (x !== "") {
-        window.localStorage.setItem(EVENT, x.toLowerCase());
+        window.localStorage.setItem(EVENT, x.toLowerCase())
         loadEvent()
     }
 }
 document.querySelector("#top_theme").onclick = function() {
     theme = Math.abs(theme-1)
-    if (theme === 0) document.querySelector(":root").classList = ""
-    if (theme === 1) document.querySelector(":root").classList = "dark"
-    window.localStorage.setItem(THEME, ""+theme)
     updateTheme()
 }
 document.querySelector("#top_data").onclick = function() {
@@ -84,7 +85,7 @@ document.querySelector("#top_year").onclick = function() {
     let x = prompt("Change year").trim()
     if (x === "get") alert(window.localStorage.getItem(YEAR))
     else if (x !== "") {
-        window.localStorage.setItem(YEAR, x);
+        window.localStorage.setItem(YEAR, x)
         window.location.reload()
     }
 }
@@ -138,53 +139,58 @@ document.addEventListener("keydown", (e) => {
     regenList()
 })
 
+// Adds all of the columns from the mapping to the columns list
 function handleMapping() {
+    columns = ["Team_Number", "Name"] // Clears columns to avoid duplicates
     for (let x of Object.keys(mapping["averages"])) columns.push(x.replaceAll(" ", "_"))
     for (let x of Object.keys(mapping["calculated"])) columns.push(x.replaceAll(" ", "_"))
     for (let x of Object.keys(mapping["calculated_averages"])) columns.push(x.replaceAll(" ", "_"))
     setHeader()
 }
+// Processes scouting_data based on information from mapping
 function processData() {
-    handleMapping()
+    handleMapping() // Adds columns
     let data = {}
+    // Loops through every scouting submission
     for (let i of scouting_data) {
-        let team = i[mapping["team"]]
-        if (typeof team_data[team] !== undefined) {
+        let team = i[mapping["team"]] // Team Number
+        if (typeof team_data[team] !== undefined) { // Only does calculations if team exists (in case someone put 4951 instead of 4915, no reason to include typos or teams that aren't in the event)
             if (typeof data[team] === "undefined") data[team] = {"averages": {}, "calculated": {}, "calculated_averages": {}}
             for (let average of Object.keys(mapping["averages"])) {
-                let averageKey = average.replaceAll(" ", "_")
+                let averageKey = average.replaceAll(" ", "_") // Removes spaces
                 if (typeof data[team]["averages"][averageKey] === "undefined") data[team]["averages"][averageKey] = []
 
                 let x = i[mapping["averages"][average]]
                 if (typeof x !== "number") x = parseFloat(x)
-                if (!isNaN(x))
+                if (!isNaN(x)) // Ignores NaN values, caused by a field not being filled in during scouting
                     data[team]["averages"][averageKey].push(x)
             }
             for (let calculated of Object.keys(mapping["calculated"])) {
                 let calculatedKey = calculated.replaceAll(" ", "_")
                 if (typeof data[team]["calculated"][calculatedKey] === "undefined") data[team]["calculated"][calculatedKey] = 0
                 let e = evaluate(i, mapping["calculated"][calculated])
-                if (!isNaN(e))
+                if (!isNaN(e)) // Ignores NaN values, caused by a field not being filled in during scouting
                     data[team]["calculated"][calculatedKey] += e
             }
             for (let calculated of Object.keys(mapping["calculated_averages"])) {
                 let calculatedKey = calculated.replaceAll(" ", "_")
                 if (typeof data[team]["calculated_averages"][calculatedKey] === "undefined") data[team]["calculated_averages"][calculatedKey] = []
                 let e = evaluate(i, mapping["calculated_averages"][calculated])
-                if (!isNaN(e))
+                if (!isNaN(e)) // Ignores NaN values, caused by a field not being filled in during scouting
                     data[team]["calculated_averages"][calculatedKey].push(e)
             }
         }
     }
+    // Adds data to team_data
     for (let i of Object.keys(data)) {
         if (typeof team_data[i] != "undefined") {
-            for (let av of Object.keys(data[i]["averages"])) {
+            for (let av of Object.keys(data[i]["averages"])) { // Averages up all data that needs to be averaged
                 let total = 0
                 for (let x of data[i]["averages"][av]) total += x
                 team_data[i][av] = Math.round((total/data[i]["averages"][av].length)*rounding)/rounding
             }
 
-            for (let cav of Object.keys(data[i]["calculated_averages"])) {
+            for (let cav of Object.keys(data[i]["calculated_averages"])) { // Averages up all the data that needs to be averaged
                 let total = 0
                 for (let x of data[i]["calculated_averages"][cav]) total += x
                 team_data[i][cav] = Math.round((total/data[i]["calculated_averages"][cav].length)*rounding)/rounding
@@ -195,6 +201,7 @@ function processData() {
     }
     regenList()
 }
+// Evaluates an expression
 function evaluate(i, exp) {
     let a = exp[0]
     let op = exp[1]
@@ -203,12 +210,12 @@ function evaluate(i, exp) {
     if (typeof a === "object") a = evaluate(i, a)
     else if (typeof a === "string") a = i[a]
     a = parseFloat(a)
-    if (isNaN(a) && op !== "=") return NaN
+    if (isNaN(a) && op !== "=") return NaN // Equality is goofy
 
     if (typeof b === "object") b = evaluate(i, b)
     else if (typeof b === "string") b = i[b]
     b = parseFloat(b)
-    if (isNaN(b) && op !== "=") return NaN
+    if (isNaN(b) && op !== "=") return NaN // Equality is goofy
 
     switch (op) {
         case "+": return a + b
@@ -219,15 +226,17 @@ function evaluate(i, exp) {
     }
 }
 
+// Updates the theme in document and handles theme in localStorage
 function updateTheme() {
-    theme = window.localStorage.getItem(THEME)
-    if (theme == null) {
+    theme = parseInt(window.localStorage.getItem(THEME))
+    if (isNaN(theme)) { // If theme isn't set in localStorage
         window.localStorage.setItem(THEME, "0")
-        updateTheme();
+        updateTheme()
         return
-    } else theme = parseInt(theme)
+    }
     if (theme === 0) document.querySelector(":root").classList = ""
     if (theme === 1) document.querySelector(":root").classList = "dark"
+    window.localStorage.setItem(THEME, ""+theme)
 }
 
 function loadEvent() {
@@ -265,6 +274,7 @@ function setHeader() {
         el.innerText = column.replaceAll("_", " ")
         header.appendChild(el)
     }
+    regenList()
 }
 function element(team) {
     let el = document.createElement("div")
@@ -371,14 +381,14 @@ function regenList() {
 
 async function load(sub, onload) {
     loading++
-    let url = (`https://www.thebluealliance.com/api/v3/${sub}?X-TBA-Auth-Key=${window.localStorage.getItem(TBA_KEY)}`);
+    let url = (`https://www.thebluealliance.com/api/v3/${sub}?X-TBA-Auth-Key=${window.localStorage.getItem(TBA_KEY)}`)
     await fetch(url).then(response => {
         if (!response.ok) {
-            throw new Error('Network response was not ok');
+            throw new Error('Network response was not ok')
         }
         loading--
         checkLoading()
-        return response.json();
+        return response.json()
     }).then(data => {
         onload(data)
     })
@@ -397,12 +407,12 @@ function loadFile(accept, listener) {
     fileInput.type = "file"
     fileInput.accept = accept
     fileInput.addEventListener("change", (e) => {
-        const reader = new FileReader();
+        const reader = new FileReader()
         reader.onload = (loadEvent) => {
             listener(loadEvent.target.result, filename.split('.').pop().toLowerCase())
         }
         let filename = e.target.files[0].name
-        reader.readAsText(e.target.files[0]);
+        reader.readAsText(e.target.files[0])
     })
     fileInput.click()
 }
@@ -490,5 +500,3 @@ if (window.localStorage.getItem(EVENT) == null || window.localStorage.getItem(EV
     loading = 0
     loadEvent()
 }
-
-setHeader()
