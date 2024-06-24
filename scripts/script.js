@@ -82,19 +82,19 @@ function loadEvent() {
     load("event/" + year + window.localStorage.getItem(EVENT) + "/teams", function(data) {
         event_data = data
         for (let team of data) {
-            team_data[team.team_number] = {}
-            team_data[team.team_number].Team_Number = team.team_number
-            team_data[team.team_number].Name = team.nickname
-            team_data[team.team_number].TBA = team
-            team_data[team.team_number].Icon = "https://api.frc-colors.com/internal/team/" + team.team_number + "/avatar.png"
+            team_data[team["team_number"]] = {}
+            team_data[team["team_number"]].Team_Number = team["team_number"]
+            team_data[team["team_number"]].Name = team["nickname"]
+            team_data[team["team_number"]].TBA = team
+            team_data[team["team_number"]].Icon = "https://api.frc-colors.com/internal/team/" + team["team_number"] + "/avatar.png"
             loading++
-            load("team/frc" + team.team_number + "/event/" + year + window.localStorage.getItem(EVENT) + "/matches", function(data) {
+            load("team/frc" + team["team_number"] + "/event/" + year + window.localStorage.getItem(EVENT) + "/matches", function(data) {
                 loading--
                 checkLoading()
                 let matchesWon = 0
                 for (let match of data)
-                    matchesWon += checkTeamWonMatch(match, team.team_number)
-                team_data[team.team_number]["Winrate"] = Math.round(rounding*(matchesWon/data.length))/rounding
+                    matchesWon += checkTeamWonMatch(match, team["team_number"])
+                team_data[team["team_number"]]["Winrate"] = Math.round(rounding*(matchesWon/data.length))/rounding
                 regenTable()
             })
             regenTable()
@@ -148,6 +148,11 @@ document.querySelector("#top_mapping").onclick = function() {
 // Adds all of the columns from the mapping to the columns list
 function handleMapping() {
     columns = defaultColumns // Clears columns to avoid duplicates
+    if (mapping["mapping_version"] !== 1) {
+        console.error("Mapping version " + mapping["mapping_version"] + " is not allowed. Allowed versions: 1")
+        alert("Mapping version " + mapping["mapping_version"] + " is not allowed. Allowed versions: 1")
+        return
+    }
     for (let x of Object.keys(mapping["averages"])) columns.push(x.replaceAll(" ", "_"))
     for (let x of Object.keys(mapping["calculated"])) columns.push(x.replaceAll(" ", "_"))
     for (let x of Object.keys(mapping["calculated_averages"])) columns.push(x.replaceAll(" ", "_"))
@@ -300,9 +305,11 @@ function updateTheme() {
         updateTheme()
         return
     }
-    if (theme === 0) document.querySelector(":root").classList = ""
-    if (theme === 1) document.querySelector(":root").classList = "dark"
-    if (theme === 2) document.querySelector(":root").classList = "spartronics_theme"
+    let root = document.querySelector(":root").classList
+    root.remove("dark")
+    root.remove("spartronics_theme")
+    if (theme === 1) root.add("dark")
+    if (theme === 2) root.add("spartronics_theme")
     window.localStorage.setItem(THEME, ""+theme)
 }
 // Theme toggle button
@@ -327,7 +334,7 @@ function setHeader() {
         let el = document.createElement("div")
         el.id = "select_" + column.replaceAll(".", "")
         el.classList.add("data")
-        el.classList.add("smol")
+        el.classList.add("small")
         if (column === selectedSort) {
             el.classList.add("highlighted")
             if (sortDirection === 1) el.classList.add("top")
@@ -440,7 +447,7 @@ function setColumnEditPanel() {
         order.type = "number"
         order.id = "order_"+col.replaceAll(".","")
         order.disabled = columns.includes(col) ? "" : "true"
-        order.addEventListener("change", (e) => {
+        order.addEventListener("change", () => {
             order.value = ""+(columns.indexOf(col)+(columns.indexOf(col)-parseInt(order.value)))
             changeColumnOrder(col)
         })

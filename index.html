@@ -13,7 +13,7 @@
 <body>
 
     <div class="sticky-header">
-        <div class="hscroll">
+        <div class="horizontal-scroll">
             <button id="top_data">Import Data</button>
             <button id="top_mapping">Import mapping</button>
             <button id="top_setapi">Set API Key</button>
@@ -27,11 +27,6 @@
         <err class="hidden"></err>
 
         <h1>FRC Scouting Tool</h1>
-
-        <input disabled id="teamsearch" type="text" placeholder="Team #" size="6" maxlength="5" pattern="\d">
-        <button disabled id="teamsearch_btn">Search</button>
-
-        <br/> <br/>
 
         <div class="row table-head b">
             <span id="select_star" class="material-symbols-outlined ar filled" onclick="star_toggle()">

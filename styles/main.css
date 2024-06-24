@@ -4,11 +4,11 @@ body {
     margin-top: 0;
 }
 
-.hscroll {
+.horizontal-scroll {
     overflow-x: scroll;
     white-space: nowrap;
 }
-.hscroll::-webkit-scrollbar {
+.horizontal-scroll::-webkit-scrollbar {
     display: none;
 }
 
