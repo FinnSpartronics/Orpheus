@@ -176,6 +176,7 @@ document.querySelector("#top_data").onclick = function() {
         }
         if (mapping !== undefined) processData()
         window.localStorage.setItem(SCOUTING_DATA, JSON.stringify(scouting_data))
+        document.querySelector("#top_data_download").disabled = false
     })
 }
 // Import mapping button
@@ -188,6 +189,7 @@ document.querySelector("#top_mapping").onclick = function() {
 }
 // Adds all of the columns from the mapping to the columns list
 function handleMapping() {
+    document.querySelector("#top_mapping_download").disabled = false
     columns = defaultColumns // Clears columns to avoid duplicates
     if (mapping["mapping_version"] !== 1) {
         console.error("Mapping version " + mapping["mapping_version"] + " is not allowed. Allowed versions: 1")
@@ -335,6 +337,11 @@ function csvToJson(csv) {
 
     return json
 }
+
+// Download buttons
+document.querySelector("#top_data_download").onclick = () => download("scouting_data.json", JSON.stringify(scouting_data))
+document.querySelector("#top_mapping_download").onclick = () => download("mapping.json", JSON.stringify(mapping))
+
 //#endregion
 
 //#region Theme
@@ -672,7 +679,7 @@ function star_toggle() {
 }
 //#endregion
 
-//#region File and API loading functions
+//#region File and API loading functions (+ download)
 // Loads data from TheBlueAlliance
 async function load(sub, onload) {
     loading++
@@ -711,6 +718,14 @@ function loadFile(accept, listener) {
     })
     fileInput.click()
 }
+function download(filename, text) {
+    let el = document.createElement("a")
+    el.setAttribute("href", "data:text/plain;charset=utf-8," + encodeURIComponent(text))
+    el.setAttribute("download", filename)
+    //document.appendChild(el)
+    el.click()
+    //document.removeChild(el)
+}
 //#endregion
 
 //#region Init
@@ -723,8 +738,10 @@ document.querySelector("#top_year").innerText = year
 
 scouting_data = window.localStorage.getItem(SCOUTING_DATA)
 scouting_data = scouting_data == null ? undefined : JSON.parse(scouting_data)
+document.querySelector("#top_data_download").disabled = scouting_data === undefined
 mapping = window.localStorage.getItem(MAPPING)
 mapping = mapping == null ? undefined : JSON.parse(mapping)
+document.querySelector("#top_mapping_download").disabled = mapping === undefined
 
 setHeader()
 updateTheme()
