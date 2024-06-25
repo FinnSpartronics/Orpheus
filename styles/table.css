@@ -20,6 +20,13 @@
     border-top: 1px solid var(--line);
     border-bottom: 1px solid var(--line);
 }
+.row.selected-row {
+    background: var(--highlight)
+}
+.row-controls {
+    display: flex;
+    flex-direction: column;
+}
 
 .icon {
     width: 3.5rem;
