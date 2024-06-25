@@ -12,6 +12,32 @@ body {
     display: none;
 }
 
+.top-control-dropdown {
+    background: var(--bg);
+    backdrop-filter: blur(4px);
+    padding: 0;
+    outline: 0;
+    border: 0;
+    position: fixed;
+    margin: 0;
+    filter: drop-shadow(-1px 1px 1px var(--shadow));
+    border-radius: .4rem;
+}
+.top-control-dropdown:focus {
+    outline: 0;
+    border: 0;
+}
+.top-control-dropdown div {
+    display: flex;
+    flex-direction: column;
+    gap: .25rem;
+    margin: 0;
+    padding: 0;
+}
+.top-control-dropdown div button {
+    margin: 0;
+}
+
 err {
     color: red;
     font-size: 4rem;

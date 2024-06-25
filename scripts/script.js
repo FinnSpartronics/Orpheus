@@ -47,6 +47,44 @@ const tieValue = 0.5
 
 //#endregion
 
+//#region Init Header Controls
+let modalShowing = false
+for (let el of document.querySelector("#top-controls").children) {
+    if (el.tagName === "BUTTON") {
+        el.onclick = function() {
+            for (let el of document.getElementsByClassName("top-control-dropdown"))
+                el.close()
+            let modal = document.querySelector(`dialog[for="${el.id}"]`)
+            modal.show()
+            modalShowing = false
+            setTimeout(() => modalShowing = true, 0)
+        }
+    } else {
+        el.onclick = function() {
+            modalShowing = false
+            setTimeout(() => modalShowing = true, 0)
+        }
+        let inner = document.createElement("div")
+        inner.innerHTML = el.innerHTML
+        el.innerHTML = ""
+        el.appendChild(inner)
+
+        let button = document.querySelector("#"+el.getAttribute("for"))
+        el.style.top = button.getBoundingClientRect().bottom + 4 + "px"
+        el.style.left = button.getBoundingClientRect().left + 10 + "px"
+    }
+}
+
+document.addEventListener("click", () => {
+    if (modalShowing) {
+        for (let el of document.getElementsByClassName("top-control-dropdown"))
+            el.close()
+        modalShowing = false
+    }
+})
+
+//#endregion
+
 //#region API Key, Event Loading, Year setting
 document.querySelector("#top_setapi").onclick = function() {
     let x = prompt("What is your TBA API key? 'get' to get it, leave blank to skip")
@@ -691,9 +729,7 @@ mapping = mapping == null ? undefined : JSON.parse(mapping)
 setHeader()
 updateTheme()
 
-let versionElement = document.createElement("span")
-versionElement.innerText = "v"+version
-document.querySelector(".sticky-header").children[0].appendChild(versionElement)
+document.querySelector("#version_slot").innerText = "v"+version
 
 if (window.localStorage.getItem(TBA_KEY) == null || window.localStorage.getItem(TBA_KEY).trim() === "") {
     document.querySelector("err").classList = ""

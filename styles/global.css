@@ -28,6 +28,7 @@
     --star: rgb(244, 228, 0);
     --icon_bg: white;
     --disabled: rgb(162,162,162);
+    --shadow: rgba(0, 0, 0, .6);
 }
 :root.dark {
     --bg: rgb(53, 55, 59);
@@ -38,6 +39,7 @@
     --star: var(--font);
     --icon_bg: var(--bg);
     --disabled: rgb(70,70,70);
+    --shadow: rgba(255, 255, 255, .6);
 }
 :root.spartronics_theme {
     --bg: rgb(0, 103, 185);
@@ -48,6 +50,7 @@
     --star: var(--font);
     --icon_bg: var(--bg);
     --disabled: rgb(70,70,70);
+    --shadow: rgba(244, 228, 0, .6);
 }
 
 * {

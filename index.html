@@ -13,15 +13,32 @@
 <body>
 
     <div class="sticky-header">
-        <div class="horizontal-scroll">
-            <button id="top_data">Import Data</button>
-            <button id="top_mapping">Import mapping</button>
-            <button id="top_setapi">Set API Key</button>
-            <button id="top_load_event">Set Event</button>
-            <button id="top_year">Set Year</button>
-            <button id="top_theme">Toggle Theme</button>
-            <button id="top_keyboard">Keyboard Controls: Enabled</button>
-            <button id="top_columns">Edit Table Columns</button>
+        <div class="horizontal-scroll" id="top-controls">
+            <button id="top-control-file">File</button>
+            <dialog class="top-control-dropdown" for="top-control-file">
+                <button id="top_data">Import Data</button>
+                <button id="top_mapping">Import mapping</button>
+                <button id="top_data_download" disabled>Download saved data</button>
+                <button id="top_mapping_download" disabled>Download saved mapping</button>
+            </dialog>
+
+            <button id="top-control-idk">idk</button>
+            <dialog class="top-control-dropdown" for="top-control-idk">
+                <button id="top_setapi">Set API Key</button>
+                <button id="top_load_event">Set Event</button>
+                <button id="top_year">Set Year</button>
+            </dialog>
+
+            <button id="top-control-preferences">Preferences</button>
+            <dialog class="top-control-dropdown" for="top-control-preferences">
+                <button id="top_theme">Toggle Theme</button>
+                <button id="top_keyboard">Keyboard Controls: Enabled</button>
+            </dialog>
+
+            <button id="top-control-data">Data</button>
+            <dialog class="top-control-dropdown" for="top-control-data">
+                <button id="top_columns">Edit Table Columns</button>
+            </dialog>
         </div>
 
         <err class="hidden"></err>
@@ -40,8 +57,11 @@
 
     </div>
 
-    <button id="foot_clearLocalStorage">Clear LocalStorage</button>
-    <button id="foot_clearDataMappings">Clear saved Scouting Data & Mappings</button>
+    <footer>
+        <button id="foot_clearLocalStorage">Clear LocalStorage</button>
+        <button id="foot_clearDataMappings">Clear saved Scouting Data & Mappings</button>
+        <span id="version_slot"></span>
+    </footer>
 
     <dialog class="edit-columns"></dialog>
 </body>

@@ -34,6 +34,7 @@ input::placeholder {
     border: 1px solid var(--line);
     background-color: var(--bg);
     padding: 1rem;
+    filter: drop-shadow(-1px 1px 1px var(--shadow));
 }
 .edit-columns list {
     display: flex;
