@@ -472,23 +472,35 @@ function openTeam(team) {
 }
 
 function search() {
+    const chars = /[!@#$%^&*()-=_+`~[\]{};'\\:"|,./<>?]/g // Todo: fix bug where numbers get auto-deleted
+
     let el = document.querySelector("#search4915")
-    let val = el.value.toLowerCase().trim()
+    let val = el.value.toLowerCase().trim().replaceAll(chars, "")
+
+    console.log(document.querySelector("#search4915").value, val)
+
+    if (val === "") {
+        if (el.value != val)
+            alert("Cannot search for nothing \nWhitespace and the following characters are ignored:\n!@#$%^&*()-=_+`![]{};'\\:\"|,./<>?")
+        else
+            alert("Cannot search for nothing")
+        return
+    }
 
     let teamNumber = undefined
     if (team_data[val] !== undefined) teamNumber = val
     else {
         for (let t of Object.keys(team_data))
-            if (team_data[t].Name.toLowerCase().trim() === val) teamNumber = t
+            if (team_data[t].Name.toLowerCase().trim().replaceAll(chars, "") === val) teamNumber = t
     }
     if (teamNumber === undefined) {
         for (let t of Object.keys(team_data))
-            if ((" " + team_data[t].Name.toLowerCase().trim()).match(/\s./g, "").join("").trim().replaceAll(" ", "") === val)
+            if ((" " + team_data[t].Name.toLowerCase().trim().replaceAll(chars, "")).match(/\s./g, "").join("").trim().replaceAll(" ", "") === val)
                 if (confirm(`Did you mean team ${t} ${team_data[t].Name}?`)) teamNumber = t
     }
     if (teamNumber === undefined) {
         for (let t of Object.keys(team_data))
-            if (team_data[t].Name.toLowerCase().trim().startsWith(val))
+            if (team_data[t].Name.toLowerCase().trim().replaceAll(chars, "").startsWith(val))
                 if (confirm(`Did you mean team ${t} ${team_data[t].Name}?`)) teamNumber = t
     }
     if (teamNumber === undefined) {
@@ -496,6 +508,7 @@ function search() {
         return
     }
 
+    el.value = ""
     openTeam(teamNumber)
 }
 document.querySelector("#search4915").addEventListener("keydown", (e) => {
