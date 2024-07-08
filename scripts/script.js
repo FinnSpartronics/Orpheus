@@ -39,6 +39,7 @@ let rounding = 3
 rounding = Math.pow(10, rounding)
 
 let keyboardControls = true
+let brieflyDisableKeyboard = false
 
 let year
 const version = 0.1
@@ -422,6 +423,9 @@ function element(team) {
     el.appendChild(controls)
 
     if (showTeamIcons) {
+        let iconParent = document.createElement("button")
+        iconParent.className = "icon-holder"
+        iconParent.onclick = () => openTeam(team)
         let iconEl = document.createElement("img")
         iconEl.src = team_data[team].Icon
         iconEl.alt = "Icon"
@@ -431,7 +435,9 @@ function element(team) {
             team_data[team].Icon = MISSING_LOGO
             iconEl.src = MISSING_LOGO
         }
-        el.appendChild(iconEl)
+        iconEl.title = team_data[team].Name
+        iconParent.appendChild(iconEl)
+        el.appendChild(iconParent)
     }
 
     for (let column of columns) {
@@ -458,6 +464,50 @@ function regenTable() {
     clearTable()
     for (let team of Object.keys(team_data)) element(team)
 }
+//#endregion
+
+//#region Team Pages
+function openTeam(team) {
+    console.log(team)
+}
+
+function search() {
+    let el = document.querySelector("#search4915")
+    let val = el.value.toLowerCase().trim()
+
+    let teamNumber = undefined
+    if (team_data[val] !== undefined) teamNumber = val
+    else {
+        for (let t of Object.keys(team_data))
+            if (team_data[t].Name.toLowerCase().trim() === val) teamNumber = t
+    }
+    if (teamNumber === undefined) {
+        for (let t of Object.keys(team_data))
+            if ((" " + team_data[t].Name.toLowerCase().trim()).match(/\s./g, "").join("").trim().replaceAll(" ", "") === val)
+                if (confirm(`Did you mean team ${t} ${team_data[t].Name}?`)) teamNumber = t
+    }
+    if (teamNumber === undefined) {
+        for (let t of Object.keys(team_data))
+            if (team_data[t].Name.toLowerCase().trim().startsWith(val))
+                if (confirm(`Did you mean team ${t} ${team_data[t].Name}?`)) teamNumber = t
+    }
+    if (teamNumber === undefined) {
+        alert(`Could not find team ${val} from the list of teams`)
+        return
+    }
+
+    openTeam(teamNumber)
+}
+document.querySelector("#search4915").addEventListener("keydown", (e) => {
+    if (e.code === "Enter") search()
+})
+document.querySelector("#search4915").addEventListener("focus", () => {
+    brieflyDisableKeyboard = true
+})
+document.querySelector("#search4915").addEventListener("blur", () => {
+    brieflyDisableKeyboard = false
+})
+
 //#endregion
 
 //#region Column Changing, Keyboard Controls
@@ -583,7 +633,7 @@ document.querySelector("#top_keyboard").onclick = function() {
     document.querySelector("#top_keyboard").innerText = "Keyboard Controls: " + (keyboardControls ? "Enabled" : "Disabled")
 }
 document.addEventListener("keydown", (e) => {
-    if (!keyboardControls) return
+    if (!keyboardControls || brieflyDisableKeyboard) return
     let key = e.key.toLowerCase()
     if (key === "d" || key === "arrowright") {
         let currentIndex = columns.indexOf(selectedSort)

@@ -10,6 +10,9 @@ button, input {
     border-radius: .25rem;
     transition: 200ms;
 }
+button.nomargin, input.nomargin {
+    margin: 0;
+}
 button:hover, input:hover, input:focus {
     background-color: var(--highlight);
     border-radius: .4rem;
@@ -21,6 +24,14 @@ button:disabled, input:disabled {
 }
 input::placeholder {
     color: var(--disabled)
+}
+
+button.icon-holder {
+    background-color: transparent;
+    border: 0;
+    width: fit-content;
+    height: fit-content;
+    padding: 0;
 }
 
 .edit-columns[open] {
