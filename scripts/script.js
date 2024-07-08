@@ -472,12 +472,10 @@ function openTeam(team) {
 }
 
 function search() {
-    const chars = /[!@#$%^&*()-=_+`~[\]{};'\\:"|,./<>?]/g // Todo: fix bug where numbers get auto-deleted
+    const chars = /[!@#$%^&*()\-=_+`~[\]{};'\\:"|,./<>?]/g
 
     let el = document.querySelector("#search4915")
     let val = el.value.toLowerCase().trim().replaceAll(chars, "")
-
-    console.log(document.querySelector("#search4915").value, val)
 
     if (val === "") {
         if (el.value != val)
