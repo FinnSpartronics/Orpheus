@@ -469,6 +469,53 @@ function regenTable() {
 //#region Team Pages
 function openTeam(team) {
     console.log(team)
+    document.querySelector(".table").classList.add("hidden")
+    document.querySelector(".table-head").classList.add("hidden")
+
+    let el = document.querySelector(".team-data")
+    el.classList.remove("hidden")
+
+    let info = document.createElement("div")
+    info.className = "team-info"
+
+    let basicInfo = document.createElement("div")
+    basicInfo.className = "team-info"
+
+    let teamLogo = document.createElement("img")
+    teamLogo.className = "logo-large"
+    teamLogo.src = team_data[team].Icon
+    basicInfo.appendChild(teamLogo)
+
+    let basicInfoInfo = document.createElement("div")
+    basicInfoInfo.classList = "team-infoinfo"
+
+    let teamName = document.createElement("div")
+    teamName.className = "team-name"
+    teamName.innerText = team + " - " + team_data[team].Name
+    basicInfoInfo.appendChild(teamName)
+
+    let desc = document.createElement("div")
+    desc.className = "team-desc"
+    desc.innerText = team_data[team].TBA.name
+    basicInfoInfo.appendChild(desc)
+
+    basicInfo.appendChild(basicInfoInfo)
+    info.appendChild(basicInfo)
+    el.appendChild(info)
+
+
+    
+
+    /*
+        <div class="team-info">
+            <div class="team-info">
+                <img>
+            </div>
+            <div class="team-info-matches">
+
+            </div>
+        </div>
+     */
 }
 
 function search() {

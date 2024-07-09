@@ -1,0 +1,27 @@
+.team-data {
+    width: 100%;
+}
+
+.team-info {
+    display: flex;
+    flex-direction: row;
+}
+.team-infoinfo {
+    display: flex;
+    flex-direction: column;
+}
+
+.team-name {
+    font-weight: bold;
+    font-size: 2rem;
+}
+.team-desc {
+    font-size: 1rem;
+}
+
+.logo-large {
+    width: 100px;
+    height: 100px;
+    border-radius: 12px;
+    border: 2px solid black;
+}
