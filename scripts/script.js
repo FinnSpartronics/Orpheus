@@ -11,6 +11,8 @@ const LOCAL_STORAGE_KEYS = [YEAR, TBA_KEY, EVENT, SCOUTING_DATA, MAPPING, THEME]
 //#region Variables
 const MISSING_LOGO = "https://frc-cdn.firstinspires.org/eventweb_frc/ProgramLogos/FIRSTicon_RGB_withTM.png"
 
+const toolName = "FRC Scouting Tool"
+
 let event_data
 let scouting_data
 let team_data = {}
@@ -475,6 +477,11 @@ function openTeam(team) {
     let el = document.querySelector(".team-data")
     el.classList.remove("hidden")
 
+    let backButton = document.createElement("button")
+    backButton.className = "back-button"
+    backButton.innerHTML = `<span class="material-symbols-outlined">arrow_back</span> Return back`
+    backButton.addEventListener("click", closeTeam)
+
     let info = document.createElement("div")
     info.className = "team-info"
 
@@ -501,10 +508,16 @@ function openTeam(team) {
 
     basicInfo.appendChild(basicInfoInfo)
     info.appendChild(basicInfo)
-    el.appendChild(info)
+
+    let holder = document.createElement("div")
+    holder.className = "team-data-holder"
+    holder.appendChild(backButton)
+    holder.appendChild(info)
+
+    el.appendChild(holder)
 
 
-    
+
 
     /*
         <div class="team-info">
@@ -516,6 +529,11 @@ function openTeam(team) {
             </div>
         </div>
      */
+}
+function closeTeam() {
+    document.querySelector(".table").classList.remove("hidden")
+    document.querySelector(".table-head").classList.remove("hidden")
+    document.querySelector(".team-data").classList.add("hidden")
 }
 
 function search() {
@@ -869,4 +887,8 @@ if (window.localStorage.getItem(EVENT) == null || window.localStorage.getItem(EV
     loading = 0
     loadEvent()
 }
+
+document.querySelector("title").innerText = toolName
+document.querySelector("#title").innerText = toolName
+
 //#endregion

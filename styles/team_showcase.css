@@ -25,3 +25,16 @@
     border-radius: 12px;
     border: 2px solid black;
 }
+
+.team-data-holder {
+    display: flex;
+    flex-direction: column;
+}
+
+.back-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 1.5rem;
+    width: 150px;
+}
