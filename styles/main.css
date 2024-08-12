@@ -38,12 +38,12 @@ body {
     margin: 0;
 }
 
-err {
+#err {
     color: red;
     font-size: 4rem;
     font-weight: bold;
 }
-err.hidden {display: none;}
+#err.hidden {display: none;}
 
 .sticky-header {
     position: sticky;

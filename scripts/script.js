@@ -529,12 +529,13 @@ function regenTable() {
 
 //#region Team Pages
 function openTeam(team) {
-    console.log(team)
     document.querySelector(".table").classList.add("hidden")
     document.querySelector(".table-head").classList.add("hidden")
 
     let el = document.querySelector(".team-data")
     el.classList.remove("hidden")
+
+    for (let child of el.children) child.remove()
 
     let backButton = document.createElement("button")
     backButton.className = "back-button"
@@ -553,7 +554,7 @@ function openTeam(team) {
     basicInfo.appendChild(teamLogo)
 
     let basicInfoInfo = document.createElement("div")
-    basicInfoInfo.classList = "team-infoinfo"
+    basicInfoInfo.className = "team-infoinfo"
 
     let teamName = document.createElement("div")
     teamName.className = "team-name"
@@ -602,7 +603,7 @@ function search() {
     let val = el.value.toLowerCase().trim().replaceAll(chars, "")
 
     if (val === "") {
-        if (el.value != val)
+        if (el.value !== val)
             alert("Cannot search for nothing \nWhitespace and the following characters are ignored:\n!@#$%^&*()-=_+`![]{};'\\:\"|,./<>?")
         else
             alert("Cannot search for nothing")
@@ -882,11 +883,11 @@ async function load(sub, onload) {
 }
 function checkLoading() {
     if (loading === 0) {
-        document.querySelector("err").classList = "hidden"
+        document.querySelector("#err").className = "hidden"
         if (scouting_data !== undefined && mapping !== undefined) processData()
     } else {
-        document.querySelector("err").classList = ""
-        document.querySelector("err").innerHTML = "Loading Data... Do not touch anything"
+        document.querySelector("#err").className = ""
+        document.querySelector("#err").innerHTML = "Loading Data... Do not touch anything"
     }
 }
 function loadFile(accept, listener) {
@@ -934,12 +935,12 @@ updateTheme()
 document.querySelector("#version_slot").innerText = "v"+version
 
 if (window.localStorage.getItem(TBA_KEY) == null || window.localStorage.getItem(TBA_KEY).trim() === "") {
-    document.querySelector("err").classList = ""
-    document.querySelector("err").innerHTML = "No API Key"
+    document.querySelector("#err").className = ""
+    document.querySelector("#err").innerHTML = "No API Key"
 }
 if (window.localStorage.getItem(EVENT) == null || window.localStorage.getItem(EVENT).trim() === "") {
-    document.querySelector("err").classList = ""
-    document.querySelector("err").innerHTML = (document.querySelector("err").innerHTML + " No Event").trim()
+    document.querySelector("#err").className = ""
+    document.querySelector("#err").innerHTML = (document.querySelector("#err").innerHTML + " No Event").trim()
 } else {
     loading = 1
     checkLoading()
