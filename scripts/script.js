@@ -232,7 +232,7 @@ function processData() {
         // If in # format, nothing needs to be done.
 
         if (typeof team_data[team] !== "undefined") { // Only does calculations if team exists (in case someone put 4951 instead of 4915, no reason to include typos or teams that aren't in the event)
-            if (typeof data[team] === "undefined") data[team] = {"averages": {}, "calculated": {}, "calculated_averages": {}}
+            if (typeof data[team] === "undefined") data[team] = {"averages": {}, "calculated": {}, "calculated_averages": {}, "graphs": {}}
             for (let average of Object.keys(mapping["averages"])) {
                 let averageKey = average.replaceAll(" ", "_") // Removes spaces
                 if (typeof data[team]["averages"][averageKey] === "undefined") data[team]["averages"][averageKey] = []
@@ -256,6 +256,15 @@ function processData() {
                 if (!isNaN(e)) // Ignores NaN values, caused by a field not being filled in during scouting
                     data[team]["calculated_averages"][calculatedKey].push(e)
             }
+
+            console.log(mapping)
+            for (let graph of Object.keys(mapping["graphs"])) {
+                let graphKey = graph.replaceAll(" ", "_")
+                if (typeof data[team]["graphs"][graphKey] === "undefined") data[team]["calculated_averages"][graphKey] = {}
+                let e = evaluate(i, mapping["calculated_averages"][graph])
+                if (!isNaN(e)) // Ignores NaN values, caused by a field not being filled in during scouting
+                    data[team]["graphs"][graphKey][i[mapping["match"]["number"]]] = e
+            }
         }
     }
     // Adds data to team_data
@@ -273,6 +282,8 @@ function processData() {
         }
 
         for (let calc of Object.keys(data[i]["calculated"])) team_data[i][calc] = data[i]["calculated"][calc]
+
+        for (let graph of Object.keys(data[i]["graphs"])) team_data[i]["graphs"][graph] = data[i]["graphs"][graph]
     }
     regenTable()
 }
@@ -574,10 +585,9 @@ function openTeam(team) {
     holder.appendChild(backButton)
     holder.appendChild(info)
 
+    holder.appendChild(graphElement())
+
     el.appendChild(holder)
-
-
-
 
     /*
         <div class="team-info">
@@ -643,6 +653,21 @@ document.querySelector("#search4915").addEventListener("focus", () => {
 document.querySelector("#search4915").addEventListener("blur", () => {
     brieflyDisableKeyboard = false
 })
+
+let graphCount = 0
+function graphElement() {
+    graphCount++
+
+    let el = document.querySelector("div")
+    el.style.width = "400px"
+    el.style.height = "400px"
+    let calc = Desmos.GraphingCalculator(el, {expressions: false, settingsMenu: false, })
+    console.log(calc)
+    calc.setExpression({id:'graph'+graphCount, latex:'X=\\left[1,2,3,4,5\\right]'});
+    calc.setExpression({id:'graph'+graphCount, latex:'Y=\\left[1,2,3,4,5\\right]'});
+    calc.setExpression({id:'graph'+graphCount, latex:'(X, Y)'});
+    return el
+}
 
 //#endregion
 
