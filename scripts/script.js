@@ -32,7 +32,7 @@ let showTeamIcons = true
 
 const defaultColumns = ["Team_Number", "Name", "Winrate"]
 let columns = defaultColumns
-const hiddenColumns = ["TBA", "Icon"]
+const hiddenColumns = ["TBA", "Icon", "graphs"]
 
 let selectedSort = "Team_Number"
 let sortDirection = 1
@@ -257,11 +257,10 @@ function processData() {
                     data[team]["calculated_averages"][calculatedKey].push(e)
             }
 
-            console.log(mapping)
             for (let graph of Object.keys(mapping["graphs"])) {
                 let graphKey = graph.replaceAll(" ", "_")
-                if (typeof data[team]["graphs"][graphKey] === "undefined") data[team]["calculated_averages"][graphKey] = {}
-                let e = evaluate(i, mapping["calculated_averages"][graph])
+                if (typeof data[team]["graphs"][graphKey] === "undefined") data[team]["graphs"][graphKey] = {}
+                let e = evaluate(i, mapping["graphs"][graph])
                 if (!isNaN(e)) // Ignores NaN values, caused by a field not being filled in during scouting
                     data[team]["graphs"][graphKey][i[mapping["match"]["number"]]] = e
             }
@@ -283,6 +282,7 @@ function processData() {
 
         for (let calc of Object.keys(data[i]["calculated"])) team_data[i][calc] = data[i]["calculated"][calc]
 
+        if (team_data[i]["graphs"] === undefined) team_data[i]["graphs"] = {}
         for (let graph of Object.keys(data[i]["graphs"])) team_data[i]["graphs"][graph] = data[i]["graphs"][graph]
     }
     regenTable()
@@ -295,7 +295,8 @@ function evaluate(i, exp) {
     if (i["Pi"] === undefined) i["Pi"] = Math.PI
     if (i["e"] === undefined) i["e"] = Math.E
 
-    if (exp.length === 3) {
+    if (exp === undefined) return NaN
+    else if (exp.length === 3) {
         let a = exp[0]
         let op = exp[1]
         let b = exp[2]
