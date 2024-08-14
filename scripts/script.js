@@ -32,7 +32,7 @@ let showTeamIcons = true
 
 const defaultColumns = ["Team_Number", "Name", "Winrate"]
 let columns = defaultColumns
-const hiddenColumns = ["TBA", "Icon", "graphs"]
+const hiddenColumns = ["TBA", "Icon", "graphs", "matches"]
 
 let selectedSort = "Team_Number"
 let sortDirection = 1
@@ -232,7 +232,7 @@ function processData() {
         // If in # format, nothing needs to be done.
 
         if (typeof team_data[team] !== "undefined") { // Only does calculations if team exists (in case someone put 4951 instead of 4915, no reason to include typos or teams that aren't in the event)
-            if (typeof data[team] === "undefined") data[team] = {"averages": {}, "calculated": {}, "calculated_averages": {}, "graphs": {}}
+            if (typeof data[team] === "undefined") data[team] = {"averages": {}, "calculated": {}, "calculated_averages": {}, "graphs": {}, "matches": []}
             for (let average of Object.keys(mapping["averages"])) {
                 let averageKey = average.replaceAll(" ", "_") // Removes spaces
                 if (typeof data[team]["averages"][averageKey] === "undefined") data[team]["averages"][averageKey] = []
@@ -264,6 +264,8 @@ function processData() {
                 if (!isNaN(e)) // Ignores NaN values, caused by a field not being filled in during scouting
                     data[team]["graphs"][graphKey][i[mapping["match"]["number"]]] = e
             }
+
+            data[team]["matches"].push(i)
         }
     }
     // Adds data to team_data
@@ -284,6 +286,8 @@ function processData() {
 
         if (team_data[i]["graphs"] === undefined) team_data[i]["graphs"] = {}
         for (let graph of Object.keys(data[i]["graphs"])) team_data[i]["graphs"][graph] = data[i]["graphs"][graph]
+
+        team_data[i]["matches"] = data[i]["matches"]
     }
     regenTable()
 }
@@ -294,6 +298,7 @@ function evaluate(i, exp) {
     if (i["pI"] === undefined) i["pI"] = Math.PI
     if (i["Pi"] === undefined) i["Pi"] = Math.PI
     if (i["e"] === undefined) i["e"] = Math.E
+    if (i["E"] === undefined) i["E"] = Math.E
 
     if (exp === undefined) return NaN
     else if (exp.length === 3) {
@@ -304,12 +309,12 @@ function evaluate(i, exp) {
         if (typeof a === "object") a = evaluate(i, a)
         else if (typeof a === "string") a = i[a]
         a = parseFloat(a)
-        if (isNaN(a) && op !== "=") return NaN // Equality is goofy
+        if (isNaN(a) && op !== "=")  a = 0
 
         if (typeof b === "object") b = evaluate(i, b)
         else if (typeof b === "string") b = i[b]
         b = parseFloat(b)
-        if (isNaN(b) && op !== "=") return NaN // Equality is goofy
+        if (isNaN(b) && op !== "=") b = 0
 
         switch (op) {
             case "+": return a + b
@@ -327,6 +332,7 @@ function evaluate(i, exp) {
         if (typeof b === "object") b = evaluate(i, b)
         else if (typeof b === "string") b = i[b]
         b = parseFloat(b)
+        if (isNaN(b)) b = 0
 
         switch (op) {
             case "abs": return Math.abs(b)
@@ -349,6 +355,7 @@ function evaluate(i, exp) {
         if (typeof a === "object") a = evaluate(i, a)
         else if (typeof a === "string") a = i[a]
         a = parseFloat(a)
+        if (isNaN(a)) a = 0
         return a
     } else if (exp.length === 0) return 0
     else return NaN
@@ -541,6 +548,8 @@ function regenTable() {
 
 //#region Team Pages
 function openTeam(team) {
+    let data = team_data[team]
+
     document.querySelector(".table").classList.add("hidden")
     document.querySelector(".table-head").classList.add("hidden")
 
@@ -562,7 +571,7 @@ function openTeam(team) {
 
     let teamLogo = document.createElement("img")
     teamLogo.className = "logo-large"
-    teamLogo.src = team_data[team].Icon
+    teamLogo.src = data.Icon
     basicInfo.appendChild(teamLogo)
 
     let basicInfoInfo = document.createElement("div")
@@ -570,12 +579,12 @@ function openTeam(team) {
 
     let teamName = document.createElement("div")
     teamName.className = "team-name"
-    teamName.innerText = team + " - " + team_data[team].Name
+    teamName.innerText = team + " - " + data.Name
     basicInfoInfo.appendChild(teamName)
 
     let desc = document.createElement("div")
     desc.className = "team-desc"
-    desc.innerText = team_data[team].TBA.name
+    desc.innerText = data.TBA.name
     basicInfoInfo.appendChild(desc)
 
     basicInfo.appendChild(basicInfoInfo)
@@ -586,7 +595,7 @@ function openTeam(team) {
     holder.appendChild(backButton)
     holder.appendChild(info)
 
-    holder.appendChild(graphElement())
+    holder.appendChild(graphElement(data.graphs["Bot_Rating"], "Bot Rating".replaceAll("_", " ")))
 
     el.appendChild(holder)
 
@@ -656,17 +665,23 @@ document.querySelector("#search4915").addEventListener("blur", () => {
 })
 
 let graphCount = 0
-function graphElement() {
-    graphCount++
-
+function graphElement(data, name) {
+    graphCount += 1
     let el = document.querySelector("div")
     el.style.width = "400px"
     el.style.height = "400px"
-    let calc = Desmos.GraphingCalculator(el, {expressions: false, settingsMenu: false, })
-    console.log(calc)
-    calc.setExpression({id:'graph'+graphCount, latex:'X=\\left[1,2,3,4,5\\right]'});
-    calc.setExpression({id:'graph'+graphCount, latex:'Y=\\left[1,2,3,4,5\\right]'});
-    calc.setExpression({id:'graph'+graphCount, latex:'(X, Y)'});
+    let calc = Desmos.GraphingCalculator(el, {expressions: false, settingsMenu: false, xAxisLabel: "Matches", yAxisLabel: name, zoomButtons: true, lockViewport: false, })
+
+    function numArrToStrArr(numArr) {
+        let strArr = []
+        for (let n of numArr) strArr.push(n.toString())
+        return strArr
+    }
+
+    calc.setExpressions([
+        {type:"table", columns: [{latex: "x_{1}", values: numArrToStrArr(Object.keys(data))}, {latex: "y_{1}", values: numArrToStrArr(Object.values(data))}], color: Desmos.Colors.RED},
+        {latex: "y_{1}\\sim mx_{1}+b", color: Desmos.Colors.RED},
+    ]);
     return el
 }
 
