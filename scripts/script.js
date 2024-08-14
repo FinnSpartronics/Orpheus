@@ -598,7 +598,7 @@ function openTeam(team) {
     holder.appendChild(info)
 
     let graph = "Bot_Rating"
-    holder.appendChild(graphElement([data.graphs[graph], team_data[4915].graphs[graph]], "points scored".replaceAll("_", " "), [team, 4915]))
+    holder.appendChild(graphElement([data.graphs[graph], team_data[4915].graphs[graph]], graph.replaceAll("_", " "), [team, 4915]))
 
     el.appendChild(holder)
 
@@ -702,18 +702,24 @@ function graphElement(data, name, teams) {
             type:"table",
             columns: [
                 {latex: "x_{" + i + "}", values: numArrToStrArr(Object.keys(data[i]))},
-                {latex: "y_{" + i + "}", values: numArrToStrArr(Object.values(data[i])), color: desmosColors[i]},
+                {latex: "y_{" + i + "}", values: numArrToStrArr(Object.values(data[i])), hidden: true},
             ]
         })
         expressions.push({latex: "y_{" + i + "}\\sim mx_{" + i + "}+b", color: desmosColors[i]})
         expressions.push({
             latex: "(" + maxX * 1.15 + "," + ((1.2 - ((i + 1)*.05)) * maxY ) + ")",
-            label: teams[i] + " " + team_data[teams[i]].Name,
+            label: teams[i] + " " + team_data[teams[i]].Name.substring(0, 20) + (team_data[teams[i]].Name.length >= 20 ? "..." : ""),
             showLabel: true,
             labelOrientation: Desmos.LabelOrientations.LEFT,
             color: desmosColors[i],
             labelSize: Desmos.FontSizes.SMALL,
-            pointSize: 20
+            pointSize: 16
+        })
+        expressions.push({
+            latex: "(x_{" + i + "}, y_{" + i + "})",
+            color: desmosColors[i],
+            label: teams[i] + " (${x_{" + i + "}},${y_{" + i + "}})",
+            labelSize: Desmos.FontSizes.SMALL,
         })
     }
 
