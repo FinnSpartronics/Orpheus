@@ -48,6 +48,8 @@ const version = 0.1
 
 const tieValue = 0.5
 
+const desmosColors = [Desmos.Colors.RED, Desmos.Colors.BLUE, Desmos.Colors.GREEN, Desmos.Colors.PURPLE, Desmos.Colors.ORANGE, Desmos.Colors.BLACK]
+
 //#endregion
 
 //#region Init Header Controls
@@ -595,7 +597,8 @@ function openTeam(team) {
     holder.appendChild(backButton)
     holder.appendChild(info)
 
-    holder.appendChild(graphElement(data.graphs["Bot_Rating"], "Bot Rating".replaceAll("_", " ")))
+    let graph = "Bot_Rating"
+    holder.appendChild(graphElement([data.graphs[graph], team_data[4915].graphs[graph]], "points scored".replaceAll("_", " "), [team, 4915]))
 
     el.appendChild(holder)
 
@@ -664,11 +667,11 @@ document.querySelector("#search4915").addEventListener("blur", () => {
     brieflyDisableKeyboard = false
 })
 
-function graphElement(data, name) {
+function graphElement(data, name, teams) {
     let el = document.createElement("div")
     el.style.width = "400px"
     el.style.height = "400px"
-    let calc = Desmos.GraphingCalculator(el, {expressions: false, settingsMenu: false, xAxisLabel: "Matches", yAxisLabel: name, zoomButtons: true, lockViewport: false, })
+    let calc = Desmos.GraphingCalculator(el, {expressions: false, settingsMenu: false, xAxisLabel: "Matches", yAxisLabel: name, zoomButtons: false, lockViewport: true, })
 
     function numArrToStrArr(numArr) {
         let strArr = []
@@ -676,15 +679,45 @@ function graphElement(data, name) {
         return strArr
     }
 
-    calc.setExpressions([
-        {type:"table", columns: [{latex: "x_{1}", values: numArrToStrArr(Object.keys(data))}, {latex: "y_{1}", values: numArrToStrArr(Object.values(data))}], color: Desmos.Colors.RED},
-        {latex: "y_{1}\\sim mx_{1}+b", color: Desmos.Colors.RED},
-        {latex: "y_{2}\\sim mx_{2}+b", color: Desmos.Colors.BLUE},
-        {latex: "y_{3}\\sim mx_{3}+b", color: Desmos.Colors.GREEN},
-        {latex: "y_{4}\\sim mx_{4}+b", color: Desmos.Colors.PURPLE},
-        {latex: "y_{5}\\sim mx_{5}+b", color: Desmos.Colors.ORANGE},
-        {latex: "y_{6}\\sim mx_{6}+b", color: Desmos.Colors.BLACK},
-    ]);
+    let minY = 0
+    let maxY = 0
+    let maxX = 0
+    for (let team of data)
+        for (let x of Object.keys(team)) {
+            if (team[x] > maxY) maxY = team[x]
+            if (parseFloat(x) > maxX) maxX = x
+            if (team[x] < minY) minY = team[x]
+        }
+
+    calc.setMathBounds({
+        left: maxX * -.05,
+        right: maxX * 1.2,
+        bottom: maxY * -.05,
+        top: maxY * 1.2
+    })
+
+    let expressions = []
+    for (let i = 0; i < data.length; i++) {
+        expressions.push({
+            type:"table",
+            columns: [
+                {latex: "x_{" + i + "}", values: numArrToStrArr(Object.keys(data[i]))},
+                {latex: "y_{" + i + "}", values: numArrToStrArr(Object.values(data[i])), color: desmosColors[i]},
+            ]
+        })
+        expressions.push({latex: "y_{" + i + "}\\sim mx_{" + i + "}+b", color: desmosColors[i]})
+        expressions.push({
+            latex: "(" + maxX * 1.15 + "," + ((1.2 - ((i + 1)*.05)) * maxY ) + ")",
+            label: teams[i] + " " + team_data[teams[i]].Name,
+            showLabel: true,
+            labelOrientation: Desmos.LabelOrientations.LEFT,
+            color: desmosColors[i],
+            labelSize: Desmos.FontSizes.SMALL,
+            pointSize: 20
+        })
+    }
+
+    calc.setExpressions(expressions);
     return el
 }
 
