@@ -664,10 +664,8 @@ document.querySelector("#search4915").addEventListener("blur", () => {
     brieflyDisableKeyboard = false
 })
 
-let graphCount = 0
 function graphElement(data, name) {
-    graphCount += 1
-    let el = document.querySelector("div")
+    let el = document.createElement("div")
     el.style.width = "400px"
     el.style.height = "400px"
     let calc = Desmos.GraphingCalculator(el, {expressions: false, settingsMenu: false, xAxisLabel: "Matches", yAxisLabel: name, zoomButtons: true, lockViewport: false, })
@@ -681,6 +679,11 @@ function graphElement(data, name) {
     calc.setExpressions([
         {type:"table", columns: [{latex: "x_{1}", values: numArrToStrArr(Object.keys(data))}, {latex: "y_{1}", values: numArrToStrArr(Object.values(data))}], color: Desmos.Colors.RED},
         {latex: "y_{1}\\sim mx_{1}+b", color: Desmos.Colors.RED},
+        {latex: "y_{2}\\sim mx_{2}+b", color: Desmos.Colors.BLUE},
+        {latex: "y_{3}\\sim mx_{3}+b", color: Desmos.Colors.GREEN},
+        {latex: "y_{4}\\sim mx_{4}+b", color: Desmos.Colors.PURPLE},
+        {latex: "y_{5}\\sim mx_{5}+b", color: Desmos.Colors.ORANGE},
+        {latex: "y_{6}\\sim mx_{6}+b", color: Desmos.Colors.BLACK},
     ]);
     return el
 }
