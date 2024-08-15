@@ -570,6 +570,7 @@ function openTeam(team) {
     let info = document.createElement("div")
     info.className = "team-info"
 
+    // Basic Info
     let basicInfo = document.createElement("div")
     basicInfo.className = "team-info"
 
@@ -594,10 +595,25 @@ function openTeam(team) {
     basicInfo.appendChild(basicInfoInfo)
     info.appendChild(basicInfo)
 
+    // Matches and Comments
+
+    let comments = ""
+    for (let match of data.matches)
+        if (match[mapping["notes"]].trim() !== "")
+            comments = comments + match[mapping["notes"]] + "    -" + match[mapping["scouter"]] + " (" + match[mapping["match"]["number"]] + ")\n\n"
+    comments = comments.trim()
+
+    let commentsEl = document.createElement("div")
+    commentsEl.innerText = comments
+    info.appendChild(commentsEl)
+
+    // Final Composition
+
     let holder = document.createElement("div")
     holder.className = "team-data-holder"
     holder.appendChild(backButton)
     holder.appendChild(info)
+
 
     let graph = "Bot_Rating"
     holder.appendChild(graphElement([data.graphs[graph], team_data[4915].graphs[graph]], graph.replaceAll("_", " "), [team, 4915]))
