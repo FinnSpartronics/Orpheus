@@ -50,6 +50,8 @@ const tieValue = 0.5
 
 const desmosColors = [Desmos.Colors.RED, Desmos.Colors.BLUE, Desmos.Colors.GREEN, Desmos.Colors.PURPLE, Desmos.Colors.ORANGE, Desmos.Colors.BLACK]
 
+const alphabet = "abcdefghijklmnopqrstuvwxyz".split('')
+
 //#endregion
 
 //#region Init Header Controls
@@ -705,7 +707,10 @@ function graphElement(data, name, teams) {
                 {latex: "y_{" + i + "}", values: numArrToStrArr(Object.values(data[i])), hidden: true},
             ]
         })
-        expressions.push({latex: "y_{" + i + "}\\sim mx_{" + i + "}+b", color: desmosColors[i]})
+        let v1 = alphabet[i*2]
+        let v2 = alphabet[(i*2)+1]
+        expressions.push({latex: "y_{" + i + "}\\sim " + v1 + "x_{" + i + "}" + v2, hidden: true})
+        expressions.push({latex: v1 + "x + " + v2 + " = y", color: desmosColors[i], lineWidth: 6, lineOpacity: .6, label: teams[i] + " " + team_data[teams[i]].Name})
         expressions.push({
             latex: "(" + maxX * 1.15 + "," + ((1.2 - ((i + 1)*.05)) * maxY ) + ")",
             label: teams[i] + " " + team_data[teams[i]].Name.substring(0, 20) + (team_data[teams[i]].Name.length >= 20 ? "..." : ""),
@@ -720,6 +725,7 @@ function graphElement(data, name, teams) {
             color: desmosColors[i],
             label: teams[i] + " (${x_{" + i + "}},${y_{" + i + "}})",
             labelSize: Desmos.FontSizes.SMALL,
+            pointSize: 11,
         })
     }
 
