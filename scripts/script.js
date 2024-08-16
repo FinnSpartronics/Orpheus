@@ -134,14 +134,18 @@ function loadEvent() {
             team_data[team["team_number"]].Team_Number = team["team_number"]
             team_data[team["team_number"]].Name = team["nickname"]
             team_data[team["team_number"]].TBA = team
+            team_data[team["team_number"]].TBA["matches"] = {}
             team_data[team["team_number"]].Icon = "https://api.frc-colors.com/internal/team/" + team["team_number"] + "/avatar.png"
             loading++
             load("team/frc" + team["team_number"] + "/event/" + year + window.localStorage.getItem(EVENT) + "/matches", function(data) {
                 loading--
                 checkLoading()
                 let matchesWon = 0
-                for (let match of data)
+                for (let match of data) {
                     matchesWon += checkTeamWonMatch(match, team["team_number"])
+                    if (match.comp_level === "qm")
+                        team_data[team["team_number"]].TBA["matches"][match.match_number] = match
+                }
                 team_data[team["team_number"]]["Winrate"] = Math.round(rounding*(matchesWon/data.length))/rounding
                 regenTable()
             })
@@ -552,50 +556,16 @@ function regenTable() {
 
 //#region Team Pages
 function openTeam(team) {
-    let data = team_data[team]
-
+    // Hiding table and showing team page element
     document.querySelector(".table").classList.add("hidden")
     document.querySelector(".table-head").classList.add("hidden")
 
-    let el = document.querySelector(".team-data")
+    let el = document.querySelector(".team-page")
     el.classList.remove("hidden")
+    el.innerText = ""
 
-    for (let child of el.children) child.remove()
-
-    let backButton = document.createElement("button")
-    backButton.className = "back-button"
-    backButton.innerHTML = `<span class="material-symbols-outlined">arrow_back</span> Return back`
-    backButton.addEventListener("click", closeTeam)
-
-    let info = document.createElement("div")
-    info.className = "team-info"
-
-    // Basic Info
-    let basicInfo = document.createElement("div")
-    basicInfo.className = "team-info"
-
-    let teamLogo = document.createElement("img")
-    teamLogo.className = "logo-large"
-    teamLogo.src = data.Icon
-    basicInfo.appendChild(teamLogo)
-
-    let basicInfoInfo = document.createElement("div")
-    basicInfoInfo.className = "team-infoinfo"
-
-    let teamName = document.createElement("div")
-    teamName.className = "team-name"
-    teamName.innerText = team + " - " + data.Name
-    basicInfoInfo.appendChild(teamName)
-
-    let desc = document.createElement("div")
-    desc.className = "team-desc"
-    desc.innerText = data.TBA.name
-    basicInfoInfo.appendChild(desc)
-
-    basicInfo.appendChild(basicInfoInfo)
-    info.appendChild(basicInfo)
-
-    // Matches and Comments
+    // Start of team page element assembly
+    let data = team_data[team]
 
     let comments = ""
     for (let match of data.matches)
@@ -603,38 +573,64 @@ function openTeam(team) {
             comments = comments + match[mapping["notes"]] + "    -" + match[mapping["scouter"]] + " (" + match[mapping["match"]["number"]] + ")\n\n"
     comments = comments.trim()
 
-    let commentsEl = document.createElement("div")
-    commentsEl.innerText = comments
-    info.appendChild(commentsEl)
+    // General Layout Assembly
+    let holder = document.createElement("div")
+    holder.className = "team-page-holder"
+
+    let teamInfo = document.createElement("div")
+    teamInfo.className = "team-info"
+    holder.appendChild(teamInfo)
+
+    //#region Team Info
+    let basicInfo = document.createElement("div")
+    basicInfo.className = "team-info-basic"
+    teamInfo.appendChild(basicInfo)
+
+    let teamLogo = document.createElement("img")
+    teamLogo.className = "logo-large"
+    teamLogo.src = data.Icon
+    basicInfo.appendChild(teamLogo)
+
+    let teamDescription = document.createElement("div")
+    teamDescription.className = "team-info-description"
+    basicInfo.appendChild(teamDescription)
+
+    let teamName = document.createElement("div")
+    teamName.className = "team-name"
+    teamName.innerText = data.Team_Number + " " + data.Name.substring(0, 20) + (data.Name.length > 20 ? "..." : "")
+    teamName.title = data.Name
+    teamDescription.appendChild(teamName)
+
+    let teamDescriptionRemainder = document.createElement("div")
+    teamDescriptionRemainder.innerText = "Rookie Year: " + data.TBA.rookie_year + "\n" + data.TBA.city + ", " + data.TBA.state_prov
+    teamDescription.appendChild(teamDescriptionRemainder)
+
+    //#endregion\
+
+    //#region Matches
+
+
+
+    //#endregion
+
+    let teamData = document.createElement("div")
+    teamData.className = "team-data"
+    holder.appendChild(teamData)
+
 
     // Final Composition
-
-    let holder = document.createElement("div")
-    holder.className = "team-data-holder"
-    holder.appendChild(backButton)
-    holder.appendChild(info)
-
-
-    let graph = "Bot_Rating"
-    holder.appendChild(graphElement([data.graphs[graph], team_data[4915].graphs[graph]], graph.replaceAll("_", " "), [team, 4915]))
+    let backButton = document.createElement("button")
+    backButton.className = "back-button"
+    backButton.innerHTML = `<span class="material-symbols-outlined">arrow_back</span> Back to Table`
+    backButton.addEventListener("click", closeTeam)
+    el.appendChild(backButton)
 
     el.appendChild(holder)
-
-    /*
-        <div class="team-info">
-            <div class="team-info">
-                <img>
-            </div>
-            <div class="team-info-matches">
-
-            </div>
-        </div>
-     */
 }
 function closeTeam() {
     document.querySelector(".table").classList.remove("hidden")
     document.querySelector(".table-head").classList.remove("hidden")
-    document.querySelector(".team-data").classList.add("hidden")
+    document.querySelector(".team-page").classList.add("hidden")
 }
 
 function search() {

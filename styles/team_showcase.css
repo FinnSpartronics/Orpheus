@@ -1,22 +1,29 @@
-.team-data {
+.team-page {
     width: 100%;
-}
-
-.team-info {
-    display: flex;
-    flex-direction: row;
-}
-.team-infoinfo {
     display: flex;
     flex-direction: column;
 }
 
-.team-name {
-    font-weight: bold;
-    font-size: 2rem;
+.team-page-holder {
+    width: 100%;
+    display: flex;
 }
-.team-desc {
-    font-size: 1rem;
+
+.back-button {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: .5rem;
+}
+
+.team-info, .team-data, .team-info-description {
+    display: flex;
+    flex-direction: column;
+}
+
+.team-info-basic {
+    display: flex;
+    flex-direction: row;
 }
 
 .logo-large {
@@ -26,15 +33,7 @@
     border: 2px solid black;
 }
 
-.team-data-holder {
-    display: flex;
-    flex-direction: column;
-}
-
-.back-button {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    height: 1.5rem;
-    width: 150px;
+.team-name {
+    font-weight: bold;
+    font-size: 2rem;
 }
