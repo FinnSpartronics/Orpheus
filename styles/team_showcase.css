@@ -16,7 +16,7 @@
     padding: .5rem;
 }
 
-.team-info, .team-data, .team-info-description {
+.team-info, .team-data, .team-info-description, .matches {
     display: flex;
     flex-direction: column;
 }
@@ -36,4 +36,32 @@
 .team-name {
     font-weight: bold;
     font-size: 2rem;
+}
+
+
+.matches {
+    gap: 4px;
+}
+
+.match {
+    display: flex;
+    border-radius: 4px;
+    border: 1px solid var(--font);
+    justify-content: space-between;
+}
+.match-number {
+    width: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-weight: bold;
+}
+.match-number.trophy {
+    background-color: var(--green);
+}
+.match-number.balance {
+    background-color: var(--yellow);
+}
+.match-number.skull {
+    background-color: var(--red);
 }

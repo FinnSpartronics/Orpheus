@@ -609,7 +609,33 @@ function openTeam(team) {
 
     //#region Matches
 
+    let matches = document.createElement("div")
+    matches.className = "matches"
+    teamInfo.appendChild(matches)
 
+    for (let match of Object.keys(data.TBA.matches)) {
+        let mEl = document.createElement("div")
+        mEl.className = "match"
+
+        let matchData = data.TBA.matches[match]
+        let alliance = matchData.alliances.blue.team_keys.includes(data.TBA.key) ? "blue" : "red"
+
+        let matchNumber = document.createElement("div")
+        matchNumber.className = "match-number"
+        matchNumber.innerText = match
+        mEl.appendChild(matchNumber)
+
+        let icon = "skull" // Lose
+        if (matchData.winning_alliance === alliance) icon = "trophy" // Win
+        else if (matchData.winning_alliance === "") icon = "balance" // Tie
+        let iconEl = document.createElement("span")
+        iconEl.className = "material-symbols-outlined"
+        iconEl.innerText = icon
+        matchNumber.classList.add(icon)
+        matchNumber.appendChild(iconEl)
+
+        matches.appendChild(mEl)
+    }
 
     //#endregion
 

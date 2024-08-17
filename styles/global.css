@@ -29,6 +29,10 @@
     --icon_bg: white;
     --disabled: rgb(162,162,162);
     --shadow: rgba(0, 0, 0, .6);
+    --red: rgb(241, 181, 181);
+    --blue: rgb(190, 204, 233);
+    --green: rgb(146, 212, 162);
+    --yellow: rgb(245, 214, 153);
 }
 :root.dark {
     --bg: rgb(53, 55, 59);
@@ -40,6 +44,10 @@
     --icon_bg: var(--bg);
     --disabled: rgb(70,70,70);
     --shadow: rgba(255, 255, 255, .6);
+    --red: rgb(140, 36, 36);
+    --blue: rgb(36, 65, 140);
+    --green: rgb(34, 129, 31);
+    --yellow: rgb(159, 92, 10);
 }
 :root.spartronics_theme {
     --bg: rgb(0, 103, 185);
@@ -51,6 +59,10 @@
     --icon_bg: var(--bg);
     --disabled: rgb(70,70,70);
     --shadow: rgba(244, 228, 0, .6);
+    --red: rgb(140, 36, 36);
+    --blue: rgb(36, 65, 140);
+    --green: rgb(34, 129, 31);
+    --yellow: rgb(159, 92, 10);
 }
 
 * {
