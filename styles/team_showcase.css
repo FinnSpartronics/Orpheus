@@ -50,11 +50,12 @@
     justify-content: space-between;
 }
 .match-number {
-    width: 50px;
+    min-width: 50px;
     display: flex;
     align-items: center;
     justify-content: space-between;
     font-weight: bold;
+    border-right: 1px solid black;
 }
 .match-number.trophy {
     background-color: var(--green);
@@ -64,4 +65,16 @@
 }
 .match-number.skull {
     background-color: var(--red);
+}
+.match-alliance {
+    display: flex;
+    justify-content: space-evenly;
+    gap: 16px;
+    width: 100%;
+}
+.match-alliance.red {
+    background-color: var(--red);
+}
+.match-alliance.blue {
+    background-color: var(--blue);
 }

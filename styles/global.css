@@ -7,6 +7,8 @@
             'GRAD' 0,
             'opsz' 48;
     margin-right: 2px;
+    cursor: default;
+    user-select: none;
 }
 .filled {
     font-variation-settings:

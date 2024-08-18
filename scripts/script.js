@@ -605,13 +605,47 @@ function openTeam(team) {
     teamDescriptionRemainder.innerText = "Rookie Year: " + data.TBA.rookie_year + "\n" + data.TBA.city + ", " + data.TBA.state_prov
     teamDescription.appendChild(teamDescriptionRemainder)
 
-    //#endregion\
-
-    //#region Matches
+    let matchSearch = document.createElement("input")
+    matchSearch.placeholder = "Comma separated team numbers (names coming soon)"
+    matchSearch.onchange = matchSearch.onkeyup = matchSearch.oninput = function() {
+        generateTeamMatches(data, team, matchSearch.value)
+    }
+    teamInfo.appendChild(matchSearch)
 
     let matches = document.createElement("div")
     matches.className = "matches"
     teamInfo.appendChild(matches)
+
+    //#endregion
+
+    let teamData = document.createElement("div")
+    teamData.className = "team-data"
+    holder.appendChild(teamData)
+
+    // Final Composition
+    let backButton = document.createElement("button")
+    backButton.className = "back-button"
+    backButton.innerHTML = `<span class="material-symbols-outlined">arrow_back</span> Back to Table`
+    backButton.addEventListener("click", closeTeam)
+    el.appendChild(backButton)
+
+    el.appendChild(holder)
+
+    generateTeamMatches(data, team, "")
+}
+function closeTeam() {
+    document.querySelector(".table").classList.remove("hidden")
+    document.querySelector(".table-head").classList.remove("hidden")
+    document.querySelector(".team-page").classList.add("hidden")
+}
+
+function generateTeamMatches(data, team, teamsWith) {
+    while(document.querySelector(".matches").children.length > 0)
+        document.querySelector(".matches").children[0].remove()
+
+    let skipTeamCheck = (teamsWith === undefined || teamsWith.trim() === "")
+    if (!skipTeamCheck)
+        teamsWith = teamsWith.trim().split(",")
 
     for (let match of Object.keys(data.TBA.matches)) {
         let mEl = document.createElement("div")
@@ -620,6 +654,7 @@ function openTeam(team) {
         let matchData = data.TBA.matches[match]
         let alliance = matchData.alliances.blue.team_keys.includes(data.TBA.key) ? "blue" : "red"
 
+        //#region Children
         let matchNumber = document.createElement("div")
         matchNumber.className = "match-number"
         matchNumber.innerText = match
@@ -634,29 +669,41 @@ function openTeam(team) {
         matchNumber.classList.add(icon)
         matchNumber.appendChild(iconEl)
 
-        matches.appendChild(mEl)
+        let firstAlliance = document.createElement("div")
+        firstAlliance.className = "match-alliance " + alliance
+        for (let t of matchData.alliances[alliance].team_keys) {
+            let tEl = document.createElement("div")
+            tEl.innerText = t.replace("frc", "")
+            if (t.replace("frc", "") === team) tEl.style.order = "-10000"
+            firstAlliance.appendChild(tEl)
+        }
+        mEl.appendChild(firstAlliance)
+
+        let secondAlliance = document.createElement("div")
+        secondAlliance.className = "match-alliance " + (alliance === "blue" ? "red" : "blue")
+        for (let t of matchData.alliances[(alliance === "blue" ? "red" : "blue")].team_keys) {
+            let tEl = document.createElement("div")
+            tEl.innerText = t.replace("frc", "")
+            secondAlliance.appendChild(tEl)
+        }
+        mEl.appendChild(secondAlliance)
+
+        mEl.title = icon.replace("skull", "Lost").replace("trophy", "Won").replace("balance", "Tie")
+                    + " " + matchData.alliances[alliance].score + " | " + matchData.alliances[(alliance === "blue" ? "red" : "blue")].score
+        //#endregion
+
+        let teams = matchData.alliances.blue.team_keys.concat(matchData.alliances.red.team_keys)
+        for (let t in teams) teams[t] = teams[t].replace("frc", "")
+
+        if (skipTeamCheck) document.querySelector(".matches").appendChild(mEl)
+        else {
+            let containsTeam = false
+            for (let t of teamsWith)
+                if (teams.includes(t.trim())) containsTeam = true
+            if (containsTeam)
+                document.querySelector(".matches").appendChild(mEl)
+        }
     }
-
-    //#endregion
-
-    let teamData = document.createElement("div")
-    teamData.className = "team-data"
-    holder.appendChild(teamData)
-
-
-    // Final Composition
-    let backButton = document.createElement("button")
-    backButton.className = "back-button"
-    backButton.innerHTML = `<span class="material-symbols-outlined">arrow_back</span> Back to Table`
-    backButton.addEventListener("click", closeTeam)
-    el.appendChild(backButton)
-
-    el.appendChild(holder)
-}
-function closeTeam() {
-    document.querySelector(".table").classList.remove("hidden")
-    document.querySelector(".table-head").classList.remove("hidden")
-    document.querySelector(".team-page").classList.add("hidden")
 }
 
 function search() {

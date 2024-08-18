@@ -1,6 +1,13 @@
 # Scouting Tool
  A WIP tool for scouting FRC events
 
+### An internet connection is required when using this tool.
+#### Why?
+This tool uses the following APIs as a crucial part of this tool's functionality:
+ - Desmos API
+ - TheBlueAlliance
+ - FRC Colors
+
 
 ### Mapping Format
 ```json
