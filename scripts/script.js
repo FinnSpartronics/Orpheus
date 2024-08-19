@@ -859,7 +859,7 @@ function graphElement(data, name, teams) {
         let v1 = alphabet[i*2]
         let v2 = alphabet[(i*2)+1]
 
-        expressions.push({latex: "y_{" + i + "}\\sim " + v1 + "x_{" + i + "}" + v2, hidden: true})
+        expressions.push({latex: "y_{" + i + "}\\sim " + v1 + "x_{" + i + "} + " + v2, hidden: true})
         expressions.push({latex: v1 + "x + " + v2 + " = y", color: desmosColors[i], lineWidth: 6, lineOpacity: .6, label: teams[i] + " " + team_data[teams[i]].Name})
         expressions.push({
             latex: "(" + maxX * 1.15 + "," + ((1.2 - ((i + 1)*.05)) * maxY ) + ")",
