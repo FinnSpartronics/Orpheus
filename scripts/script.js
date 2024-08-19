@@ -601,6 +601,17 @@ function openTeam(team) {
     teamName.title = data.Name
     teamDescription.appendChild(teamName)
 
+    let starEl = document.createElement("span")
+    starEl.className = "material-symbols-outlined ar team-star"
+    if (starred.includes(team)) starEl.classList.add("filled")
+    starEl.onclick = function() {
+        star(team)
+        if (starred.includes(team)) starEl.classList.add("filled")
+        else starEl.classList.remove("filled")
+    }
+    starEl.innerText = "star"
+    teamName.appendChild(starEl)
+
     let teamDescriptionRemainder = document.createElement("div")
     teamDescriptionRemainder.innerText = "Rookie Year: " + data.TBA.rookie_year + "\n" + data.TBA.city + ", " + data.TBA.state_prov
     teamDescription.appendChild(teamDescriptionRemainder)
@@ -624,7 +635,7 @@ function openTeam(team) {
     holder.appendChild(teamData)
 
     let graphTeams = []
-    let graph
+    let graph = Object.keys(data.graphs)[0]
 
     let overallGraphHolder = document.createElement("div")
     overallGraphHolder.className = "graph-overall-holder"
@@ -678,6 +689,7 @@ function openTeam(team) {
         graphHolder.classList.remove("initial")
         graphHolder.appendChild(graphElement(graphData, graph.replaceAll("_", " "), teams))
     }
+    addGraph()
 
     let commentsEl = document.createElement("div")
     commentsEl.className = "team-comments"
@@ -820,9 +832,9 @@ document.querySelector("#search4915").addEventListener("blur", () => {
 
 function graphElement(data, name, teams) {
     let el = document.createElement("div")
-    el.style.width = "500px"
-    el.style.height = "500px"
-    let calc = Desmos.GraphingCalculator(el, {expressions: false, settingsMenu: false, xAxisLabel: "Matches", yAxisLabel: name, zoomButtons: false, lockViewport: true, })
+    el.style.width = "800px"
+    el.style.height = "600px"
+    let calc = Desmos.GraphingCalculator(el, {expressions: false, settingsMenu: false, xAxisLabel: "Matches", yAxisLabel: name, zoomButtons: false, lockViewport: false, })
 
     function numArrToStrArr(numArr) {
         let strArr = []
