@@ -66,6 +66,7 @@ div.icon {
     overflow: hidden;
 
     user-select: none;
+    box-sizing: border-box;
 }
 .data.small {
     font-size: .8rem;
@@ -75,9 +76,11 @@ div.icon {
     background: var(--highlight);
 }
 .data.top {
+    padding-top: 4px;
     align-items: start;
 }
 .data.bottom {
+    padding-bottom: 4px;
     align-items: end;
 }
 .data.dragging {

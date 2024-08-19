@@ -15,13 +15,14 @@
     justify-content: center;
     align-items: center;
     padding: .5rem;
+    margin-bottom: 4px;
 }
 
 .team-info,
 .team-data,
 .team-info-description,
 .matches,
-.graphSelectionHolder {
+.graph-selection-holder {
     display: flex;
     flex-direction: column;
 }
@@ -100,12 +101,30 @@
     height: 200px;
 }
 
-.graphSelectionHolder {
+.graph-overall-holder {
+    display: flex;
+    gap: 4px;
+    flex-direction: row;
+}
+
+.graph-selection-holder {
     border: 1px solid var(--font);
     border-radius: 12px;
+    width: 100%;
 }
 
 .graph-holder {
-    width: 400px;
-    height: 400px;
+    width: 500px;
+    height: 500px;
+}
+.graph-holder.initial {
+    border: 1px solid var(--font);
+    border-radius: 12px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 2rem;
+    color: var(--placeholder);
+    min-width: 500px;
+    height: 500px;
 }

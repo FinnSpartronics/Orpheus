@@ -23,7 +23,7 @@ button:disabled, input:disabled {
     color: var(--disabled);
 }
 input::placeholder {
-    color: var(--disabled)
+    color: var(--placeholder)
 }
 
 button.icon-holder {

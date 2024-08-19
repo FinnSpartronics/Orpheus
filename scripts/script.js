@@ -626,9 +626,13 @@ function openTeam(team) {
     let graphTeams = []
     let graph
 
+    let overallGraphHolder = document.createElement("div")
+    overallGraphHolder.className = "graph-overall-holder"
+    teamData.appendChild(overallGraphHolder)
+
     let graphSelectionsHolder = document.createElement("div")
-    graphSelectionsHolder.className = "graphSelectionsHolder"
-    teamData.appendChild(graphSelectionsHolder)
+    graphSelectionsHolder.className = "graph-selection-holder"
+    overallGraphHolder.appendChild(graphSelectionsHolder)
 
     let graphAddTeam = document.createElement("button")
     graphAddTeam.innerText = "Add/Remove Team to Compare"
@@ -657,8 +661,10 @@ function openTeam(team) {
         graphSelectionsHolder.appendChild(goEl)
     }
 
-    let graphHolder = document.createElement("graph-holder")
-    graphSelectionsHolder.appendChild(graphHolder)
+    let graphHolder = document.createElement("div")
+    graphHolder.className = "graph-holder initial"
+    graphHolder.innerText = "Select something to graph"
+    overallGraphHolder.appendChild(graphHolder)
 
     function addGraph() {
         while (graphHolder.children.length > 0) graphHolder.children[0].remove()
@@ -668,6 +674,8 @@ function openTeam(team) {
         }
         let teams = JSON.parse(JSON.stringify(graphTeams))
         teams.unshift(team)
+        graphHolder.innerText = ""
+        graphHolder.classList.remove("initial")
         graphHolder.appendChild(graphElement(graphData, graph.replaceAll("_", " "), teams))
     }
 
@@ -812,8 +820,8 @@ document.querySelector("#search4915").addEventListener("blur", () => {
 
 function graphElement(data, name, teams) {
     let el = document.createElement("div")
-    el.style.width = "400px"
-    el.style.height = "400px"
+    el.style.width = "500px"
+    el.style.height = "500px"
     let calc = Desmos.GraphingCalculator(el, {expressions: false, settingsMenu: false, xAxisLabel: "Matches", yAxisLabel: name, zoomButtons: false, lockViewport: true, })
 
     function numArrToStrArr(numArr) {
