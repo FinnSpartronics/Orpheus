@@ -618,9 +618,65 @@ function openTeam(team) {
 
     //#endregion
 
+    //#region Team Data
     let teamData = document.createElement("div")
     teamData.className = "team-data"
     holder.appendChild(teamData)
+
+    let graphTeams = []
+    let graph
+
+    let graphSelectionsHolder = document.createElement("div")
+    graphSelectionsHolder.className = "graphSelectionsHolder"
+    teamData.appendChild(graphSelectionsHolder)
+
+    let graphAddTeam = document.createElement("button")
+    graphAddTeam.innerText = "Add/Remove Team to Compare"
+    graphAddTeam.addEventListener("click", () => {
+        let x = prompt("What team would you like to add/remove? Current teams: " + graphTeams).trim()
+        if (graphTeams.includes(x))
+            graphTeams.splice(graphTeams.indexOf(x))
+        else if(Object.keys(team_data).includes(x))
+            graphTeams.push(x)
+        else alert("Couldn't find team number " + x + ". ")
+        addGraph()
+    })
+    graphSelectionsHolder.appendChild(graphAddTeam)
+
+    for (let graphOption of Object.keys(data.graphs)) {
+        let goEl = document.createElement("div")
+        goEl.innerText = graphOption.replaceAll("_", " ")
+        goEl.className = "graph-option"
+        goEl.addEventListener("click", function() {
+            graph = graphOption
+            if (document.querySelector(".graph-option.selected") !== null)
+                document.querySelector(".graph-option.selected").classList.remove("selected")
+            goEl.classList.add("selected")
+            addGraph()
+        })
+        graphSelectionsHolder.appendChild(goEl)
+    }
+
+    let graphHolder = document.createElement("graph-holder")
+    graphSelectionsHolder.appendChild(graphHolder)
+
+    function addGraph() {
+        while (graphHolder.children.length > 0) graphHolder.children[0].remove()
+        let graphData = [data.graphs[graph]]
+        for (let team of graphTeams) {
+            graphData.push(team_data[team].graphs[graph])
+        }
+        let teams = JSON.parse(JSON.stringify(graphTeams))
+        teams.unshift(team)
+        graphHolder.appendChild(graphElement(graphData, graph.replaceAll("_", " "), teams))
+    }
+
+    let commentsEl = document.createElement("div")
+    commentsEl.className = "team-comments"
+    commentsEl.innerText = comments
+    teamData.appendChild(commentsEl)
+
+    //#endregion
 
     // Final Composition
     let backButton = document.createElement("button")
@@ -794,6 +850,7 @@ function graphElement(data, name, teams) {
         })
         let v1 = alphabet[i*2]
         let v2 = alphabet[(i*2)+1]
+
         expressions.push({latex: "y_{" + i + "}\\sim " + v1 + "x_{" + i + "}" + v2, hidden: true})
         expressions.push({latex: v1 + "x + " + v2 + " = y", color: desmosColors[i], lineWidth: 6, lineOpacity: .6, label: teams[i] + " " + team_data[teams[i]].Name})
         expressions.push({

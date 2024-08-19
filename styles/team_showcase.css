@@ -7,6 +7,7 @@
 .team-page-holder {
     width: 100%;
     display: flex;
+    gap: 8px;
 }
 
 .back-button {
@@ -16,14 +17,23 @@
     padding: .5rem;
 }
 
-.team-info, .team-data, .team-info-description, .matches {
+.team-info,
+.team-data,
+.team-info-description,
+.matches,
+.graphSelectionHolder {
     display: flex;
     flex-direction: column;
+}
+
+.team-info {
+    width: 500px;
 }
 
 .team-info-basic {
     display: flex;
     flex-direction: row;
+    margin-bottom: 8px;
 }
 
 .logo-large {
@@ -47,7 +57,7 @@
     display: flex;
     border-radius: 4px;
     border: 1px solid var(--font);
-    justify-content: space-between;
+    justify-content: space-evenly;
 }
 .match-number {
     min-width: 50px;
@@ -77,4 +87,25 @@
 }
 .match-alliance.blue {
     background-color: var(--blue);
+}
+
+
+.team-data {
+    width: 100%;
+}
+
+.team-comments {
+    overflow: scroll;
+    width: 100%;
+    height: 200px;
+}
+
+.graphSelectionHolder {
+    border: 1px solid var(--font);
+    border-radius: 12px;
+}
+
+.graph-holder {
+    width: 400px;
+    height: 400px;
 }
