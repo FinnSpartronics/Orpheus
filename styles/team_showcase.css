@@ -54,10 +54,10 @@
     font-size: 1em;
 }
 
+/*#region Matches*/
 .matches {
     gap: 4px;
 }
-
 .match {
     display: flex;
     border-radius: 4px;
@@ -93,7 +93,42 @@
 .match-alliance.blue {
     background-color: var(--blue);
 }
+/*#endregion*/
 
+/*#region Compare*/
+.compare-holder {
+    display: flex;
+    flex-direction: column;
+    margin-top: 8px;
+    padding: 8px;
+    border: 1px solid var(--font);
+    gap: 4px;
+    border-radius: 4px;
+    font-size: 1.3rem;
+}
+
+.compare-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.compare-team {
+    border: 1px solid var(--font);
+    display: flex;
+    width: 100%;
+    padding: 4px;
+    box-sizing: border-box;
+    border-radius: 4px;
+    align-items: center;
+}
+
+.compare-team-name {
+    cursor: pointer;
+    text-decoration: underline;
+}
+
+/*#endregion*/
 
 .team-data {
     width: 100%;
@@ -105,6 +140,7 @@
     height: 200px;
 }
 
+/*#region Graph*/
 .graph-overall-holder {
     display: flex;
     gap: 4px;
@@ -151,3 +187,5 @@
     min-width: 800px;
     height: 600px;
 }
+
+/*#endregion*/

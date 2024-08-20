@@ -555,7 +555,7 @@ function regenTable() {
 //#endregion
 
 //#region Team Pages
-function openTeam(team) {
+function openTeam(team, comparisons) {
     // Hiding table and showing team page element
     document.querySelector(".table").classList.add("hidden")
     document.querySelector(".table-head").classList.add("hidden")
@@ -563,6 +563,8 @@ function openTeam(team) {
     let el = document.querySelector(".team-page")
     el.classList.remove("hidden")
     el.innerText = ""
+
+    if (comparisons === undefined) comparisons = []
 
     // Start of team page element assembly
     let data = team_data[team]
@@ -626,6 +628,78 @@ function openTeam(team) {
     let matches = document.createElement("div")
     matches.className = "matches"
     teamInfo.appendChild(matches)
+
+    //#endregion
+
+    //#region Comparisons
+    let compareHolder = document.createElement("div")
+    compareHolder.className = "compare-holder"
+    teamInfo.appendChild(compareHolder)
+
+    let compareHeader = document.createElement("div")
+    compareHeader.className = "compare-header"
+    compareHolder.appendChild(compareHeader)
+
+    let compareTitle = document.createElement("div")
+    compareTitle.innerText = "Compare"
+    compareHeader.appendChild(compareTitle)
+
+    let addComparisonBtn = document.createElement("button")
+    addComparisonBtn.innerText = "Add Team"
+    addComparisonBtn.addEventListener("click", () => {
+        if (comparisons.length >= desmosColors.length - 1) {
+            alert("Cannot have more than " + (desmosColors.length - 1) + " teams in comparison. Sorry!")
+            return
+        }
+        let x = prompt("Enter a team number to add to comparison").trim()
+        if (x === null) return
+        if (comparisons.includes(x)) return
+        if (team_data[x] !== undefined) {
+            comparisons.push(x)
+            addComparisonElement(x)
+        }
+    })
+    compareHeader.appendChild(addComparisonBtn)
+
+    for (let c of comparisons) {
+        addComparisonElement(c)
+    }
+
+    function addComparisonElement(c) {
+        let compareEl = document.createElement("div")
+        compareEl.className = "compare-team"
+
+        let starEl = document.createElement("span")
+        starEl.className = "material-symbols-outlined ar team-compare-star"
+        if (starred.includes(c)) starEl.classList.add("filled")
+        starEl.onclick = function() {
+            star(c)
+            if (starred.includes(c)) starEl.classList.add("filled")
+            else starEl.classList.remove("filled")
+        }
+        starEl.innerText = "star"
+        compareEl.appendChild(starEl)
+
+        let compareTeamName = document.createElement("div")
+        compareTeamName.innerText = c + " " + team_data[c].Name
+        compareTeamName.className = "compare-team-name"
+        compareTeamName.addEventListener("click", () => {
+            comparisons.splice(comparisons.indexOf(c), 1, team)
+            openTeam(c, comparisons)
+        })
+        compareEl.appendChild(compareTeamName)
+
+        let deleteEl = document.createElement("span")
+        deleteEl.className = "material-symbols-outlined ar team-compare-delete"
+        deleteEl.onclick = function() {
+            comparisons.splice(comparisons.indexOf(c), 1)
+            compareEl.remove()
+        }
+        deleteEl.innerText = "delete"
+        compareEl.appendChild(deleteEl)
+
+        compareHolder.appendChild(compareEl)
+    }
 
     //#endregion
 
