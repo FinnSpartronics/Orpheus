@@ -658,6 +658,7 @@ function openTeam(team, comparisons) {
             comparisons.push(x)
             addComparisonElement(x)
         }
+        addGraph()
     })
     compareHeader.appendChild(addComparisonBtn)
 
@@ -708,56 +709,49 @@ function openTeam(team, comparisons) {
     teamData.className = "team-data"
     holder.appendChild(teamData)
 
-    let graphTeams = []
     let graph = Object.keys(data.graphs)[0]
 
-    let overallGraphHolder = document.createElement("div")
-    overallGraphHolder.className = "graph-overall-holder"
-    teamData.appendChild(overallGraphHolder)
+    let graphCommentsHolder = document.createElement("div")
+    graphCommentsHolder.className = "graph-comments-holder"
+    teamData.appendChild(graphCommentsHolder)
 
-    let graphSelectionsHolder = document.createElement("div")
+    let graphOverallHolder = document.createElement("div")
+    graphOverallHolder.className = "graph-holder"
+    graphCommentsHolder.appendChild(graphOverallHolder)
+
+    let graphControls = document.createElement("div")
+    graphControls.className = "graph-controls"
+    graphOverallHolder.appendChild(graphControls)
+
+    let graphSelectionsHolder = document.createElement("select")
     graphSelectionsHolder.className = "graph-selection-holder"
-    overallGraphHolder.appendChild(graphSelectionsHolder)
-
-    let graphAddTeam = document.createElement("button")
-    graphAddTeam.innerText = "Add/Remove Team to Compare"
-    graphAddTeam.addEventListener("click", () => {
-        let x = prompt("What team would you like to add/remove? Current teams: " + graphTeams).trim()
-        if (graphTeams.includes(x))
-            graphTeams.splice(graphTeams.indexOf(x))
-        else if(Object.keys(team_data).includes(x))
-            graphTeams.push(x)
-        else alert("Couldn't find team number " + x + ". ")
-        addGraph()
-    })
-    graphSelectionsHolder.appendChild(graphAddTeam)
+    graphControls.appendChild(graphSelectionsHolder)
 
     for (let graphOption of Object.keys(data.graphs)) {
-        let goEl = document.createElement("div")
+        let goEl = document.createElement("option")
         goEl.innerText = graphOption.replaceAll("_", " ")
+        goEl.value = graphOption
         goEl.className = "graph-option"
-        goEl.addEventListener("click", function() {
-            graph = graphOption
-            if (document.querySelector(".graph-option.selected") !== null)
-                document.querySelector(".graph-option.selected").classList.remove("selected")
-            goEl.classList.add("selected")
-            addGraph()
-        })
         graphSelectionsHolder.appendChild(goEl)
     }
 
+    let graphRefresh = document.createElement("button")
+    graphRefresh.innerText = "Refresh Graph"
+    graphRefresh.addEventListener("click", addGraph)
+    graphControls.appendChild(graphRefresh)
+
     let graphHolder = document.createElement("div")
-    graphHolder.className = "graph-holder initial"
+    graphHolder.className = "graph initial"
     graphHolder.innerText = "Select something to graph"
-    overallGraphHolder.appendChild(graphHolder)
+    graphOverallHolder.appendChild(graphHolder)
 
     function addGraph() {
         while (graphHolder.children.length > 0) graphHolder.children[0].remove()
         let graphData = [data.graphs[graph]]
-        for (let team of graphTeams) {
+        for (let team of comparisons) {
             graphData.push(team_data[team].graphs[graph])
         }
-        let teams = JSON.parse(JSON.stringify(graphTeams))
+        let teams = JSON.parse(JSON.stringify(comparisons))
         teams.unshift(team)
         graphHolder.innerText = ""
         graphHolder.classList.remove("initial")
@@ -765,10 +759,19 @@ function openTeam(team, comparisons) {
     }
     addGraph()
 
+    let commentsHolder = document.createElement("div")
+    commentsHolder.className = "comments-holder"
+    graphCommentsHolder.appendChild(commentsHolder)
+
+    let commentsTitle = document.createElement("div")
+    commentsTitle.className = "comments-title"
+    commentsTitle.innerText = "Team Comments"
+    commentsHolder.appendChild(commentsTitle)
+
     let commentsEl = document.createElement("div")
     commentsEl.className = "team-comments"
     commentsEl.innerText = comments
-    teamData.appendChild(commentsEl)
+    commentsHolder.appendChild(commentsEl)
 
     //#endregion
 
@@ -906,8 +909,8 @@ document.querySelector("#search4915").addEventListener("blur", () => {
 
 function graphElement(data, name, teams) {
     let el = document.createElement("div")
-    el.style.width = "800px"
-    el.style.height = "600px"
+    el.style.width = "550px"
+    el.style.height = "550px"
     let calc = Desmos.GraphingCalculator(el, {expressions: false, settingsMenu: false, xAxisLabel: "Matches", yAxisLabel: name, zoomButtons: false, lockViewport: false, })
 
     function numArrToStrArr(numArr) {
