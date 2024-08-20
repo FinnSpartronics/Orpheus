@@ -1154,7 +1154,7 @@ function sort(team) {
 
         let index = isNaN(team_data[team][selectedSort]) ? 0 : team_data[team][selectedSort] /max
         if (sortDirection === 1) index = 1-index
-        return starOffset + Math.floor(1000*index)
+        return starOffset + Math.floor(10000*index)
     }
 }
 function changeSort(to) {
