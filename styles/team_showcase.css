@@ -200,8 +200,8 @@
 .team-comments {
     overflow-y: auto;
     width: 100%;
-    height: 100%;
     font-size: 1.1rem;
+    min-height: 374px;
 }
 /*#endregion*/
 

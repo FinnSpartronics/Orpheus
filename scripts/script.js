@@ -577,7 +577,10 @@ function regenTable() {
 //#endregion
 
 //#region Team Pages
-let maintainedSettings = {}
+let maintainedTeamPageSettings = {
+    "teamInfoWidth": 450,
+    "graphHeight": 500,
+}
 
 function openTeam(team, comparisons) {
     // Hiding table and showing team page element
@@ -770,7 +773,7 @@ function openTeam(team, comparisons) {
     graphRefresh.addEventListener("click", addGraph)
     graphControls.appendChild(graphRefresh)
 
-    let graphHeight = 500
+    let graphHeight = maintainedTeamPageSettings["graphHeight"]
     let graphHolder = document.createElement("div")
     graphHolder.className = "graph initial"
     graphHolder.innerText = "Select something to graph"
@@ -817,7 +820,7 @@ function openTeam(team, comparisons) {
 
     //#region Resize Drag things (todo: come up with better name)
 
-    let teamInfoWidth = 450
+    let teamInfoWidth = maintainedTeamPageSettings["teamInfoWidth"]
     teamInfo.style.width = teamInfoWidth + "px"
     let teamInfoDrag = document.createElement("div")
     teamInfoDrag.className = "drag width"
@@ -830,6 +833,7 @@ function openTeam(team, comparisons) {
             teamInfoWidth = startW - (startX - e.x)
             teamInfo.style.width = teamInfoWidth + "px"
             teamInfoWidth = teamInfo.offsetWidth
+            maintainedTeamPageSettings["teamInfoWidth"] = teamInfoWidth
         }
         function bodyUp(e) {
             document.body.removeEventListener("mousemove", bodyMove)
@@ -838,7 +842,7 @@ function openTeam(team, comparisons) {
     })
     holder.insertBefore(teamInfoDrag, teamData)
 
-    graphHolder.style.width = graphHolder.style.height = graphHeight + "px"
+    commentsEl.style.maxHeight = graphHolder.style.width = graphHolder.style.height = graphHeight + "px"
     let graphDrag = document.createElement("div")
     graphDrag.className = "drag height padding"
     graphDrag.addEventListener("mousedown", (e) => {
@@ -847,15 +851,19 @@ function openTeam(team, comparisons) {
         document.body.addEventListener("mousemove", bodyMove)
         document.body.addEventListener("mouseup", bodyUp)
         graphHolder.innerHTML = ""
+        e.preventDefault()
         function bodyMove(e) {
             graphHeight = startH - (startY - e.y)
-            graphHolder.style.width = graphHolder.style.height = graphHeight + "px"
+            commentsEl.style.maxHeight = graphHolder.style.width = graphHolder.style.height = graphHeight + "px"
             graphHeight = graphHolder.offsetHeight
+            maintainedTeamPageSettings["graphHeight"] = graphHeight
+            e.preventDefault()
         }
         function bodyUp(e) {
             document.body.removeEventListener("mousemove", bodyMove)
             document.body.removeEventListener("mouseup", bodyUp)
             addGraph()
+            e.preventDefault()
         }
     })
     teamData.insertBefore(graphDrag, teamTableHead)
@@ -885,7 +893,6 @@ function closeTeam() {
     tableMode = "main"
     regenTable()
     setHeader()
-    maintainedSettings = {}
 }
 
 function generateTeamMatches(data, team, teamsWith) {
