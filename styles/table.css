@@ -1,12 +1,23 @@
 .table {
-    min-width: 95vw;
     overflow-x: scroll;
     white-space: nowrap;
     display:flex;
     flex-direction: column;
 }
-.table-head {
+
+.table.main-table {
+    min-width: 95vw;
+}
+
+.table.team-table {
+    width: 100%;
+    overflow-x: auto;
+}
+.table-head.main-table {
     order: -1000000;
+}
+.table-head.team-table {
+    width: 100%;
 }
 
 .row {

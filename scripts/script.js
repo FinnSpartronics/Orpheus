@@ -577,6 +577,8 @@ function regenTable() {
 //#endregion
 
 //#region Team Pages
+let maintainedSettings = {}
+
 function openTeam(team, comparisons) {
     // Hiding table and showing team page element
     document.querySelector(".table.main-table").classList.add("hidden")
@@ -768,6 +770,7 @@ function openTeam(team, comparisons) {
     graphRefresh.addEventListener("click", addGraph)
     graphControls.appendChild(graphRefresh)
 
+    let graphHeight = 500
     let graphHolder = document.createElement("div")
     graphHolder.className = "graph initial"
     graphHolder.innerText = "Select something to graph"
@@ -783,7 +786,7 @@ function openTeam(team, comparisons) {
         teams.unshift(team)
         graphHolder.innerText = ""
         graphHolder.classList.remove("initial")
-        graphHolder.appendChild(graphElement(graphData, graph.replaceAll("_", " "), teams))
+        graphHolder.appendChild(graphElement(graphData, graph.replaceAll("_", " "), teams, graphHeight, graphHeight))
     }
     addGraph()
 
@@ -812,6 +815,53 @@ function openTeam(team, comparisons) {
 
     //#endregion
 
+    //#region Resize Drag things (todo: come up with better name)
+
+    let teamInfoWidth = 450
+    teamInfo.style.width = teamInfoWidth + "px"
+    let teamInfoDrag = document.createElement("div")
+    teamInfoDrag.className = "drag width"
+    teamInfoDrag.addEventListener("mousedown", (e) => {
+        let startX = e.x
+        let startW = teamInfo.clientWidth
+        document.body.addEventListener("mousemove", bodyMove)
+        document.body.addEventListener("mouseup", bodyUp)
+        function bodyMove(e) {
+            teamInfoWidth = startW - (startX - e.x)
+            teamInfo.style.width = teamInfoWidth + "px"
+            teamInfoWidth = teamInfo.offsetWidth
+        }
+        function bodyUp(e) {
+            document.body.removeEventListener("mousemove", bodyMove)
+            document.body.removeEventListener("mouseup", bodyUp)
+        }
+    })
+    holder.insertBefore(teamInfoDrag, teamData)
+
+    graphHolder.style.width = graphHolder.style.height = graphHeight + "px"
+    let graphDrag = document.createElement("div")
+    graphDrag.className = "drag height padding"
+    graphDrag.addEventListener("mousedown", (e) => {
+        let startY = e.y
+        let startH = graphHolder.clientHeight
+        document.body.addEventListener("mousemove", bodyMove)
+        document.body.addEventListener("mouseup", bodyUp)
+        graphHolder.innerHTML = ""
+        function bodyMove(e) {
+            graphHeight = startH - (startY - e.y)
+            graphHolder.style.width = graphHolder.style.height = graphHeight + "px"
+            graphHeight = graphHolder.offsetHeight
+        }
+        function bodyUp(e) {
+            document.body.removeEventListener("mousemove", bodyMove)
+            document.body.removeEventListener("mouseup", bodyUp)
+            addGraph()
+        }
+    })
+    teamData.insertBefore(graphDrag, teamTableHead)
+
+    //#endregion
+
     // Final Composition
     let backButton = document.createElement("button")
     backButton.className = "back-button"
@@ -835,6 +885,7 @@ function closeTeam() {
     tableMode = "main"
     regenTable()
     setHeader()
+    maintainedSettings = {}
 }
 
 function generateTeamMatches(data, team, teamsWith) {
@@ -952,10 +1003,10 @@ document.querySelector("#search4915").addEventListener("blur", () => {
     brieflyDisableKeyboard = false
 })
 
-function graphElement(data, name, teams) {
+function graphElement(data, name, teams, width, height) {
     let el = document.createElement("div")
-    el.style.width = "500px"
-    el.style.height = "500px"
+    el.style.width = width === undefined ? "500px" : width + "px"
+    el.style.height = height === undefined ? "500px" : height + "px"
     let calc = Desmos.GraphingCalculator(el, {expressions: false, settingsMenu: false, xAxisLabel: "Matches", yAxisLabel: name, zoomButtons: false, lockViewport: false, })
 
     function numArrToStrArr(numArr) {

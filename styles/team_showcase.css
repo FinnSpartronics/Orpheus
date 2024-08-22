@@ -28,7 +28,9 @@
 }
 
 .team-info {
-    width: 600px;
+    width: 450px;
+    min-width: 400px;
+    flex-shrink: 0;
 }
 
 .team-info-basic {
@@ -166,9 +168,14 @@
 }
 
 .graph {
-    width: 500px;
-    height: 500px;
     color: black;
+    flex-shrink: 0;
+    border: 1px solid var(--font);
+    min-height: 374px;
+    min-width: 374px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 .graph.initial {
     border: 1px solid var(--font);
@@ -178,8 +185,6 @@
     align-items: center;
     font-size: 2rem;
     color: var(--placeholder);
-    min-width: 500px;
-    height: 500px;
 }
 
 
@@ -199,3 +204,29 @@
     font-size: 1.1rem;
 }
 /*#endregion*/
+
+.drag {
+    background-color: var(--line);
+    border: 1px solid transparent;
+    border-radius: 2px;
+    box-sizing: border-box;
+    flex-shrink: 0;
+}
+.drag.width {
+    width: 4px;
+    max-height: 100vh;
+    cursor: col-resize;
+}
+.drag.height {
+    height: 4px;
+    max-width: 100vh;
+    cursor: row-resize;
+}
+.drag.width.padding {
+    margin-left: 4px;
+    margin-right: 4px;
+}
+.drag.height.padding {
+    margin-top: 4px;
+    margin-bottom: 4px;
+}
