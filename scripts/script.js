@@ -728,6 +728,7 @@ function openTeam(team, comparisons) {
         deleteEl.onclick = function() {
             comparisons.splice(comparisons.indexOf(c), 1)
             compareEl.remove()
+            addGraph()
         }
         deleteEl.innerText = "delete"
         compareEl.appendChild(deleteEl)
@@ -742,7 +743,8 @@ function openTeam(team, comparisons) {
     teamData.className = "team-data"
     holder.appendChild(teamData)
 
-    let graph = Object.keys(data.graphs)[0]
+    let graph = maintainedTeamPageSettings["graph"]
+    if (graph === undefined) graph = Object.keys(data.graphs)[0]
 
     let graphCommentsHolder = document.createElement("div")
     graphCommentsHolder.className = "graph-comments-holder"
@@ -758,6 +760,11 @@ function openTeam(team, comparisons) {
 
     let graphSelectionsHolder = document.createElement("select")
     graphSelectionsHolder.className = "graph-selection-holder"
+    graphSelectionsHolder.addEventListener("change", (e) => {
+        graph = graphSelectionsHolder.value
+        maintainedTeamPageSettings["graph"] = graph
+        addGraph()
+    })
     graphControls.appendChild(graphSelectionsHolder)
 
     for (let graphOption of Object.keys(data.graphs)) {
@@ -765,6 +772,7 @@ function openTeam(team, comparisons) {
         goEl.innerText = graphOption.replaceAll("_", " ")
         goEl.value = graphOption
         goEl.className = "graph-option"
+        if (graphOption === graph) goEl.setAttribute("selected", "selected")
         graphSelectionsHolder.appendChild(goEl)
     }
 
@@ -789,6 +797,7 @@ function openTeam(team, comparisons) {
         teams.unshift(team)
         graphHolder.innerText = ""
         graphHolder.classList.remove("initial")
+        // noinspection JSSuspiciousNameCombination
         graphHolder.appendChild(graphElement(graphData, graph.replaceAll("_", " "), teams, graphHeight, graphHeight))
     }
     addGraph()
