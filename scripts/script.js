@@ -52,6 +52,8 @@ const desmosColors = [Desmos.Colors.RED, Desmos.Colors.BLUE, Desmos.Colors.GREEN
 
 const alphabet = "abcdefghijklmnopqrstuvwxyz".split('')
 
+let showNamesInTeamComments = true
+
 //#endregion
 
 //#region Init Header Controls
@@ -581,6 +583,7 @@ let maintainedTeamPageSettings = {
     "teamInfoWidth": 450,
     "graphHeight": 500,
 }
+let openedTeam
 
 function openTeam(team, comparisons) {
     // Hiding table and showing team page element
@@ -588,6 +591,8 @@ function openTeam(team, comparisons) {
     document.querySelector(".table.main-table").innerText = ""
     document.querySelector(".table-head.main-table").classList.add("hidden")
     document.querySelector(".table-head.main-table").innerText = ""
+
+    openedTeam = team
 
     let el = document.querySelector(".team-page")
     el.classList.remove("hidden")
@@ -601,7 +606,10 @@ function openTeam(team, comparisons) {
     let comments = ""
     for (let match of data.matches)
         if (match[mapping["notes"]].trim() !== "")
-            comments = comments + match[mapping["notes"]] + "    -" + match[mapping["scouter"]] + " (" + match[mapping["match"]["number"]] + ")\n\n"
+            if (showNamesInTeamComments)
+                comments = comments + match[mapping["notes"]] + "    -" + match[mapping["scouter"]] + " (" + match[mapping["match"]["number"]] + ")\n\n"
+            else
+                comments = comments + match[mapping["notes"]] + " (Match " + match[mapping["match"]["number"]] + ")\n\n"
     comments = comments.trim()
 
     // General Layout Assembly
@@ -1082,6 +1090,11 @@ function graphElement(data, name, teams, width, height) {
 
     calc.setExpressions(expressions);
     return el
+}
+
+document.querySelector("#top_show_hide_comment_names").onclick = function() {
+    showNamesInTeamComments = !showNamesInTeamComments
+    if (openedTeam !== undefined) openTeam(openedTeam)
 }
 
 //#endregion
