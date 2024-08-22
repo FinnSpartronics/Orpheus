@@ -24,7 +24,7 @@ let starred = []
 let usingStar = true
 
 let selected = []
-let showCheckboxes = true
+let showCheckboxes = false
 
 let loading = 0
 
@@ -457,10 +457,23 @@ document.querySelector("#top_theme").onclick = function() {
 //#endregion
 
 //#region Table
+let tableMode = "main"
+let tableTeams = []
+
 // Sets the table header
 function setHeader() {
-    let header = document.querySelector(".table-head")
-    while (header.children.length > 1) header.children[header.children.length-1].remove()
+    let header = document.querySelector(".table-head.main-table")
+    if (tableMode === "team") header = document.querySelector(".table-head.team-table")
+    while (header.children.length > 0) header.children[0].remove()
+
+    let starToggle = document.createElement("span")
+    starToggle.id = "select_star"
+    starToggle.className = "material-symbols-outlined ar"
+    if (usingStar) starToggle.classList.add("filled")
+    starToggle.innerText = "star"
+    starToggle.addEventListener("click", star_toggle)
+    header.appendChild(starToggle)
+
     if (showTeamIcons) {
         let iconPlaceholder = document.createElement("div")
         iconPlaceholder.classList.add("icon")
@@ -513,7 +526,11 @@ function element(team) {
     if (showTeamIcons) {
         let iconParent = document.createElement("button")
         iconParent.className = "icon-holder"
-        iconParent.onclick = () => openTeam(team)
+        if (tableMode === "team")
+            iconParent.onclick = () => {
+                openTeam(team)
+            }
+        else iconParent.onclick = () => openTeam(team)
         let iconEl = document.createElement("img")
         iconEl.src = team_data[team].Icon
         iconEl.alt = "Icon"
@@ -537,28 +554,35 @@ function element(team) {
         el.appendChild(columnEl)
     }
 
-    document.querySelector(".table").appendChild(el)
+    if (tableMode === "team") document.querySelector(".table.team-table").appendChild(el)
+    else document.querySelector(".table.main-table").appendChild(el)
 
     el.style.order = sort(team)
 }
 // Clears the table
 function clearTable() {
-    while (document.querySelector(".table").children.length > 0) {
-        document.querySelector(".table").children[0].remove()
-    }
+    if (tableMode === "team")
+        while (document.querySelector(".table.team-table").children.length > 0)
+            document.querySelector(".table.team-table").children[0].remove()
+    else
+        while (document.querySelector(".table.main-table").children.length > 0)
+            document.querySelector(".table.main-table").children[0].remove()
 }
 // Regenerates the table
 function regenTable() {
     clearTable()
-    for (let team of Object.keys(team_data)) element(team)
+    if (tableMode === "team") for (let team of tableTeams) element(team)
+    else for (let team of Object.keys(team_data)) element(team)
 }
 //#endregion
 
 //#region Team Pages
 function openTeam(team, comparisons) {
     // Hiding table and showing team page element
-    document.querySelector(".table").classList.add("hidden")
-    document.querySelector(".table-head").classList.add("hidden")
+    document.querySelector(".table.main-table").classList.add("hidden")
+    document.querySelector(".table.main-table").innerText = ""
+    document.querySelector(".table-head.main-table").classList.add("hidden")
+    document.querySelector(".table-head.main-table").innerText = ""
 
     let el = document.querySelector(".team-page")
     el.classList.remove("hidden")
@@ -659,6 +683,10 @@ function openTeam(team, comparisons) {
             addComparisonElement(x)
         }
         addGraph()
+
+        tableTeams = JSON.parse(JSON.stringify(comparisons))
+        tableTeams.push(team)
+        regenTable()
     })
     compareHeader.appendChild(addComparisonBtn)
 
@@ -773,6 +801,15 @@ function openTeam(team, comparisons) {
     commentsEl.innerText = comments
     commentsHolder.appendChild(commentsEl)
 
+
+    let teamTableHead = document.createElement("div")
+    teamTableHead.className = "row table-head team-table b"
+    teamData.appendChild(teamTableHead)
+
+    let teamTable = document.createElement("div")
+    teamTable.className = "table team-table"
+    teamData.appendChild(teamTable)
+
     //#endregion
 
     // Final Composition
@@ -784,12 +821,20 @@ function openTeam(team, comparisons) {
 
     el.appendChild(holder)
 
+    tableMode = "team"
+    tableTeams = JSON.parse(JSON.stringify(comparisons))
+    tableTeams.push(team)
     generateTeamMatches(data, team, "")
+    setHeader()
+    regenTable()
 }
 function closeTeam() {
-    document.querySelector(".table").classList.remove("hidden")
-    document.querySelector(".table-head").classList.remove("hidden")
-    document.querySelector(".team-page").classList.add("hidden")
+    document.querySelector(".table.main-table").classList.remove("hidden")
+    document.querySelector(".table-head.main-table").classList.remove("hidden")
+    document.querySelector(".team-page").innerText = ""
+    tableMode = "main"
+    regenTable()
+    setHeader()
 }
 
 function generateTeamMatches(data, team, teamsWith) {
@@ -909,8 +954,8 @@ document.querySelector("#search4915").addEventListener("blur", () => {
 
 function graphElement(data, name, teams) {
     let el = document.createElement("div")
-    el.style.width = "550px"
-    el.style.height = "550px"
+    el.style.width = "500px"
+    el.style.height = "500px"
     let calc = Desmos.GraphingCalculator(el, {expressions: false, settingsMenu: false, xAxisLabel: "Matches", yAxisLabel: name, zoomButtons: false, lockViewport: false, })
 
     function numArrToStrArr(numArr) {

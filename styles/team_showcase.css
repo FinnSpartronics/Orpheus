@@ -139,6 +139,7 @@
     display: flex;
     gap: 4px;
     flex-direction: row;
+    order: -1000001;
 }
 
 .graph-selection-holder {
@@ -165,8 +166,9 @@
 }
 
 .graph {
-    width: 550px;
-    height: 550px;
+    width: 500px;
+    height: 500px;
+    color: black;
 }
 .graph.initial {
     border: 1px solid var(--font);
@@ -176,8 +178,8 @@
     align-items: center;
     font-size: 2rem;
     color: var(--placeholder);
-    min-width: 550px;
-    height: 550px;
+    min-width: 500px;
+    height: 500px;
 }
 
 
