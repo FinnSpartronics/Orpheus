@@ -117,6 +117,7 @@ document.querySelector("#top_load_event").onclick = function() {
     else if (x !== "") {
         window.localStorage.setItem(EVENT, x.toLowerCase())
         loadEvent()
+        document.querySelector("#top_load_event").innerText = x.toUpperCase()
     }
 }
 document.querySelector("#top_year").onclick = function() {
@@ -1395,6 +1396,7 @@ if (window.localStorage.getItem(EVENT) == null || window.localStorage.getItem(EV
     document.querySelector("#err").className = ""
     document.querySelector("#err").innerHTML = (document.querySelector("#err").innerHTML + " No Event").trim()
 } else {
+    document.querySelector("#top_load_event").innerText = window.localStorage.getItem(EVENT).toUpperCase()
     loading = 1
     checkLoading()
     loading = 0
