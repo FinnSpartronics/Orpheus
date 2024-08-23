@@ -203,6 +203,9 @@
     font-size: 1.1rem;
     min-height: 374px;
 }
+.team-comments.nograph {
+    min-height: 80px;
+}
 /*#endregion*/
 
 .drag {

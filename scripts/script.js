@@ -49,7 +49,8 @@ const version = 0.1
 
 const tieValue = 0.5
 
-const desmosColors = [Desmos.Colors.RED, Desmos.Colors.BLUE, Desmos.Colors.GREEN, Desmos.Colors.PURPLE, Desmos.Colors.ORANGE, Desmos.Colors.BLACK]
+let desmosColors
+const desmosScriptSrc = "https://www.desmos.com/api/v1.9/calculator.js?apiKey=dcb31709b452b1cf9dc26972add0fda6"
 
 const alphabet = "abcdefghijklmnopqrstuvwxyz".split('')
 
@@ -692,7 +693,7 @@ function openTeam(team, comparisons) {
     let addComparisonBtn = document.createElement("button")
     addComparisonBtn.innerText = "Add Team"
     addComparisonBtn.addEventListener("click", () => {
-        if (comparisons.length >= desmosColors.length - 1) {
+        if (usingDesmos && comparisons.length >= desmosColors.length - 1) {
             alert("Cannot have more than " + (desmosColors.length - 1) + " teams in comparison. Sorry!")
             return
         }
@@ -768,7 +769,8 @@ function openTeam(team, comparisons) {
 
     let graphOverallHolder = document.createElement("div")
     graphOverallHolder.className = "graph-holder"
-    graphCommentsHolder.appendChild(graphOverallHolder)
+    if (usingDesmos)
+        graphCommentsHolder.appendChild(graphOverallHolder)
 
     let graphControls = document.createElement("div")
     graphControls.className = "graph-controls"
@@ -804,6 +806,7 @@ function openTeam(team, comparisons) {
     graphOverallHolder.appendChild(graphHolder)
 
     function addGraph() {
+        if (!usingDesmos) return
         while (graphHolder.children.length > 0) graphHolder.children[0].remove()
         let graphData = [data.graphs[graph]]
         for (let team of comparisons) {
@@ -829,6 +832,8 @@ function openTeam(team, comparisons) {
 
     let commentsEl = document.createElement("div")
     commentsEl.className = "team-comments"
+    if (!usingDesmos)
+        commentsEl.classList.add("nograph")
     commentsEl.innerText = comments
     commentsHolder.appendChild(commentsEl)
 
@@ -873,6 +878,7 @@ function openTeam(team, comparisons) {
     graphDrag.addEventListener("mousedown", (e) => {
         let startY = e.y
         let startH = graphHolder.clientHeight
+        if (!usingDesmos) startH = commentsEl.clientHeight
         document.body.addEventListener("mousemove", bodyMove)
         document.body.addEventListener("mouseup", bodyUp)
         graphHolder.innerHTML = ""
@@ -880,7 +886,9 @@ function openTeam(team, comparisons) {
         function bodyMove(e) {
             graphHeight = startH - (startY - e.y)
             commentsEl.style.maxHeight = graphHolder.style.width = graphHolder.style.height = graphHeight + "px"
-            graphHeight = graphHolder.offsetHeight
+            if (!usingDesmos) commentsEl.style.minHeight = commentsEl.style.maxHeight
+            if (usingDesmos) graphHeight = graphHolder.offsetHeight
+            else graphHeight = commentsEl.offsetHeight
             maintainedTeamPageSettings["graphHeight"] = graphHeight
             e.preventDefault()
         }
@@ -1380,6 +1388,10 @@ document.querySelector("#top_toggle_use_frcolors").addEventListener("click", () 
     usingFrcColors = !usingFrcColors
     setEnabledAPIS()
 })
+document.querySelector("#top_toggle_use_desmos").addEventListener("click", () => {
+    usingDesmos = !usingDesmos
+    setEnabledAPIS()
+})
 
 // Sets the localStorage enabled apis
 function setEnabledAPIS() {
@@ -1389,6 +1401,8 @@ function setEnabledAPIS() {
 //#endregion
 
 //#region Init
+
+// Year
 year = window.localStorage.getItem(YEAR)
 if (year === null || year < 1992) {
     window.localStorage.setItem(YEAR, new Date().getFullYear().toString())
@@ -1396,6 +1410,7 @@ if (year === null || year < 1992) {
 }
 document.querySelector("#top_year").innerText = year
 
+// Loading saved mappings or data
 scouting_data = window.localStorage.getItem(SCOUTING_DATA)
 scouting_data = scouting_data == null ? undefined : JSON.parse(scouting_data)
 document.querySelector("#top_data_download").disabled = scouting_data === undefined
@@ -1406,8 +1421,12 @@ document.querySelector("#top_mapping_download").disabled = mapping === undefined
 setHeader()
 updateTheme()
 
+// Version and Title
+document.querySelector("title").innerText = toolName
+document.querySelector("#title").innerText = toolName
 document.querySelector("#version_slot").innerText = "v"+version
 
+// Apis
 let apis = window.localStorage.getItem(ENABLED_APIS)
 if (apis === null) {
     window.localStorage.setItem(ENABLED_APIS, JSON.stringify({tba: true, desmos: true, frccolors: true}))
@@ -1418,11 +1437,20 @@ document.querySelector("#top_toggle_use_tba").innerText = "TBA API: " + (usingTB
 
 usingDesmos = apis.desmos
 document.querySelector("#top_toggle_use_desmos").innerText = "Desmos API: " + (usingDesmos ? "Enabled" : "Disabled")
+if (usingDesmos) {
+    let desmosScript = document.createElement("script")
+    document.head.appendChild(desmosScript)
+    desmosScript.src = desmosScriptSrc
+    desmosScript.addEventListener("load", () => {
+        desmosColors = [Desmos.Colors.RED, Desmos.Colors.BLUE, Desmos.Colors.GREEN, Desmos.Colors.PURPLE, Desmos.Colors.ORANGE, Desmos.Colors.BLACK]
+    })
+}
 
 usingFrcColors = apis.frccolors
 document.querySelector("#top_toggle_use_frcolors").innerText = "FRC Colors API: " + (usingFrcColors ? "Enabled" : "Disabled")
 showTeamIcons = usingFrcColors
 
+// Final Prep
 if (window.localStorage.getItem(TBA_KEY) == null || window.localStorage.getItem(TBA_KEY).trim() === "") {
     document.querySelector("#err").className = ""
     document.querySelector("#err").innerHTML = "No API Key"
@@ -1438,7 +1466,5 @@ if (window.localStorage.getItem(EVENT) == null || window.localStorage.getItem(EV
     loadEvent()
 }
 
-document.querySelector("title").innerText = toolName
-document.querySelector("#title").innerText = toolName
 
 //#endregion
