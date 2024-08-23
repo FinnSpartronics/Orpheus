@@ -5,7 +5,8 @@ const EVENT  = "scouting_4915_event"
 const SCOUTING_DATA  = "scouting_4915_scouting_data"
 const MAPPING  = "scouting_4915_mapping"
 const THEME = "scouting_4915_theme"
-const LOCAL_STORAGE_KEYS = [YEAR, TBA_KEY, EVENT, SCOUTING_DATA, MAPPING, THEME]
+const ENABLED_APIS = "scouting_4915_apis"
+const LOCAL_STORAGE_KEYS = [YEAR, TBA_KEY, EVENT, SCOUTING_DATA, MAPPING, THEME, ENABLED_APIS]
 //#endregion
 
 //#region Variables
@@ -53,6 +54,10 @@ const desmosColors = [Desmos.Colors.RED, Desmos.Colors.BLUE, Desmos.Colors.GREEN
 const alphabet = "abcdefghijklmnopqrstuvwxyz".split('')
 
 let showNamesInTeamComments = true
+
+let usingTBA
+let usingDesmos
+let usingFrcColors
 
 //#endregion
 
@@ -626,10 +631,12 @@ function openTeam(team, comparisons) {
     basicInfo.className = "team-info-basic"
     teamInfo.appendChild(basicInfo)
 
-    let teamLogo = document.createElement("img")
-    teamLogo.className = "logo-large"
-    teamLogo.src = data.Icon
-    basicInfo.appendChild(teamLogo)
+    if (showTeamIcons) {
+        let teamLogo = document.createElement("img")
+        teamLogo.className = "logo-large"
+        teamLogo.src = data.Icon
+        basicInfo.appendChild(teamLogo)
+    }
 
     let teamDescription = document.createElement("div")
     teamDescription.className = "team-info-description"
@@ -1124,23 +1131,25 @@ function setColumnEditPanel() {
     columnEditPanel.appendChild(button)
     columnEditPanel.appendChild(document.createElement("margin"))
 
-    let iconCheckbox = document.createElement("input")
-    iconCheckbox.type = "checkbox"
-    iconCheckbox.id = "checkbox_enableIcons"
-    iconCheckbox.checked = showTeamIcons
-    iconCheckbox.addEventListener("change", () => {
-        showTeamIcons = iconCheckbox.checked
-        setHeader()
-    })
-    let iconCheckboxLabel = document.createElement("label")
-    iconCheckboxLabel.innerText = "Team Icons"
-    iconCheckboxLabel.setAttribute("for", iconCheckbox.id)
+    if (usingFrcColors) {
+        let iconCheckbox = document.createElement("input")
+        iconCheckbox.type = "checkbox"
+        iconCheckbox.id = "checkbox_enableIcons"
+        iconCheckbox.checked = showTeamIcons
+        iconCheckbox.addEventListener("change", () => {
+            showTeamIcons = iconCheckbox.checked
+            setHeader()
+        })
+        let iconCheckboxLabel = document.createElement("label")
+        iconCheckboxLabel.innerText = "Team Icons"
+        iconCheckboxLabel.setAttribute("for", iconCheckbox.id)
 
-    let icon = document.createElement("div")
-    icon.appendChild(iconCheckbox)
-    icon.appendChild(iconCheckboxLabel)
-    columnEditPanel.appendChild(icon)
-    columnEditPanel.appendChild(document.createElement("margin"))
+        let icon = document.createElement("div")
+        icon.appendChild(iconCheckbox)
+        icon.appendChild(iconCheckboxLabel)
+        columnEditPanel.appendChild(icon)
+        columnEditPanel.appendChild(document.createElement("margin"))
+    }
 
     let list = document.createElement("div")
     list.class = "list"
@@ -1319,7 +1328,7 @@ function star_toggle() {
 }
 //#endregion
 
-//#region File and API loading functions (+ download)
+//#region File and API loading functions (+ download, API Toggles)
 // Loads data from TheBlueAlliance
 async function load(sub, onload) {
     loading++
@@ -1366,6 +1375,17 @@ function download(filename, text) {
     el.click()
     //document.removeChild(el)
 }
+
+document.querySelector("#top_toggle_use_frcolors").addEventListener("click", () => {
+    usingFrcColors = !usingFrcColors
+    setEnabledAPIS()
+})
+
+// Sets the localStorage enabled apis
+function setEnabledAPIS() {
+    window.localStorage.setItem(ENABLED_APIS, JSON.stringify({tba: usingTBA, desmos: usingDesmos, frccolors: usingFrcColors}))
+    location.reload()
+}
 //#endregion
 
 //#region Init
@@ -1387,6 +1407,21 @@ setHeader()
 updateTheme()
 
 document.querySelector("#version_slot").innerText = "v"+version
+
+let apis = window.localStorage.getItem(ENABLED_APIS)
+if (apis === null) {
+    window.localStorage.setItem(ENABLED_APIS, JSON.stringify({tba: true, desmos: true, frccolors: true}))
+    apis = {tba: true, desmos: true, frccolors: true}
+} else apis = JSON.parse(apis)
+usingTBA = apis.tba
+document.querySelector("#top_toggle_use_tba").innerText = "TBA API: " + (usingTBA ? "Enabled" : "Disabled")
+
+usingDesmos = apis.desmos
+document.querySelector("#top_toggle_use_desmos").innerText = "Desmos API: " + (usingDesmos ? "Enabled" : "Disabled")
+
+usingFrcColors = apis.frccolors
+document.querySelector("#top_toggle_use_frcolors").innerText = "FRC Colors API: " + (usingFrcColors ? "Enabled" : "Disabled")
+showTeamIcons = usingFrcColors
 
 if (window.localStorage.getItem(TBA_KEY) == null || window.localStorage.getItem(TBA_KEY).trim() === "") {
     document.querySelector("#err").className = ""
