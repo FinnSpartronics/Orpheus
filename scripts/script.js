@@ -1,3 +1,4 @@
+// TODO: Add a projector mode that makes text bigger and adds more margin/padding around body, and makes dots/lines bigger in graph
 //#region Local Storage Keys
 let YEAR = "scouting_4915_year"
 const TBA_KEY  = "scouting_4915_apikey"
