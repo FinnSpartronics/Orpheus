@@ -57,6 +57,7 @@ const alphabet = "abcdefghijklmnopqrstuvwxyz".split('')
 let showNamesInTeamComments = true
 
 let usingTBA
+let usingTBAMatches
 let usingDesmos
 let usingFrcColors
 
@@ -136,8 +137,8 @@ document.querySelector("#top_year").onclick = function() {
 }
 function loadEvent() {
     loading++
-    if (usingTBA)
-        load("event/" + year + window.localStorage.getItem(EVENT) + "/teams", function(data) {
+    if (usingTBA) {
+        load("event/" + year + window.localStorage.getItem(EVENT) + "/teams", function (data) {
             event_data = data
             for (let team of data) {
                 team_data[team["team_number"]] = {}
@@ -146,24 +147,31 @@ function loadEvent() {
                 team_data[team["team_number"]].TBA = team
                 team_data[team["team_number"]].TBA["matches"] = {}
                 team_data[team["team_number"]].Icon = "https://api.frc-colors.com/internal/team/" + team["team_number"] + "/avatar.png"
-                loading++
-                load("team/frc" + team["team_number"] + "/event/" + year + window.localStorage.getItem(EVENT) + "/matches", function(data) {
-                    loading--
-                    checkLoading()
-                    let matchesWon = 0
-                    for (let match of data) {
-                        matchesWon += checkTeamWonMatch(match, team["team_number"])
-                        if (match.comp_level === "qm")
-                            team_data[team["team_number"]].TBA["matches"][match.match_number] = match
-                    }
-                    team_data[team["team_number"]]["Winrate"] = Math.round(rounding*(matchesWon/data.length))/rounding
-                    regenTable()
-                })
+                if (usingTBAMatches) {
+                    loading++
+                    load("team/frc" + team["team_number"] + "/event/" + year + window.localStorage.getItem(EVENT) + "/matches", function (data) {
+                        loading--
+                        checkLoading()
+                        let matchesWon = 0
+                        for (let match of data) {
+                            matchesWon += checkTeamWonMatch(match, team["team_number"])
+                            if (match.comp_level === "qm")
+                                team_data[team["team_number"]].TBA["matches"][match.match_number] = match
+                        }
+                        team_data[team["team_number"]]["Winrate"] = Math.round(rounding * (matchesWon / data.length)) / rounding
+                        regenTable()
+                    })
+                }
                 regenTable()
             }
             loading--
             checkLoading()
         })
+        if (!usingTBAMatches) {
+            hiddenColumns.push("Winrate")
+            columns.splice(columns.indexOf("Winrate"), 1)
+        }
+    }
     else {
         hiddenColumns.push("Name")
         hiddenColumns.push("Winrate")
@@ -678,12 +686,14 @@ function openTeam(team, comparisons) {
         teamDescriptionRemainder.innerText = "Rookie Year: " + data.TBA.rookie_year + "\n" + data.TBA.city + ", " + data.TBA.state_prov
         teamDescription.appendChild(teamDescriptionRemainder)
 
-        let matchSearch = document.createElement("input")
-        matchSearch.placeholder = "Comma separated team numbers (names coming soon)"
-        matchSearch.onchange = matchSearch.onkeyup = matchSearch.oninput = function() {
-            generateTeamMatches(data, team, matchSearch.value)
+        if (usingTBAMatches) {
+            let matchSearch = document.createElement("input")
+            matchSearch.placeholder = "Comma separated team numbers (names coming soon)"
+            matchSearch.onchange = matchSearch.onkeyup = matchSearch.oninput = function() {
+                generateTeamMatches(data, team, matchSearch.value)
+            }
+            teamInfo.appendChild(matchSearch)
         }
-        teamInfo.appendChild(matchSearch)
     }
 
     let matches = document.createElement("div")
@@ -952,7 +962,7 @@ function generateTeamMatches(data, team, teamsWith) {
     if (!skipTeamCheck)
         teamsWith = teamsWith.trim().split(",")
 
-    if (usingTBA)
+    if (usingTBA && usingTBAMatches)
         for (let match of Object.keys(data.TBA.matches)) {
             let mEl = document.createElement("div")
             mEl.className = "match"
@@ -1414,8 +1424,26 @@ function download(filename, text) {
     //document.removeChild(el)
 }
 
-document.querySelector("#top_toggle_use_tba").addEventListener("click", () => {
+document.querySelector("#top_toggle_use_allapi").addEventListener("click", () => {
+    usingTBAMatches = true
+    usingTBA = true
+    usingDesmos = true
+    usingFrcColors = true
+    setEnabledAPIS()
+})
+document.querySelector("#top_toggle_use_noneapi").addEventListener("click", () => {
+    usingTBAMatches = false
+    usingTBA = false
+    usingDesmos = false
+    usingFrcColors = false
+    setEnabledAPIS()
+})
+document.querySelector("#top_toggle_use_tbaevent").addEventListener("click", () => {
     usingTBA = !usingTBA
+    setEnabledAPIS()
+})
+document.querySelector("#top_toggle_use_tbamatch").addEventListener("click", () => {
+    usingTBAMatches = !usingTBAMatches
     setEnabledAPIS()
 })
 document.querySelector("#top_toggle_use_desmos").addEventListener("click", () => {
@@ -1429,7 +1457,7 @@ document.querySelector("#top_toggle_use_frcolors").addEventListener("click", () 
 
 // Sets the localStorage enabled apis
 function setEnabledAPIS() {
-    window.localStorage.setItem(ENABLED_APIS, JSON.stringify({tba: usingTBA, desmos: usingDesmos, frccolors: usingFrcColors}))
+    window.localStorage.setItem(ENABLED_APIS, JSON.stringify({tbaevent: usingTBA, tbamatch: usingTBAMatches, desmos: usingDesmos, frccolors: usingFrcColors}))
     location.reload()
 }
 //#endregion
@@ -1463,12 +1491,20 @@ document.querySelector("#version_slot").innerText = "v"+version
 // Apis
 let apis = window.localStorage.getItem(ENABLED_APIS)
 if (apis === null) {
-    window.localStorage.setItem(ENABLED_APIS, JSON.stringify({tba: true, desmos: true, frccolors: true}))
-    apis = {tba: true, desmos: true, frccolors: true}
+    window.localStorage.setItem(ENABLED_APIS, JSON.stringify({tbaevent: true, tbamatch: true, desmos: true, frccolors: true}))
+    apis = {tbaevent: true, tbamatch: true, desmos: true, frccolors: true}
 } else apis = JSON.parse(apis)
 
-usingTBA = apis.tba
-document.querySelector("#top_toggle_use_tba").innerText = "TBA API: " + (usingTBA ? "Enabled" : "Disabled")
+
+usingTBA = apis.tbaevent
+document.querySelector("#top_toggle_use_tbaevent").innerText = "TBA API: " + (usingTBA ? "Enabled" : "Disabled")
+
+usingTBAMatches = apis.tbamatch
+document.querySelector("#top_toggle_use_tbamatch").innerText = "TBA API (Matches): " + (usingTBAMatches ? "Enabled" : "Disabled")
+if (!usingTBA) {
+    document.querySelector("#top_toggle_use_tbamatch").innerText = "TBA API (Matches): Disabled"
+    document.querySelector("#top_toggle_use_tbamatch").disabled = true
+}
 
 usingDesmos = apis.desmos
 document.querySelector("#top_toggle_use_desmos").innerText = "Desmos API: " + (usingDesmos ? "Enabled" : "Disabled")
@@ -1486,11 +1522,10 @@ document.querySelector("#top_toggle_use_frcolors").innerText = "FRC Colors API: 
 showTeamIcons = usingFrcColors
 
 // Final Prep
-if (usingTBA && (window.localStorage.getItem(TBA_KEY) == null || window.localStorage.getItem(TBA_KEY).trim() === "")) {
+if (usingTBA && (window.localStorage.getItem(TBA_KEY) == null || window.localStorage.getItem(TBA_KEY).trim() === "" || window.localStorage.getItem(TBA_KEY) === "null")) {
     document.querySelector("#err").className = ""
     document.querySelector("#err").innerHTML = "No API Key for TheBlueAlliance"
-}
-if (window.localStorage.getItem(EVENT) == null || window.localStorage.getItem(EVENT).trim() === "") {
+} else if (window.localStorage.getItem(EVENT) == null || window.localStorage.getItem(EVENT).trim() === "") {
     document.querySelector("#err").className = ""
     document.querySelector("#err").innerHTML = (document.querySelector("#err").innerHTML + " No Event").trim()
 } else {
