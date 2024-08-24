@@ -13,7 +13,7 @@ const LOCAL_STORAGE_KEYS = [YEAR, TBA_KEY, EVENT, SCOUTING_DATA, MAPPING, THEME,
 //#region Variables
 const MISSING_LOGO = "https://frc-cdn.firstinspires.org/eventweb_frc/ProgramLogos/FIRSTicon_RGB_withTM.png"
 
-const toolName = "FRC Scouting Tool"
+const toolName = "Pythia"
 
 let event_data
 let scouting_data
@@ -1487,7 +1487,7 @@ updateTheme()
 // Version and Title
 document.querySelector("title").innerText = toolName
 document.querySelector("#title").innerText = toolName
-document.querySelector("#version_slot").innerText = "v"+version
+document.querySelector("#version_slot").innerText = toolName + " v"+version
 
 // Apis
 let apis = window.localStorage.getItem(ENABLED_APIS)
