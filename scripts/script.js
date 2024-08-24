@@ -136,33 +136,41 @@ document.querySelector("#top_year").onclick = function() {
 }
 function loadEvent() {
     loading++
-    load("event/" + year + window.localStorage.getItem(EVENT) + "/teams", function(data) {
-        event_data = data
-        for (let team of data) {
-            team_data[team["team_number"]] = {}
-            team_data[team["team_number"]].Team_Number = team["team_number"]
-            team_data[team["team_number"]].Name = team["nickname"]
-            team_data[team["team_number"]].TBA = team
-            team_data[team["team_number"]].TBA["matches"] = {}
-            team_data[team["team_number"]].Icon = "https://api.frc-colors.com/internal/team/" + team["team_number"] + "/avatar.png"
-            loading++
-            load("team/frc" + team["team_number"] + "/event/" + year + window.localStorage.getItem(EVENT) + "/matches", function(data) {
-                loading--
-                checkLoading()
-                let matchesWon = 0
-                for (let match of data) {
-                    matchesWon += checkTeamWonMatch(match, team["team_number"])
-                    if (match.comp_level === "qm")
-                        team_data[team["team_number"]].TBA["matches"][match.match_number] = match
-                }
-                team_data[team["team_number"]]["Winrate"] = Math.round(rounding*(matchesWon/data.length))/rounding
+    if (usingTBA)
+        load("event/" + year + window.localStorage.getItem(EVENT) + "/teams", function(data) {
+            event_data = data
+            for (let team of data) {
+                team_data[team["team_number"]] = {}
+                team_data[team["team_number"]].Team_Number = team["team_number"]
+                team_data[team["team_number"]].Name = team["nickname"]
+                team_data[team["team_number"]].TBA = team
+                team_data[team["team_number"]].TBA["matches"] = {}
+                team_data[team["team_number"]].Icon = "https://api.frc-colors.com/internal/team/" + team["team_number"] + "/avatar.png"
+                loading++
+                load("team/frc" + team["team_number"] + "/event/" + year + window.localStorage.getItem(EVENT) + "/matches", function(data) {
+                    loading--
+                    checkLoading()
+                    let matchesWon = 0
+                    for (let match of data) {
+                        matchesWon += checkTeamWonMatch(match, team["team_number"])
+                        if (match.comp_level === "qm")
+                            team_data[team["team_number"]].TBA["matches"][match.match_number] = match
+                    }
+                    team_data[team["team_number"]]["Winrate"] = Math.round(rounding*(matchesWon/data.length))/rounding
+                    regenTable()
+                })
                 regenTable()
-            })
-            regenTable()
-        }
-        loading--
-        checkLoading()
-    })
+            }
+            loading--
+            checkLoading()
+        })
+    else {
+        hiddenColumns.push("Name")
+        hiddenColumns.push("Winrate")
+        columns.splice(columns.indexOf("Name"),1)
+        columns.splice(columns.indexOf("Winrate"),1)
+        processData()
+    }
 }
 function checkTeamWonMatch(match, team) {
     team = "frc" + team
@@ -234,20 +242,24 @@ function processData() {
         } else { // Detect format of team number
             team = i[mapping["team"]].toString().trim()
             if (team.startsWith("frc") && !isNaN(parseInt(team.substring(3, team.length)))) teamFormat = "frc#" // Checks if it is frc# format
-            else if (isNaN(parseInt(team))) teamFormat = "#" // Checks if it is team number format
+            else if (!isNaN(parseInt(team))) teamFormat = "#" // Checks if it is team number format
             else teamFormat = "name" // If none of the above, it assumes team name format.
         }
         if (teamFormat === "frc#") team = team.substring(3, team.length) // Gets team number
         if (teamFormat === "name") {
-            for (let key of Object.keys(team_data)) { // Loops through all teams in team_data to see if they are
-                if (team_data[key].Name.toLowerCase().trim() === team) {
-                    team = key
-                    break
+            if (usingTBA)
+                for (let key of Object.keys(team_data)) { // Loops through all teams in team_data to see if they are
+                    if (team_data[key].Name.toLowerCase().trim() === team) {
+                        team = key
+                        break
+                    }
                 }
-            }
+            else
+                console.log("Cannot use teamFormat mapping type name when TBA is disabled (for now)") // Todo - add team name format support when TBA is disabled
         }
         // If in # format, nothing needs to be done.
 
+        if (!usingTBA) team_data[team] = {Team_Number: team, Icon: "https://api.frc-colors.com/internal/team/" + team + "/avatar.png"}
         if (typeof team_data[team] !== "undefined") { // Only does calculations if team exists (in case someone put 4951 instead of 4915, no reason to include typos or teams that aren't in the event)
             if (typeof data[team] === "undefined") data[team] = {"averages": {}, "calculated": {}, "calculated_averages": {}, "graphs": {}, "matches": []}
             for (let average of Object.keys(mapping["averages"])) {
@@ -645,7 +657,8 @@ function openTeam(team, comparisons) {
 
     let teamName = document.createElement("div")
     teamName.className = "team-name"
-    teamName.innerText = data.Team_Number + " " + data.Name.substring(0, 20) + (data.Name.length > 20 ? "..." : "")
+    if (data.Name === undefined) teamName.innerText = data.Team_Number
+    else teamName.innerText = data.Team_Number + " " + data.Name.substring(0, 20) + (data.Name.length > 20 ? "..." : "")
     teamName.title = data.Name
     teamDescription.appendChild(teamName)
 
@@ -660,16 +673,18 @@ function openTeam(team, comparisons) {
     starEl.innerText = "star"
     teamName.appendChild(starEl)
 
-    let teamDescriptionRemainder = document.createElement("div")
-    teamDescriptionRemainder.innerText = "Rookie Year: " + data.TBA.rookie_year + "\n" + data.TBA.city + ", " + data.TBA.state_prov
-    teamDescription.appendChild(teamDescriptionRemainder)
+    if (usingTBA) {
+        let teamDescriptionRemainder = document.createElement("div")
+        teamDescriptionRemainder.innerText = "Rookie Year: " + data.TBA.rookie_year + "\n" + data.TBA.city + ", " + data.TBA.state_prov
+        teamDescription.appendChild(teamDescriptionRemainder)
 
-    let matchSearch = document.createElement("input")
-    matchSearch.placeholder = "Comma separated team numbers (names coming soon)"
-    matchSearch.onchange = matchSearch.onkeyup = matchSearch.oninput = function() {
-        generateTeamMatches(data, team, matchSearch.value)
+        let matchSearch = document.createElement("input")
+        matchSearch.placeholder = "Comma separated team numbers (names coming soon)"
+        matchSearch.onchange = matchSearch.onkeyup = matchSearch.oninput = function() {
+            generateTeamMatches(data, team, matchSearch.value)
+        }
+        teamInfo.appendChild(matchSearch)
     }
-    teamInfo.appendChild(matchSearch)
 
     let matches = document.createElement("div")
     matches.className = "matches"
@@ -732,7 +747,8 @@ function openTeam(team, comparisons) {
         compareEl.appendChild(starEl)
 
         let compareTeamName = document.createElement("div")
-        compareTeamName.innerText = c + " " + team_data[c].Name
+        compareTeamName.innerText = c
+        if (usingTBA) compareTeamName += " " + team_data[c].Name
         compareTeamName.className = "compare-team-name"
         compareTeamName.addEventListener("click", () => {
             comparisons.splice(comparisons.indexOf(c), 1, team)
@@ -936,62 +952,73 @@ function generateTeamMatches(data, team, teamsWith) {
     if (!skipTeamCheck)
         teamsWith = teamsWith.trim().split(",")
 
-    for (let match of Object.keys(data.TBA.matches)) {
+    if (usingTBA)
+        for (let match of Object.keys(data.TBA.matches)) {
+            let mEl = document.createElement("div")
+            mEl.className = "match"
+
+            let matchData = data.TBA.matches[match]
+            let alliance = matchData.alliances.blue.team_keys.includes(data.TBA.key) ? "blue" : "red"
+
+            //#region Children
+            let matchNumber = document.createElement("div")
+            matchNumber.className = "match-number"
+            matchNumber.innerText = match
+            mEl.appendChild(matchNumber)
+
+            let icon = "skull" // Lose
+            if (matchData.winning_alliance === alliance) icon = "trophy" // Win
+            else if (matchData.winning_alliance === "") icon = "balance" // Tie
+            let iconEl = document.createElement("span")
+            iconEl.className = "material-symbols-outlined"
+            iconEl.innerText = icon
+            matchNumber.classList.add(icon)
+            matchNumber.appendChild(iconEl)
+
+            let firstAlliance = document.createElement("div")
+            firstAlliance.className = "match-alliance " + alliance
+            for (let t of matchData.alliances[alliance].team_keys) {
+                let tEl = document.createElement("div")
+                tEl.innerText = t.replace("frc", "")
+                if (t.replace("frc", "") === team) tEl.style.order = "-10000"
+                firstAlliance.appendChild(tEl)
+            }
+            mEl.appendChild(firstAlliance)
+
+            let secondAlliance = document.createElement("div")
+            secondAlliance.className = "match-alliance " + (alliance === "blue" ? "red" : "blue")
+            for (let t of matchData.alliances[(alliance === "blue" ? "red" : "blue")].team_keys) {
+                let tEl = document.createElement("div")
+                tEl.innerText = t.replace("frc", "")
+                secondAlliance.appendChild(tEl)
+            }
+            mEl.appendChild(secondAlliance)
+
+            mEl.title = icon.replace("skull", "Lost").replace("trophy", "Won").replace("balance", "Tie")
+                        + " " + matchData.alliances[alliance].score + " | " + matchData.alliances[(alliance === "blue" ? "red" : "blue")].score
+            //#endregion
+
+            let teams = matchData.alliances.blue.team_keys.concat(matchData.alliances.red.team_keys)
+            for (let t in teams) teams[t] = teams[t].replace("frc", "")
+
+            if (skipTeamCheck) document.querySelector(".matches").appendChild(mEl)
+            else {
+                let containsTeam = false
+                for (let t of teamsWith)
+                    if (teams.includes(t.trim())) containsTeam = true
+                if (containsTeam)
+                    document.querySelector(".matches").appendChild(mEl)
+            }
+        }
+    else {
         let mEl = document.createElement("div")
+        mEl.innerText = "Matches: "
         mEl.className = "match"
-
-        let matchData = data.TBA.matches[match]
-        let alliance = matchData.alliances.blue.team_keys.includes(data.TBA.key) ? "blue" : "red"
-
-        //#region Children
-        let matchNumber = document.createElement("div")
-        matchNumber.className = "match-number"
-        matchNumber.innerText = match
-        mEl.appendChild(matchNumber)
-
-        let icon = "skull" // Lose
-        if (matchData.winning_alliance === alliance) icon = "trophy" // Win
-        else if (matchData.winning_alliance === "") icon = "balance" // Tie
-        let iconEl = document.createElement("span")
-        iconEl.className = "material-symbols-outlined"
-        iconEl.innerText = icon
-        matchNumber.classList.add(icon)
-        matchNumber.appendChild(iconEl)
-
-        let firstAlliance = document.createElement("div")
-        firstAlliance.className = "match-alliance " + alliance
-        for (let t of matchData.alliances[alliance].team_keys) {
-            let tEl = document.createElement("div")
-            tEl.innerText = t.replace("frc", "")
-            if (t.replace("frc", "") === team) tEl.style.order = "-10000"
-            firstAlliance.appendChild(tEl)
+        for (let match of Object.keys(data.matches)) {
+            mEl.innerText += data.matches[match][mapping["match"]["number"]] + ", "
         }
-        mEl.appendChild(firstAlliance)
-
-        let secondAlliance = document.createElement("div")
-        secondAlliance.className = "match-alliance " + (alliance === "blue" ? "red" : "blue")
-        for (let t of matchData.alliances[(alliance === "blue" ? "red" : "blue")].team_keys) {
-            let tEl = document.createElement("div")
-            tEl.innerText = t.replace("frc", "")
-            secondAlliance.appendChild(tEl)
-        }
-        mEl.appendChild(secondAlliance)
-
-        mEl.title = icon.replace("skull", "Lost").replace("trophy", "Won").replace("balance", "Tie")
-                    + " " + matchData.alliances[alliance].score + " | " + matchData.alliances[(alliance === "blue" ? "red" : "blue")].score
-        //#endregion
-
-        let teams = matchData.alliances.blue.team_keys.concat(matchData.alliances.red.team_keys)
-        for (let t in teams) teams[t] = teams[t].replace("frc", "")
-
-        if (skipTeamCheck) document.querySelector(".matches").appendChild(mEl)
-        else {
-            let containsTeam = false
-            for (let t of teamsWith)
-                if (teams.includes(t.trim())) containsTeam = true
-            if (containsTeam)
-                document.querySelector(".matches").appendChild(mEl)
-        }
+        mEl.innerText = mEl.innerText.substring(0, mEl.innerText.length - 2)
+        document.querySelector(".matches").appendChild(mEl)
     }
 }
 
@@ -1084,11 +1111,14 @@ function graphElement(data, name, teams, width, height) {
         let v1 = alphabet[i*2]
         let v2 = alphabet[(i*2)+1]
 
+        let teamName = ""
+        if (usingTBA) teamName = team_data[teams[i]].Name
+
         expressions.push({latex: "y_{" + i + "}\\sim " + v1 + "x_{" + i + "} + " + v2, hidden: true})
-        expressions.push({latex: v1 + "x + " + v2 + " = y", color: desmosColors[i], lineWidth: 6, lineOpacity: .6, label: teams[i] + " " + team_data[teams[i]].Name})
+        expressions.push({latex: v1 + "x + " + v2 + " = y", color: desmosColors[i], lineWidth: 6, lineOpacity: .6, label: teams[i] + " " + teamName})
         expressions.push({
             latex: "(" + maxX * 1.15 + "," + ((1.2 - ((i + 1)*.05)) * maxY ) + ")",
-            label: teams[i] + " " + team_data[teams[i]].Name.substring(0, 20) + (team_data[teams[i]].Name.length >= 20 ? "..." : ""),
+            label: teams[i] + " " + teamName.substring(0, 20) + (teamName.length >= 20 ? "..." : ""),
             showLabel: true,
             labelOrientation: Desmos.LabelOrientations.LEFT,
             color: desmosColors[i],
@@ -1384,12 +1414,16 @@ function download(filename, text) {
     //document.removeChild(el)
 }
 
-document.querySelector("#top_toggle_use_frcolors").addEventListener("click", () => {
-    usingFrcColors = !usingFrcColors
+document.querySelector("#top_toggle_use_tba").addEventListener("click", () => {
+    usingTBA = !usingTBA
     setEnabledAPIS()
 })
 document.querySelector("#top_toggle_use_desmos").addEventListener("click", () => {
     usingDesmos = !usingDesmos
+    setEnabledAPIS()
+})
+document.querySelector("#top_toggle_use_frcolors").addEventListener("click", () => {
+    usingFrcColors = !usingFrcColors
     setEnabledAPIS()
 })
 
@@ -1432,6 +1466,7 @@ if (apis === null) {
     window.localStorage.setItem(ENABLED_APIS, JSON.stringify({tba: true, desmos: true, frccolors: true}))
     apis = {tba: true, desmos: true, frccolors: true}
 } else apis = JSON.parse(apis)
+
 usingTBA = apis.tba
 document.querySelector("#top_toggle_use_tba").innerText = "TBA API: " + (usingTBA ? "Enabled" : "Disabled")
 
@@ -1451,18 +1486,20 @@ document.querySelector("#top_toggle_use_frcolors").innerText = "FRC Colors API: 
 showTeamIcons = usingFrcColors
 
 // Final Prep
-if (window.localStorage.getItem(TBA_KEY) == null || window.localStorage.getItem(TBA_KEY).trim() === "") {
+if (usingTBA && (window.localStorage.getItem(TBA_KEY) == null || window.localStorage.getItem(TBA_KEY).trim() === "")) {
     document.querySelector("#err").className = ""
-    document.querySelector("#err").innerHTML = "No API Key"
+    document.querySelector("#err").innerHTML = "No API Key for TheBlueAlliance"
 }
 if (window.localStorage.getItem(EVENT) == null || window.localStorage.getItem(EVENT).trim() === "") {
     document.querySelector("#err").className = ""
     document.querySelector("#err").innerHTML = (document.querySelector("#err").innerHTML + " No Event").trim()
 } else {
     document.querySelector("#top_load_event").innerText = window.localStorage.getItem(EVENT).toUpperCase()
-    loading = 1
-    checkLoading()
-    loading = 0
+    if (usingTBA) {
+        loading = 1
+        checkLoading()
+        loading = 0
+    }
     loadEvent()
 }
 
