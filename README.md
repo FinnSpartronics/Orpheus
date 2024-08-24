@@ -37,7 +37,7 @@ They can be toggled on or off in the **APIs** menu at the top of the screen.
 
 Event and Year settings will not apply if TBA API is disabled.
 
-###2.1 Event
+### 2.1 Event
 You can set what event you are looking at by finding whatever your event code is, for example:
 
 WABON - PNW District Bonney Lake Event,
@@ -45,7 +45,7 @@ WABON - PNW District Bonney Lake Event,
 and typing that event code into the **Set Event** button located inside of the **Event** menu. 
 If you have previously entered an event, the **Set Event** button will instead show the event code for that previous event.
 
-###2.2 Year
+### 2.2 Year
 When you first load the FRC Scouting Tool, the year will be assumed based on the current year, 
 but you can change the year by going into the **Event** menu and clicking on the year button, which will display whatever the currently selected year is.
 
@@ -103,13 +103,13 @@ but there must be the following four bits of data in some form or another:
 To put your data into the tool, open the **File** menu at the top of the screen, and press **Import Data**. 
 You will be prompted for the file that contains your scouting data. It will automatically be saved for future sessions.
 
-###3.2 Data Mappings
+### 3.2 Data Mappings
 So, the tool has your data, but it doesn't really know what to do with it. That's where data mappings come in. 
 Data mappings tell the tool what to do with your data.
 
 This is the most complicated part of the tool, but once it is set up for a season it likely will not need to be changed.
 
-####3.2.1 Data Mapping Format
+#### 3.2.1 Data Mapping Format
 Data mappings are stored in JSON files.
 
 Here is an empty template for a data mapping:
@@ -160,7 +160,7 @@ Your mapping would look like this:
 }
 ```
 
-####3.2.2 Team Format
+#### 3.2.2 Team Format
 "team" may be in either of two formats:
 ```json
 {
@@ -184,7 +184,7 @@ If you use the second format for "team", just put the key in that spot. The form
 
 NOTE: If you use the name format for your scouting data, The Blue Alliance API is required, and the FRC Scouting Tool will not work when you turn TBA off.
 
-####3.2.2 Custom Table Columns
+#### 3.2.2 Custom Table Columns
 
 So, how do you get your data onto the table? Thats where averages, calculated, and calculated_averages come in handy.
 
@@ -210,7 +210,7 @@ For example, if the name of your key in your data was "Auto amp notes scored", y
 ```
 The column that would show up on the table would be whatever is on the left, and the data comes from whatever is on the right.
 
-####3.2.3 Calculations (Calculated and Calculated Averages)
+#### 3.2.3 Calculations (Calculated and Calculated Averages)
 
 The next two work in a similar way, but allow you to do calculations with multiple parts of data.
 
@@ -279,13 +279,13 @@ You can also use "pi" or "e" anywhere in your calculations.
 
 If you want to, you can also have an 1 item array with just a key inside, for example: `["Auto amp notes scored"]`. This may be useful for graphs.
 
-####3.2.4 Graphs
+#### 3.2.4 Graphs
 
 Graphs use the same syntax as calculated and calculated averages, but the data will be displayed in graph form on a team page instead of on the main table.
 
 Simply put your calculation in the "graphs" area like you would for calculated or calculated_averages
 
-####3.2.5 Example of a finished mapping
+#### 3.2.5 Example of a finished mapping
 Here is an example of a finished data mapping. Please note that this is only for example use, and your mapping will most likely be very different from this.
 ```json
 {
@@ -316,14 +316,14 @@ Here is an example of a finished data mapping. Please note that this is only for
 }
 ```
 
-####3.2.6 Putting your mapping into the FRC Scouting Tool
+#### 3.2.6 Putting your mapping into the FRC Scouting Tool
 To put your mapping file into the tool, follow the following instructions.
 1. Open the **File** menu
 2. Press **Import mapping**
 3. Select your mapping file
 Your mapping will be saved in the browser for future use.
    
-###3.3 Downloading saved data or mappings
+### 3.3 Downloading saved data or mappings
 You can also download your saved data or mappings in case you lose the original files. Please note that sometimes the browser may glitch and lose your saved data.
 
 Download your saved data or mapping by opening the **File** menu and pressing the button for whatever you want to download. 
