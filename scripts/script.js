@@ -758,7 +758,7 @@ function openTeam(team, comparisons) {
 
         let compareTeamName = document.createElement("div")
         compareTeamName.innerText = c
-        if (usingTBA) compareTeamName += " " + team_data[c].Name
+        if (usingTBA) compareTeamName.innerText += " " + team_data[c].Name
         compareTeamName.className = "compare-team-name"
         compareTeamName.addEventListener("click", () => {
             comparisons.splice(comparisons.indexOf(c), 1, team)
