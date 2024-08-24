@@ -186,19 +186,145 @@ NOTE: If you use the name format for your scouting data, The Blue Alliance API i
 
 ####3.2.2 Custom Table Columns
 
+So, how do you get your data onto the table? Thats where averages, calculated, and calculated_averages come in handy.
+
+| Type | What it does |
+| ---- | ---- |
+| averages | Takes the average of that key for all matches in a team
+| calculated | Adds up all of some calculations for all matches in a team |
+| calculated_averages | Takes the average of some calculations for all matches in a team |
+
+Lets start with averages first. Like above with stuff like "scouter" or "notes", you just put in the key for whatever data you want to be averaged.
+But what do you put first? JSON format works on a `key: value` system, so you can't just put the key for what you want. 
+Well, first you put the name of the table column. 
+
+For example, if the name of your key in your data was "Auto amp notes scored", you could do anything like this, or come up with your own:
+```json
+  {
+    "averages": {
+      "Auto amp notes scored": "Auto amp notes scored",
+      "Auto amp notes": "Auto amp notes scored",
+      "Amp (Auto)": "Auto amp notes scored"
+    }
+  }
+```
+The column that would show up on the table would be whatever is on the left, and the data comes from whatever is on the right.
+
+####3.2.3 Calculations (Calculated and Calculated Averages)
+
+The next two work in a similar way, but allow you to do calculations with multiple parts of data.
+
+The calculation format is kinda weird. To start, there are the following operations:
+> Addition +
+> 
+> Subtraction -
+> 
+> Multiplication *
+> 
+> Division /
+> 
+> Power ^, pow
+> 
+> Equality =
+
+Most of these are self-explanatory, except for equality.\
+Lets say that you have `a = b`. How this would work is if a is equal to b, then it would simplify to the number 1. Meanwhile, if a is not equal to b, it would evaluate to zero.
+
+So, how do you use these operations in calculations? Lets use this example where a team's scouting data might have two separate fields for auto amp notes and teleop amp notes.
 ```json
 {
-  "team": "Team",
+  "calculated": {
+    "Total Amp Notes": ["Auto Amp Notes", "+", "Teleop Amp Notes"]
+  }
+}
+```
+You just create a JSON array with three items in it, the first being a, the second being the operation, and the third being b. `a +-*/^= b`
+
+You can also stack these together, for example the following which could add up to see the average amount of notes a team played.
+```json
+{
+  "calculated_averages": {
+    "Total Notes": [["Auto Amp Notes", "+", "Teleop Amp Notes"], "+", ["Auto Speaker Notes", "+", "Teleop Speaker Notes"]]
+  }
+}
+```
+Order of operations is not an issue, because each array is pretty much just parenthesis around that specific calculation.
+
+Notice how this time "calculated_averages" is used. Both calculated_averages and calculated use the same syntax for calculations.
+The only difference is that calculated_averages takes the average (mean) of the numbers.
+
+You can also replace one of these key strings with a number, for example in the above example, `"Auto Amp Notes"` could have been replaced with `5`.
+
+There are also some functions included that can be used in your calculations.
+> abs\
+> sin\
+> cos\
+> tan\
+> asin\
+> acos\
+> atan\
+> floor\
+> ceil\
+> log10\
+> round\
+> sign\
+> sqrt\
+> cbrt
+
+The syntax for these functions is as follows:
+`[function, a]`
+where function is a string with the function name, and a is either a number, or another expression.
+
+You can also use "pi" or "e" anywhere in your calculations.
+
+If you want to, you can also have an 1 item array with just a key inside, for example: `["Auto amp notes scored"]`. This may be useful for graphs.
+
+####3.2.4 Graphs
+
+Graphs use the same syntax as calculated and calculated averages, but the data will be displayed in graph form on a team page instead of on the main table.
+
+Simply put your calculation in the "graphs" area like you would for calculated or calculated_averages
+
+####3.2.5 Example of a finished mapping
+Here is an example of a finished data mapping. Please note that this is only for example use, and your mapping will most likely be very different from this.
+```json
+{
+  "team": "Team Number",
   "match": {
-    "number": "Match Number"
+    "number": "Match number"
   },
-  "notes": "Notes/Comments",
+  "notes": "Other thoughts/Summary",
   "scouter": "Your Name",
   "mapping_version": 1,
-  "averages": {},
-  "calculated": {},
-  "calculated_averages": {},
-  "graphs": {}
+  "averages": {
+    "Rating": "Overall subjective ranking",
+    "Bot Rating": "Bot rating",
+    "Drive Rating": "Drive team rating"
+  },
+  "calculated": {
+    "Total Amp Notes": ["Auto Amp Notes Scored","+","Amp notes scored"]
+  },
+  "calculated_averages": {
+    "Av. Amp Notes": ["Auto Amp Notes Scored","+","Amp notes scored"],
+    "Scouting Winrate": ["Result","=","Win"],
+    "Av. Points": [[[["Auto Speaker Notes Scored","*",5],"+",["Non amplified speaker notes scored","*",2]],"+",[["Auto Amp Notes Scored","*",2],"+","Amp notes scored"]],"+",["Amplified speaker notes scored","*",5]]
+  },
+  "graphs": {
+    "Points scored": [[[["Auto Speaker Notes Scored","*",5],"+",["Non amplified speaker notes scored","*",2]],"+",[["Auto Amp Notes Scored","*",2],"+","Amp notes scored"]],"+",["Amplified speaker notes scored","*",5]],
+    "Notes scored (Teleop)": [["Amp notes scored", "+", "Non amplified speaker notes scored"], "+", "Amplified speaker notes scored"]
+  }
 }
 ```
 
+####3.2.6 Putting your mapping into the FRC Scouting Tool
+To put your mapping file into the tool, follow the following instructions.
+1. Open the **File** menu
+2. Press **Import mapping**
+3. Select your mapping file
+Your mapping will be saved in the browser for future use.
+   
+###3.3 Downloading saved data or mappings
+You can also download your saved data or mappings in case you lose the original files. Please note that sometimes the browser may glitch and lose your saved data.
+
+Download your saved data or mapping by opening the **File** menu and pressing the button for whatever you want to download. 
+If you do not have saved data or mappings, the respective button will be grayed out.
