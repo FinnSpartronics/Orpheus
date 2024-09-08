@@ -1,6 +1,6 @@
 // TODO: Add a projector mode that makes text bigger and adds more margin/padding around body, and makes dots/lines bigger in graph
 //#region Local Storage Keys
-let YEAR = "scouting_4915_year"
+const YEAR = "scouting_4915_year"
 const TBA_KEY  = "scouting_4915_apikey"
 const EVENT  = "scouting_4915_event"
 const SCOUTING_DATA  = "scouting_4915_scouting_data"
@@ -14,6 +14,7 @@ const LOCAL_STORAGE_KEYS = [YEAR, TBA_KEY, EVENT, SCOUTING_DATA, MAPPING, THEME,
 const MISSING_LOGO = "https://frc-cdn.firstinspires.org/eventweb_frc/ProgramLogos/FIRSTicon_RGB_withTM.png"
 
 const toolName = "Pythia"
+const version = 0.1
 
 let event_data
 let scouting_data
@@ -31,7 +32,6 @@ let showCheckboxes = false
 let loading = 0
 
 let showTeamIcons = true
-
 const defaultColumns = ["Team_Number", "Name", "Winrate"]
 let columns = defaultColumns
 const hiddenColumns = ["TBA", "Icon", "graphs", "matches"]
@@ -46,7 +46,6 @@ let keyboardControls = true
 let brieflyDisableKeyboard = false
 
 let year
-const version = 0.1
 
 const tieValue = 0.5
 
@@ -156,8 +155,8 @@ function loadEvent() {
                         let matchesWon = 0
                         for (let match of data) {
                             matchesWon += checkTeamWonMatch(match, team["team_number"])
-                            if (match.comp_level === "qm")
-                                team_data[team["team_number"]].TBA["matches"][match.match_number] = match
+                            if (match["comp_level"] === "qm")
+                                team_data[team["team_number"]].TBA["matches"][match["match_number"]] = match
                         }
                         team_data[team["team_number"]]["Winrate"] = Math.round(rounding * (matchesWon / data.length)) / rounding
                         regenTable()
@@ -190,15 +189,6 @@ function checkTeamWonMatch(match, team) {
 }
 //#endregion
 
-document.querySelector("#foot_clearLocalStorage").onclick = function() {
-    let tmp = []
-    LOCAL_STORAGE_KEYS.forEach((i) => tmp.push(i.replace("scouting_4915_", "")))
-    if (confirm("This will clear the following: " + tmp)) {
-        for (let i of LOCAL_STORAGE_KEYS) window.localStorage.removeItem(i)
-        window.location.reload()
-    }
-}
-
 //#region Data and Mappings
 // Import data button
 document.querySelector("#top_data").onclick = function() {
@@ -224,7 +214,7 @@ document.querySelector("#top_mapping").onclick = function() {
         window.localStorage.setItem(MAPPING, JSON.stringify(mapping))
     })
 }
-// Adds all of the columns from the mapping to the columns list
+// Adds all the columns from the mapping to the columns list
 function handleMapping() {
     document.querySelector("#top_mapping_download").disabled = false
     columns = defaultColumns // Clears columns to avoid duplicates
@@ -245,7 +235,7 @@ function processData() {
     // Loops through every scouting submission
     for (let i of scouting_data) {
         let teamFormat, team
-        if (typeof mapping["team"] === "object") { // If object, no need to detect format
+        if (typeof mapping["team"] === "object") { // If it's an object, no need to detect format
             team = i[mapping["team"]["key"]].toString().trim()
             teamFormat = mapping["team"]["format"].trim().toLowerCase()
         } else { // Detect format of team number
@@ -684,7 +674,7 @@ function openTeam(team, comparisons) {
 
     if (usingTBA) {
         let teamDescriptionRemainder = document.createElement("div")
-        teamDescriptionRemainder.innerText = "Rookie Year: " + data.TBA.rookie_year + "\n" + data.TBA.city + ", " + data.TBA.state_prov
+        teamDescriptionRemainder.innerText = "Rookie Year: " + data.TBA["rookie_year"] + "\n" + data.TBA["city"] + ", " + data.TBA["state_prov"]
         teamDescription.appendChild(teamDescriptionRemainder)
 
         if (usingTBAMatches) {
@@ -805,7 +795,7 @@ function openTeam(team, comparisons) {
 
     let graphSelectionsHolder = document.createElement("select")
     graphSelectionsHolder.className = "graph-selection-holder"
-    graphSelectionsHolder.addEventListener("change", (e) => {
+    graphSelectionsHolder.addEventListener("change", () => {
         graph = graphSelectionsHolder.value
         maintainedTeamPageSettings["graph"] = graph
         addGraph()
@@ -892,7 +882,7 @@ function openTeam(team, comparisons) {
             teamInfoWidth = teamInfo.offsetWidth
             maintainedTeamPageSettings["teamInfoWidth"] = teamInfoWidth
         }
-        function bodyUp(e) {
+        function bodyUp() {
             document.body.removeEventListener("mousemove", bodyMove)
             document.body.removeEventListener("mouseup", bodyUp)
         }
@@ -969,7 +959,7 @@ function generateTeamMatches(data, team, teamsWith) {
             mEl.className = "match"
 
             let matchData = data.TBA.matches[match]
-            let alliance = matchData.alliances.blue.team_keys.includes(data.TBA.key) ? "blue" : "red"
+            let alliance = matchData["alliances"]["blue"]["team_keys"].includes(data.TBA.key) ? "blue" : "red"
 
             //#region Children
             let matchNumber = document.createElement("div")
@@ -978,8 +968,8 @@ function generateTeamMatches(data, team, teamsWith) {
             mEl.appendChild(matchNumber)
 
             let icon = "skull" // Lose
-            if (matchData.winning_alliance === alliance) icon = "trophy" // Win
-            else if (matchData.winning_alliance === "") icon = "balance" // Tie
+            if (matchData["winning_alliance"] === alliance) icon = "trophy" // Win
+            else if (matchData["winning_alliance"] === "") icon = "balance" // Tie
             let iconEl = document.createElement("span")
             iconEl.className = "material-symbols-outlined"
             iconEl.innerText = icon
@@ -988,7 +978,7 @@ function generateTeamMatches(data, team, teamsWith) {
 
             let firstAlliance = document.createElement("div")
             firstAlliance.className = "match-alliance " + alliance
-            for (let t of matchData.alliances[alliance].team_keys) {
+            for (let t of matchData["alliances"][alliance]["team_keys"]) {
                 let tEl = document.createElement("div")
                 tEl.innerText = t.replace("frc", "")
                 if (t.replace("frc", "") === team) tEl.style.order = "-10000"
@@ -998,7 +988,7 @@ function generateTeamMatches(data, team, teamsWith) {
 
             let secondAlliance = document.createElement("div")
             secondAlliance.className = "match-alliance " + (alliance === "blue" ? "red" : "blue")
-            for (let t of matchData.alliances[(alliance === "blue" ? "red" : "blue")].team_keys) {
+            for (let t of matchData["alliances"][(alliance === "blue" ? "red" : "blue")]["team_keys"]) {
                 let tEl = document.createElement("div")
                 tEl.innerText = t.replace("frc", "")
                 secondAlliance.appendChild(tEl)
@@ -1006,10 +996,10 @@ function generateTeamMatches(data, team, teamsWith) {
             mEl.appendChild(secondAlliance)
 
             mEl.title = icon.replace("skull", "Lost").replace("trophy", "Won").replace("balance", "Tie")
-                        + " " + matchData.alliances[alliance].score + " | " + matchData.alliances[(alliance === "blue" ? "red" : "blue")].score
+                        + " " + matchData["alliances"][alliance]["score"] + " | " + matchData["alliances"][(alliance === "blue" ? "red" : "blue")]["score"]
             //#endregion
 
-            let teams = matchData.alliances.blue.team_keys.concat(matchData.alliances.red.team_keys)
+            let teams =matchData["alliances"]["blue"]["team_keys"].concat(matchData["alliances"]["red"]["team_keys"])
             for (let t in teams) teams[t] = teams[t].replace("frc", "")
 
             if (skipTeamCheck) document.querySelector(".matches").appendChild(mEl)
@@ -1486,6 +1476,15 @@ document.querySelector("#top_mapping_download").disabled = mapping === undefined
 setHeader()
 updateTheme()
 
+document.querySelector("#foot_clearLocalStorage").onclick = function() {
+    let tmp = []
+    LOCAL_STORAGE_KEYS.forEach((i) => tmp.push(i.replace("scouting_4915_", "")))
+    if (confirm("This will clear the following: " + tmp)) {
+        for (let i of LOCAL_STORAGE_KEYS) window.localStorage.removeItem(i)
+        window.location.reload()
+    }
+}
+
 // Version and Title
 document.querySelector("title").innerText = toolName
 document.querySelector("#title").innerText = toolName
@@ -1497,7 +1496,6 @@ if (apis === null) {
     window.localStorage.setItem(ENABLED_APIS, JSON.stringify({tbaevent: true, tbamatch: true, desmos: true, frccolors: true}))
     apis = {tbaevent: true, tbamatch: true, desmos: true, frccolors: true}
 } else apis = JSON.parse(apis)
-
 
 usingTBA = apis.tbaevent
 document.querySelector("#top_toggle_use_tbaevent").innerText = "TBA API: " + (usingTBA ? "Enabled" : "Disabled")
