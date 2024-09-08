@@ -26,9 +26,6 @@ let theme = 0
 let starred = []
 let usingStar = true
 
-let selected = []
-let showCheckboxes = false
-
 let loading = 0
 
 let showTeamIcons = true
@@ -531,15 +528,6 @@ function element(team) {
     starEl.onclick = () => star(team)
     starEl.innerText = "star"
     controls.appendChild(starEl)
-
-    if (showCheckboxes) {
-        let checkbox = document.createElement("span")
-        checkbox.className = "material-symbols-outlined ar"
-        if (selected.includes(team)) el.classList.add("selected-row")
-        checkbox.onclick = () => select(team)
-        checkbox.innerText = selected.includes(team) ? "check_box" : "check_box_outline_blank"
-        controls.appendChild(checkbox)
-    }
 
     el.appendChild(controls)
 
@@ -1305,7 +1293,7 @@ document.addEventListener("keydown", (e) => {
 })
 //#endregion
 
-//#region Sorting, Stars, Selecting
+//#region Sorting, Stars
 function sort(team) {
     let starOffset = ((starred.includes(team) && usingStar) ? -Math.pow(10,9) : 0)
     if (typeof team_data[Object.keys(team_data)[0]][selectedSort] == "string") {
@@ -1353,12 +1341,6 @@ function changeSort(to) {
 function star(i) {
     if (starred.includes(i)) starred.splice(starred.indexOf(i),1)
     else starred.push(i)
-
-    regenTable()
-}
-function select(i) {
-    if (selected.includes(i)) selected.splice(selected.indexOf(i),1)
-    else selected.push(i)
 
     regenTable()
 }
