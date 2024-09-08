@@ -329,4 +329,17 @@ You can also download your saved data or mappings in case you lose the original 
 Download your saved data or mapping by opening the **File** menu and pressing the button for whatever you want to download. 
 If you do not have saved data or mappings, the respective button will be grayed out.
 
-## 4.
+## 4. Navigation
+
+### 4.1 Navigating the Table
+Navigating the table is like a normal spreadsheet. Scroll to the left or right to see more in that direction, or scroll up and down to see that information.
+
+### 4.1.1 Sorting the table
+By tapping on one of the columns on the table header, you will change the way the table is sorted.\
+The currently active column on the table is marked by a different background color on the header cell.\
+
+### 4.1.2 Reordering and toggling table columns
+
+### 4.1.3 Starring teams
+
+### 4.2 Team Pages

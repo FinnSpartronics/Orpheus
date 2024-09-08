@@ -1303,6 +1303,8 @@ document.addEventListener("keydown", (e) => {
         }
         e.preventDefault()
     }
+    if (key === "w") sortDirection = 1
+    if (key === "s") sortDirection = -1
     if (key === " ") {
         sortDirection *= -1
         e.preventDefault()
