@@ -112,7 +112,7 @@ document.querySelector("#top_setapi").onclick = function() {
     }
 }
 document.querySelector("#top_load_event").onclick = function() {
-    let x = prompt("event")
+    let x = prompt("What event code do you want?")
     if (x === "get") alert(window.localStorage.getItem(EVENT))
     else if (x === "clear") {
         window.localStorage.removeItem(EVENT)
@@ -120,8 +120,7 @@ document.querySelector("#top_load_event").onclick = function() {
     }
     else if (x !== "") {
         window.localStorage.setItem(EVENT, x.toLowerCase())
-        loadEvent()
-        document.querySelector("#top_load_event").innerText = x.toUpperCase()
+        window.location.reload()
     }
 }
 document.querySelector("#top_year").onclick = function() {
@@ -134,6 +133,7 @@ document.querySelector("#top_year").onclick = function() {
 }
 function loadEvent() {
     loading++
+    columns = defaultColumns
     if (usingTBA) {
         load("event/" + year + window.localStorage.getItem(EVENT) + "/teams", function (data) {
             event_data = data
@@ -1316,7 +1316,7 @@ function sort(team) {
         for (let x of Object.keys(team_data))
             if (team_data[x][selectedSort] >= max) max = team_data[x][selectedSort]
 
-        let index = isNaN(team_data[team][selectedSort]) ? 0 : team_data[team][selectedSort] /max
+        let index = isNaN(team_data[team][selectedSort]) || team_data[team][selectedSort] == undefined ? sortDirection * -10000 : team_data[team][selectedSort] /max
         if (sortDirection === 1) index = 1-index
         return starOffset + Math.floor(10000*index)
     }
