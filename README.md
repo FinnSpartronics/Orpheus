@@ -1,4 +1,4 @@
-# Pythia
+# Orpheus
 
 This tool isn't intended to help with the collection of data,
 but rather to help teams look at the data they've collected with the help of other tools.
@@ -24,13 +24,13 @@ You'll need to provide your own API key for The Blue Alliance, which can be obta
 4. Press **+ Add New Key**
 5. The page will reload, and you need to scroll back down to **Read API Keys**, where you can now copy the odd string of text and numbers underneath **X-TBA-Auth-Key**
 
-Now that you have your API key, return to Pythia, press the **APIs** button at the top of the screen, and then **Set TBA API Key**.
+Now that you have your API key, return to Orpheus, press the **APIs** button at the top of the screen, and then **Set TBA API Key**.
 You will be prompted for your API Key. Paste it in the pop-up, and then press enter or the confirmation button. This will be automatically saved in your browser for future sessions.
 
 If you are prompted with the lack of a TBA API key, follow the previous instructions to (if needed) obtain one, and re-paste it into the tool.
 
 ### 1.3 Enabling and Disabling APIs
-If Pythia encounters a strange error, you may want to enable or disable an API. 
+If Orpheus encounters a strange error, you may want to enable or disable an API. 
 They can be toggled on or off in the **APIs** menu at the top of the screen.
 
 ## 2. Event and Year
@@ -46,7 +46,7 @@ and typing that event code into the **Set Event** button located inside of the *
 If you have previously entered an event, the **Set Event** button will instead show the event code for that previous event.
 
 ### 2.2 Year
-When you first load Pythia, the year will be assumed based on the current year, 
+When you first load Orpheus, the year will be assumed based on the current year, 
 but you can change the year by going into the **Event** menu and clicking on the year button, which will display whatever the currently selected year is.
 
 ## 3. Data and Data Mappings
@@ -182,7 +182,7 @@ Then, you would put one of the following three options in the "format" field.
 
 If you use the second format for "team", just put the key in that spot. The format will automatically be detected.
 
-NOTE: If you use the name format for your scouting data, The Blue Alliance API is required, and Pythia will not work when you turn TBA off.
+NOTE: If you use the name format for your scouting data, The Blue Alliance API is required, and Orpheus will not work when you turn TBA off.
 
 #### 3.2.2 Custom Table Columns
 
@@ -316,7 +316,7 @@ Here is an example of a finished data mapping. Please note that this is only for
 }
 ```
 
-#### 3.2.6 Putting your mapping into Pythia
+#### 3.2.6 Putting your mapping into Orpheus
 To put your mapping file into the tool, follow the following instructions.
 1. Open the **File** menu
 2. Press **Import mapping**

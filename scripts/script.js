@@ -13,7 +13,7 @@ const LOCAL_STORAGE_KEYS = [YEAR, TBA_KEY, EVENT, SCOUTING_DATA, MAPPING, THEME,
 //#region Variables
 const MISSING_LOGO = "https://frc-cdn.firstinspires.org/eventweb_frc/ProgramLogos/FIRSTicon_RGB_withTM.png"
 
-const toolName = "Pythia"
+const toolName = "Orpheus"
 const version = 0.1
 
 let event_data
@@ -335,6 +335,7 @@ function evaluate(i, exp) {
         else if (typeof a === "string") a = i[a]
         a = parseFloat(a)
         if (isNaN(a) && op !== "=")  a = 0
+
 
         if (typeof b === "object") b = evaluate(i, b)
         else if (typeof b === "string") b = i[b]
