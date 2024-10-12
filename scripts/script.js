@@ -1,4 +1,5 @@
 // TODO: Add a projector mode that makes text bigger and adds more margin/padding around body, and makes dots/lines bigger in graph
+// TODO: Add a mode to the mapping that calculates everything and then divides by something else (for example Total Notes/(Total Notes + Missed notes) for accuracy)
 //#region Local Storage Keys
 const YEAR = "scouting_4915_year"
 const TBA_KEY  = "scouting_4915_apikey"
@@ -1138,8 +1139,9 @@ document.querySelector("#top_show_hide_comment_names").onclick = function() {
 //#region Column Changing, Keyboard Controls
 function getColumns() {
     let validColumns = []
-    for (let col of Object.keys(team_data[Object.keys(team_data)[0]]))
-        if (!hiddenColumns.includes(col)) validColumns.push(col)
+    for (let team in team_data)
+        for (let col of Object.keys(team_data[team]))
+            if (!hiddenColumns.includes(col) && !validColumns.includes(col)) validColumns.push(col)
     return validColumns
 }
 let columnEditButton = document.querySelector("#top_columns")
