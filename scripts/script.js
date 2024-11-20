@@ -943,13 +943,23 @@ function generateTeamMatches(data, team, teamsWith) {
     if (!skipTeamCheck)
         teamsWith = teamsWith.trim().split(",")
 
-    if (usingTBA && usingTBAMatches)
+    if (usingTBA && usingTBAMatches) {
+        let upcoming = false
         for (let match of Object.keys(data.TBA.matches)) {
             let mEl = document.createElement("div")
             mEl.className = "match"
 
             let matchData = data.TBA.matches[match]
             let alliance = matchData["alliances"]["blue"]["team_keys"].includes(data.TBA.key) ? "blue" : "red"
+
+            if (matchData["alliances"]["blue"]["score"] === -1 && !upcoming) {
+                let upcomingEl = document.createElement("div")
+                upcomingEl.className = "matches-upcoming-label"
+                upcomingEl.innerText = "Awaiting Results"
+
+                upcoming = true
+                document.querySelector(".matches").appendChild(upcomingEl)
+            }
 
             //#region Children
             let matchNumber = document.createElement("div")
@@ -958,8 +968,10 @@ function generateTeamMatches(data, team, teamsWith) {
             mEl.appendChild(matchNumber)
 
             let icon = "skull" // Lose
-            if (matchData["winning_alliance"] === alliance) icon = "trophy" // Win
+            if (upcoming) icon = "schedule"
+            else if (matchData["winning_alliance"] === alliance) icon = "trophy" // Win
             else if (matchData["winning_alliance"] === "") icon = "balance" // Tie
+
             let iconEl = document.createElement("span")
             iconEl.className = "material-symbols-outlined"
             iconEl.innerText = icon
@@ -985,11 +997,12 @@ function generateTeamMatches(data, team, teamsWith) {
             }
             mEl.appendChild(secondAlliance)
 
-            mEl.title = icon.replace("skull", "Lost").replace("trophy", "Won").replace("balance", "Tie")
-                        + " " + matchData["alliances"][alliance]["score"] + " | " + matchData["alliances"][(alliance === "blue" ? "red" : "blue")]["score"]
+            if (icon === "schedule") mEl.title = "Awaiting Results"
+            else mEl.title = icon.replace("skull", "Lost").replace("trophy", "Won").replace("balance", "Tie")
+                + " " + matchData["alliances"][alliance]["score"] + " | " + matchData["alliances"][(alliance === "blue" ? "red" : "blue")]["score"]
             //#endregion
 
-            let teams =matchData["alliances"]["blue"]["team_keys"].concat(matchData["alliances"]["red"]["team_keys"])
+            let teams = matchData["alliances"]["blue"]["team_keys"].concat(matchData["alliances"]["red"]["team_keys"])
             for (let t in teams) teams[t] = teams[t].replace("frc", "")
 
             if (skipTeamCheck) document.querySelector(".matches").appendChild(mEl)
@@ -1001,6 +1014,7 @@ function generateTeamMatches(data, team, teamsWith) {
                     document.querySelector(".matches").appendChild(mEl)
             }
         }
+    }
     else {
         let mEl = document.createElement("div")
         mEl.innerText = "Matches: "

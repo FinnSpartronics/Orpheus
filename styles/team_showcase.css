@@ -57,6 +57,11 @@
 }
 
 /*#region Matches*/
+.matches-upcoming-label {
+    font-size: 1.5rem;
+    border-top: 1px solid var(--font);
+    border-radius: 4px;
+}
 .matches {
     gap: 4px;
 }
