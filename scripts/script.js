@@ -1,6 +1,4 @@
-// TODO: Add a projector mode that makes text bigger and adds more margin/padding around body, and makes dots/line s bigger in graph
 // TODO: Add a mode to the mapping that calculates everything and then divides by something else (for example Total Notes/(Total Notes + Missed notes) for accuracy)
-// TODO: Add custom event support without TBA (file with teams and it'll still use TBA for team info and such but it'll get the teams from the file not the event page)
 //#region Local Storage Keys
 const YEAR = "scouting_4915_year"
 const TBA_KEY  = "scouting_4915_apikey"
@@ -1152,7 +1150,6 @@ columnEditButton.onclick = function() {
     setColumnEditPanel()
 }
 function setColumnEditPanel() {
-    // TODO: make this resizable
     let columnEditPanel = document.querySelector(".edit-columns")
     columnEditPanel.style.top = columnEditButton.getBoundingClientRect().bottom + "px"
     columnEditPanel.style.left = columnEditButton.getBoundingClientRect().left + "px"
