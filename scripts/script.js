@@ -30,8 +30,9 @@ let loading = 0
 
 let showTeamIcons = true
 const defaultColumns = ["Team_Number", "Name", "Winrate"]
-let columns = defaultColumns
-const hiddenColumns = ["TBA", "Icon", "graphs", "matches"]
+let columns = JSON.parse(JSON.stringify(defaultColumns))
+const defaultHiddenColumns = ["TBA", "Icon", "graphs", "matches"]
+let hiddenColumns = JSON.parse(JSON.stringify(defaultHiddenColumns))
 
 let selectedSort = "Team_Number"
 let sortDirection = 1
@@ -133,7 +134,8 @@ document.querySelector("#top_year").onclick = function() {
 }
 function loadEvent() {
     loading++
-    columns = defaultColumns
+    columns = JSON.parse(JSON.stringify(defaultColumns))
+    hiddenColumns = JSON.parse(JSON.stringify(defaultHiddenColumns))
     if (usingTBA) {
         load("event/" + year + window.localStorage.getItem(EVENT) + "/teams", function (data) {
             event_data = data
@@ -198,6 +200,8 @@ document.querySelector("#top_data").onclick = function() {
             else if (type === "json") scouting_data = JSON.parse(result) // Parses json
             else return // If none of the above, then can't process data
         }
+        columns = JSON.parse(JSON.stringify(defaultColumns))
+        hiddenColumns = JSON.parse(JSON.stringify(defaultHiddenColumns))
         if (mapping !== undefined) processData()
         window.localStorage.setItem(SCOUTING_DATA, JSON.stringify(scouting_data))
         document.querySelector("#top_data_download").disabled = false
@@ -207,6 +211,8 @@ document.querySelector("#top_data").onclick = function() {
 document.querySelector("#top_mapping").onclick = function() {
     loadFile(".json", (result) => {
         mapping = JSON.parse(result)
+        columns = JSON.parse(JSON.stringify(defaultColumns))
+        hiddenColumns = JSON.parse(JSON.stringify(defaultHiddenColumns))
         if (scouting_data !== undefined) processData()
         window.localStorage.setItem(MAPPING, JSON.stringify(mapping))
     })
@@ -214,7 +220,7 @@ document.querySelector("#top_mapping").onclick = function() {
 // Adds all the columns from the mapping to the columns list
 function handleMapping() {
     document.querySelector("#top_mapping_download").disabled = false
-    columns = defaultColumns // Clears columns to avoid duplicates
+    columns = JSON.parse(JSON.stringify(defaultColumns)) // Clears columns to avoid duplicates
     if (mapping["mapping_version"] !== 1) {
         console.error("Mapping version " + mapping["mapping_version"] + " is not allowed. Allowed versions: 1")
         alert("Mapping version " + mapping["mapping_version"] + " is not allowed. Allowed versions: 1")
