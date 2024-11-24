@@ -1460,6 +1460,37 @@ function setEnabledAPIS() {
 }
 //#endregion
 
+//#region Right Click menu
+document.addEventListener("contextmenu", (e) => {
+    e.preventDefault()
+
+    let contextMenu = document.querySelector(".context-menu")
+    contextMenu.style.left = e.pageX + "px"
+    contextMenu.style.top = e.pageY + "px"
+    contextMenu.style.zIndex = document.querySelector(".sticky-header").contains(e.target) ? "10000" : "999"
+    contextMenu.removeAttribute("hidden")
+
+    document.body.appendChild(contextMenu)
+
+    let maxWidth = -1
+    let height = 0
+    for (let c of contextMenu.childNodes) {
+        if (c.offsetWidth > maxWidth) maxWidth = c.offsetWidth
+        height += c.offsetHeight
+    }
+    contextMenu.style.width = maxWidth + "px"
+    contextMenu.style.height = height + "px"
+
+    contextMenu.setAttribute("collapsed", "")
+    setTimeout(() => contextMenu.removeAttribute("collapsed"), 100)
+
+})
+
+document.addEventListener("click", () => {
+    document.querySelector(".context-menu").setAttribute("hidden", "")
+})
+//#endregion
+
 //#region Init
 
 // Year

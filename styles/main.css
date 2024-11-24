@@ -49,4 +49,5 @@ body {
     position: sticky;
     background-color: var(--bg);
     top: 0;
+    z-index: 9999;
 }
