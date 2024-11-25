@@ -4,6 +4,10 @@ body {
     margin-top: 0;
 }
 
+dialog {
+    z-index: 10000;
+}
+
 .horizontal-scroll {
     overflow-x: scroll;
     white-space: nowrap;

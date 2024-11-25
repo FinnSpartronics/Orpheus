@@ -6,9 +6,15 @@
     overflow: hidden;
     display: flex;
     align-items: center;
+    gap: 4px;
 }
 .context-menu[hidden] {
     display: none;
+}
+
+.context-menu-themes {
+    display: flex;
+    gap: 4px;
 }
 
 .context-theme {

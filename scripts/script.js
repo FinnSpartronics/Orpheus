@@ -1160,6 +1160,8 @@ document.querySelector("#top_show_hide_comment_names").onclick = function() {
 //#endregion
 
 //#region Column Changing, Keyboard Controls
+let controlPressed = false
+
 function getColumns() {
     let validColumns = []
     for (let team in team_data)
@@ -1313,9 +1315,15 @@ document.addEventListener("keydown", (e) => {
         sortDirection *= -1
         e.preventDefault()
     }
+    if (key === "control") controlPressed = true
     setHeader()
     regenTable()
     setColumnEditPanel()
+})
+document.addEventListener("keyup", (e) => {
+    if (!keyboardControls || brieflyDisableKeyboard) return
+    let key = e.key.toLowerCase()
+    if (key === "control") controlPressed = false
 })
 //#endregion
 
@@ -1467,8 +1475,9 @@ function setEnabledAPIS() {
 document.addEventListener("contextmenu", (e) => {
     let contextMenu = document.querySelector(".context-menu")
 
-    if (contextMenu.contains(e.target)) { // If right clicking on context menu, open browser context menu
-        document.querySelector(".context-menu").setAttribute("hidden", "hidden")
+    if (contextMenu.contains(e.target) || controlPressed) { // If right clicking on context menu, open browser context menu
+        closeContextMenu()
+        controlPressed = false // Opening context menu means the keyup event never happens so this fixes that
         return
     }
     else {
@@ -1481,9 +1490,13 @@ document.addEventListener("contextmenu", (e) => {
     contextMenu.removeAttribute("hidden")
 })
 
-document.addEventListener("click", () => {
+document.addEventListener("click", closeContextMenu)
+
+document.addEventListener("scroll", closeContextMenu)
+
+function closeContextMenu() {
     document.querySelector(".context-menu").setAttribute("hidden", "hidden")
-})
+}
 //#endregion
 
 //#region Init
