@@ -467,6 +467,9 @@ function updateTheme() {
         updateTheme()
         return
     }
+    changeThemeTo(theme)
+}
+function changeThemeTo(theme) {
     let root = document.querySelector(":root").classList
     root.remove("dark")
     root.remove("spartronics_theme")
@@ -1460,34 +1463,26 @@ function setEnabledAPIS() {
 }
 //#endregion
 
-//#region Right Click menu
+//#region Context menu (right click menu)
 document.addEventListener("contextmenu", (e) => {
-    e.preventDefault()
-
     let contextMenu = document.querySelector(".context-menu")
+
+    if (contextMenu.contains(e.target)) { // If right clicking on context menu, open browser context menu
+        document.querySelector(".context-menu").setAttribute("hidden", "hidden")
+        return
+    }
+    else {
+        e.preventDefault()
+    }
+
     contextMenu.style.left = e.pageX + "px"
     contextMenu.style.top = e.pageY + "px"
     contextMenu.style.zIndex = document.querySelector(".sticky-header").contains(e.target) ? "10000" : "999"
     contextMenu.removeAttribute("hidden")
-
-    document.body.appendChild(contextMenu)
-
-    let maxWidth = -1
-    let height = 0
-    for (let c of contextMenu.childNodes) {
-        if (c.offsetWidth > maxWidth) maxWidth = c.offsetWidth
-        height += c.offsetHeight
-    }
-    contextMenu.style.width = maxWidth + "px"
-    contextMenu.style.height = height + "px"
-
-    contextMenu.setAttribute("collapsed", "")
-    setTimeout(() => contextMenu.removeAttribute("collapsed"), 100)
-
 })
 
 document.addEventListener("click", () => {
-    document.querySelector(".context-menu").setAttribute("hidden", "")
+    document.querySelector(".context-menu").setAttribute("hidden", "hidden")
 })
 //#endregion
 

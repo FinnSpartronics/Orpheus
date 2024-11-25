@@ -10,7 +10,7 @@
     <link rel="stylesheet" href="styles/table.css"/>
     <link rel="stylesheet" href="styles/team_showcase.css"/>
     <link rel="stylesheet" href="styles/overrides.css"/>
-    <link rel="stylesheet" href="styles/right_click.css"/>
+    <link rel="stylesheet" href="styles/context_menu.css"/>
     <script src="scripts/script.js" defer></script>
     <link rel="icon" type="image/x-icon" href="https://mtssdhosting.s3.amazonaws.com/spartronics4915.com/wp-content/uploads/20151121091749/favicon.ico">
 </head>
@@ -85,10 +85,9 @@
     <dialog class="edit-columns"></dialog>
 
     <div class="context-menu" hidden>
-        <div>Test</div>
-        <div>Test</div>
-        <div>Test</div>
-        <div>Test</div>
+        <button class="context-theme" onclick="changeThemeTo(0)"><span class="material-symbols-outlined">light_mode</span></button>
+        <button class="context-theme" onclick="changeThemeTo(1)"><span class="material-symbols-outlined">dark_mode</span></button>
+        <button class="context-theme" onclick="changeThemeTo(2)"><img src="https://mtssdhosting.s3.amazonaws.com/spartronics4915.com/wp-content/uploads/20151121091749/favicon.ico"></button>
     </div>
 
 </body>

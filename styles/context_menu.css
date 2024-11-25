@@ -1,0 +1,26 @@
+.context-menu {
+    position: absolute;
+    background-color: var(--bg);
+    border: 1px solid var(--font);
+    border-radius: 0 4px 4px 4px;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+}
+.context-menu[hidden] {
+    display: none;
+}
+
+.context-theme {
+    width: 2rem;
+    height: 2rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 0;
+}
+
+.context-theme img {
+    width: 2rem;
+    height: 2rem;
+}
