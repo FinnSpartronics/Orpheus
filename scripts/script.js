@@ -500,12 +500,14 @@ function setHeader() {
     if (usingStar) starToggle.classList.add("filled")
     starToggle.innerText = "star"
     starToggle.addEventListener("click", star_toggle)
+    starToggle.setAttribute("data-context", "star")
     header.appendChild(starToggle)
 
     if (showTeamIcons) {
         let iconPlaceholder = document.createElement("div")
         iconPlaceholder.classList.add("icon")
         iconPlaceholder.title = "Icon Placeholder"
+        iconPlaceholder.setAttribute("data-context", "icon-column")
         header.appendChild(iconPlaceholder)
     }
     for (let column of columns) {
@@ -520,6 +522,8 @@ function setHeader() {
         }
         el.addEventListener("click", () => changeSort(column))
         el.innerText = column.replaceAll("_", " ")
+        el.setAttribute("data-context", "column")
+        el.setAttribute("data-context-index", columns.indexOf(column))
         header.appendChild(el)
     }
     regenTable()
@@ -940,6 +944,7 @@ function closeTeam() {
     document.querySelector(".table-head.main-table").classList.remove("hidden")
     document.querySelector(".team-page").innerText = ""
     tableMode = "main"
+    openedTeam = undefined
     regenTable()
     setHeader()
 }
@@ -1266,6 +1271,12 @@ function toggleColumn(col) {
     setHeader()
     setColumnEditPanel()
 }
+function setColumnVisibility(index, to) {
+    if (to) columns.push(index)
+    else columns.splice(index, 1)
+    setHeader()
+    setColumnEditPanel()
+}
 function changeColumnOrder(col) {
     console.log(col)
     let current = columns.indexOf(col)
@@ -1383,6 +1394,11 @@ function star_toggle() {
     document.querySelector("#select_star").classList.toggle("filled")
     regenTable()
 }
+function set_star(team, to) {
+    if (starred.includes(team)) starred.splice(starred.indexOf(team), 1)
+    if (to) starred.push(team)
+    regenTable()
+}
 //#endregion
 
 //#region File and API loading functions (+ download, API Toggles)
@@ -1488,10 +1504,66 @@ document.addEventListener("contextmenu", (e) => {
     contextMenu.style.top = e.pageY + "px"
     contextMenu.style.zIndex = document.querySelector(".sticky-header").contains(e.target) ? "10000" : "999"
     contextMenu.removeAttribute("hidden")
+
+    let options = document.querySelector(".context-menu-options")
+    while (options.childElementCount > 0) options.children[0].remove()
+
+    function optionEl(name, action) {
+        let option = document.createElement("button")
+        option.className = "context-option"
+        option.innerText = name
+        option.addEventListener("click", action)
+        options.appendChild(option)
+    }
+
+    if (tableMode === "team")
+        optionEl("Back to Table", closeTeam)
+
+    let context = e.target.getAttribute("data-context")
+    console.log(context)
+    if (context === "star") {
+        optionEl("Star All", () => {
+            for (let x in team_data) set_star(x, true)
+        })
+        optionEl("Unstar All", () => {
+            for (let x in team_data) set_star(x, false)
+        })
+        optionEl("Flip starred teams", () => {
+            for (let x in team_data) star(x)
+        })
+    }
+    if (context === "icon-column") {
+        optionEl("Hide icons", () => {
+            showTeamIcons = false
+            setHeader()
+        })
+    }
+    if (context === "column") {
+        let column = parseInt(e.target.getAttribute("data-context-index"))
+        console.log(column)
+        optionEl("Hide column", () => {
+            setColumnVisibility(column, false)
+        })
+        if (column !== 0)
+            optionEl("<- Move left", () => {
+                let c = columns[column - 1]
+                columns[column - 1] = columns[column]
+                columns[column] = c
+                setHeader()
+                setColumnEditPanel()
+            })
+        if (column !== columns.length - 1)
+            optionEl("Move right ->", () => {
+                let c = columns[column + 1]
+                columns[column + 1] = columns[column]
+                columns[column] = c
+                setHeader()
+                setColumnEditPanel()
+            })
+    }
 })
 
 document.addEventListener("click", closeContextMenu)
-
 document.addEventListener("scroll", closeContextMenu)
 
 function closeContextMenu() {

@@ -6,6 +6,9 @@
     overflow: hidden;
     display: flex;
     align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    padding: 4px;
     gap: 4px;
 }
 .context-menu[hidden] {
@@ -29,4 +32,18 @@
 .context-theme img {
     width: 2rem;
     height: 2rem;
+}
+
+.context-menu-options {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.context-option {
+    width: 100%;
+    padding-left: .25rem;
+    text-align: left;
 }
