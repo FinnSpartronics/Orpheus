@@ -48,7 +48,7 @@ let year
 const tieValue = 0.5
 
 let desmosColors
-const desmosScriptSrc = "https://www.desmos.com/api/v1.9/calculator.js?apiKey=dcb31709b452b1cf9dc26972add0fda6"
+const desmosScriptSrc = "https://www.desmos.com/api/v1.10/calculator.js?apiKey=dcb31709b452b1cf9dc26972add0fda6"
 
 const alphabet = "abcdefghijklmnopqrstuvwxyz".split('')
 
@@ -59,7 +59,7 @@ let usingTBAMatches
 let usingDesmos
 let usingFrcColors
 
-let projectorMode = true
+let projectorMode = false
 
 //#endregion
 
@@ -1655,7 +1655,11 @@ if (usingDesmos) {
     let desmosScript = document.createElement("script")
     document.head.appendChild(desmosScript)
     desmosScript.src = desmosScriptSrc
+    loading++
+    checkLoading()
     desmosScript.addEventListener("load", () => {
+        loading--
+        checkLoading()
         desmosColors = [Desmos.Colors.RED, Desmos.Colors.BLUE, Desmos.Colors.GREEN, Desmos.Colors.PURPLE, Desmos.Colors.ORANGE, Desmos.Colors.BLACK]
     })
 }
@@ -1674,9 +1678,9 @@ if (usingTBA && (window.localStorage.getItem(TBA_KEY) == null || window.localSto
 } else {
     document.querySelector("#top_load_event").innerText = window.localStorage.getItem(EVENT).toUpperCase()
     if (usingTBA) {
-        loading = 1
+        loading++
         checkLoading()
-        loading = 0
+        loading--
     }
     loadEvent()
 }
