@@ -94,6 +94,11 @@
     gap: 16px;
     width: 100%;
 }
+.match-alliance div {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
 .match-alliance.red {
     background-color: var(--red);
 }

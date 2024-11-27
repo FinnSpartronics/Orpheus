@@ -1,0 +1,32 @@
+:root {
+    font-size: 1.5rem;
+}
+
+body {
+    margin: 0 1rem 1rem 1rem;
+}
+
+
+.data {
+    width: 240px;
+}
+
+.star {
+    font-size: 1.75rem;
+}
+
+.comments-title {
+    font-size: 1.2rem;
+}
+
+.team-comments {
+    font-size: 1rem;
+}
+
+.match-alliance {
+    font-size: .8rem;
+}
+
+.match-number {
+    font-size: 1rem;
+}

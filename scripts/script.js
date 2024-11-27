@@ -59,6 +59,8 @@ let usingTBAMatches
 let usingDesmos
 let usingFrcColors
 
+let projectorMode = true
+
 //#endregion
 
 //#region Init Header Controls
@@ -458,7 +460,7 @@ document.querySelector("#top_mapping_download").onclick = () => download("mappin
 
 //#endregion
 
-//#region Theme
+//#region Theme, Projector Mode
 // Updates the theme in document and handles theme in localStorage
 function updateTheme() {
     theme = parseInt(window.localStorage.getItem(THEME))
@@ -482,6 +484,21 @@ document.querySelector("#top_theme").onclick = function() {
     window.localStorage.setItem(THEME, ""+((theme + 1) % 3))
     updateTheme()
 }
+document.querySelector("#top_projector").addEventListener("click", () => {
+    projectorMode = !projectorMode
+    setProjectorModeSheet()
+})
+
+function setProjectorModeSheet() {
+    document.querySelector("#top_projector").innerText = "Projector Mode: " + (projectorMode ? "Enabled" : "Disabled")
+    for (let stylesheet of document.styleSheets) {
+        if (stylesheet.title === "projector") {
+            stylesheet.disabled = !projectorMode
+            return
+        }
+    }
+    console.log("Couldn't find a projector mode stylesheet")
+}
 //#endregion
 
 //#region Table
@@ -496,7 +513,7 @@ function setHeader() {
 
     let starToggle = document.createElement("span")
     starToggle.id = "select_star"
-    starToggle.className = "material-symbols-outlined ar"
+    starToggle.className = "material-symbols-outlined ar star"
     if (usingStar) starToggle.classList.add("filled")
     starToggle.innerText = "star"
     starToggle.addEventListener("click", star_toggle)
@@ -538,7 +555,7 @@ function element(team) {
     controls.classList.add("row-controls")
 
     let starEl = document.createElement("span")
-    starEl.className = "material-symbols-outlined ar"
+    starEl.className = "material-symbols-outlined ar star"
     if (starred.includes(team)) starEl.classList.add("filled")
     starEl.onclick = () => star(team)
     starEl.innerText = "star"
@@ -676,9 +693,11 @@ function openTeam(team, comparisons) {
     teamName.appendChild(starEl)
 
     if (usingTBA) {
-        let teamDescriptionRemainder = document.createElement("div")
-        teamDescriptionRemainder.innerText = "Rookie Year: " + data.TBA["rookie_year"] + "\n" + data.TBA["city"] + ", " + data.TBA["state_prov"]
-        teamDescription.appendChild(teamDescriptionRemainder)
+        if (!projectorMode) {
+            let teamDescriptionRemainder = document.createElement("div")
+            teamDescriptionRemainder.innerText = "Rookie Year: " + data.TBA["rookie_year"] + "\n" + data.TBA["city"] + ", " + data.TBA["state_prov"]
+            teamDescription.appendChild(teamDescriptionRemainder)
+        }
 
         if (usingTBAMatches) {
             let matchSearch = document.createElement("input")
@@ -1134,22 +1153,22 @@ function graphElement(data, name, teams, width, height) {
         if (usingTBA) teamName = team_data[teams[i]].Name
 
         expressions.push({latex: "y_{" + i + "}\\sim " + v1 + "x_{" + i + "} + " + v2, hidden: true})
-        expressions.push({latex: v1 + "x + " + v2 + " = y", color: desmosColors[i], lineWidth: 6, lineOpacity: .6, label: teams[i] + " " + teamName})
+        expressions.push({latex: v1 + "x + " + v2 + " = y", color: desmosColors[i], lineWidth: (projectorMode ? 12 : 6), lineOpacity: (projectorMode ? .8 : .6), label: teams[i] + " " + teamName})
         expressions.push({
             latex: "(" + maxX * 1.15 + "," + ((1.2 - ((i + 1)*.05)) * maxY ) + ")",
             label: teams[i] + " " + teamName.substring(0, 20) + (teamName.length >= 20 ? "..." : ""),
             showLabel: true,
             labelOrientation: Desmos.LabelOrientations.LEFT,
             color: desmosColors[i],
-            labelSize: Desmos.FontSizes.SMALL,
-            pointSize: 16
+            labelSize: (projectorMode ? "1.5" : "1"),
+            pointSize: (projectorMode ? 24 : 16)
         })
         expressions.push({
             latex: "(x_{" + i + "}, y_{" + i + "})",
             color: desmosColors[i],
             label: teams[i] + " (${x_{" + i + "}},${y_{" + i + "}})",
-            labelSize: Desmos.FontSizes.SMALL,
-            pointSize: 11,
+            labelSize: (projectorMode ? "1.5" : "1"),
+            pointSize: (projectorMode ? 22 : 11),
         })
     }
 
@@ -1300,6 +1319,7 @@ document.querySelector("#top_keyboard").onclick = function() {
 document.addEventListener("keydown", (e) => {
     if (!keyboardControls || brieflyDisableKeyboard) return
     let key = e.key.toLowerCase()
+    console.log(key)
     if (key === "d" || key === "arrowright") {
         let currentIndex = columns.indexOf(selectedSort)
         if (currentIndex !== columns.length-1) {
@@ -1327,6 +1347,10 @@ document.addEventListener("keydown", (e) => {
         e.preventDefault()
     }
     if (key === "control") controlPressed = true
+    if (key === "p") {
+        projectorMode = !projectorMode
+        setProjectorModeSheet()
+    }
     setHeader()
     regenTable()
     setColumnEditPanel()
@@ -1591,6 +1615,8 @@ document.querySelector("#top_mapping_download").disabled = mapping === undefined
 
 setHeader()
 updateTheme()
+document.querySelector("#projector-styles").removeAttribute("disabled")
+setProjectorModeSheet()
 
 document.querySelector("#foot_clearLocalStorage").onclick = function() {
     let tmp = []
@@ -1654,6 +1680,5 @@ if (usingTBA && (window.localStorage.getItem(TBA_KEY) == null || window.localSto
     }
     loadEvent()
 }
-
 
 //#endregion
