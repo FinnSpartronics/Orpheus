@@ -529,7 +529,7 @@ function setHeader() {
     }
     for (let column of columns) {
         let el = document.createElement("div")
-        el.id = "select_" + column.replaceAll(".", "")
+        el.id = "select_" + column.replaceAll(/\W/g, "")
         el.classList.add("data")
         el.classList.add("small")
         if (column === selectedSort) {
@@ -1401,9 +1401,9 @@ function changeSort(to) {
     for (let el of document.getElementsByClassName("top")) el.classList.remove("top")
     for (let el of document.getElementsByClassName("bottom")) el.classList.remove("bottom")
 
-    document.querySelector("#select_" + to.replaceAll(".","")).classList.add("highlighted")
-    if (sortDirection === 1) document.querySelector("#select_" + to.replaceAll(".","")).classList.add("top")
-    if (sortDirection === -1) document.querySelector("#select_" + to.replaceAll(".","")).classList.add("bottom")
+    document.querySelector("#select_" + to.replaceAll(/\W/g,"")).classList.add("highlighted")
+    if (sortDirection === 1) document.querySelector("#select_" + to.replaceAll(/\W/g,"")).classList.add("top")
+    if (sortDirection === -1) document.querySelector("#select_" + to.replaceAll(/\W/g,"")).classList.add("bottom")
 
     regenTable()
 }
