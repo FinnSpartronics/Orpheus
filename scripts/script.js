@@ -1528,6 +1528,7 @@ document.addEventListener("contextmenu", (e) => {
     contextMenu.style.top = e.pageY + "px"
     contextMenu.style.zIndex = document.querySelector(".sticky-header").contains(e.target) ? "10000" : "999"
     contextMenu.removeAttribute("hidden")
+    contextMenu.removeAttribute("empty")
 
     let options = document.querySelector(".context-menu-options")
     while (options.childElementCount > 0) options.children[0].remove()
@@ -1585,6 +1586,9 @@ document.addEventListener("contextmenu", (e) => {
                 setColumnEditPanel()
             })
     }
+    if (context === null) {
+        contextMenu.setAttribute("empty", "empty")
+    }
 })
 
 document.addEventListener("click", closeContextMenu)
@@ -1592,6 +1596,7 @@ document.addEventListener("scroll", closeContextMenu)
 
 function closeContextMenu() {
     document.querySelector(".context-menu").setAttribute("hidden", "hidden")
+    document.querySelector(".context-menu").removeAttribute("empty")
 }
 //#endregion
 

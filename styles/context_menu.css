@@ -11,6 +11,11 @@
     padding: 4px;
     gap: 4px;
 }
+
+.context-menu[empty="empty"] {
+    gap: 0;
+}
+
 .context-menu[hidden] {
     display: none;
 }
