@@ -45,7 +45,7 @@ let brieflyDisableKeyboard = false
 
 let year
 
-const tieValue = 0.5
+let tieValue = 0.5
 
 let desmosColors
 const desmosScriptSrc = "https://www.desmos.com/api/v1.10/calculator.js?apiKey=dcb31709b452b1cf9dc26972add0fda6"
@@ -213,10 +213,10 @@ document.querySelector("#top_data").onclick = function() {
 document.querySelector("#top_mapping").onclick = function() {
     loadFile(".json", (result) => {
         mapping = JSON.parse(result)
+        window.localStorage.setItem(MAPPING, JSON.stringify(mapping))
         columns = JSON.parse(JSON.stringify(defaultColumns))
         hiddenColumns = JSON.parse(JSON.stringify(defaultHiddenColumns))
         if (scouting_data !== undefined) processData()
-        window.localStorage.setItem(MAPPING, JSON.stringify(mapping))
     })
 }
 // Adds all the columns from the mapping to the columns list
@@ -228,16 +228,15 @@ function handleMapping() {
         alert("Mapping version " + mapping["mapping_version"] + " is not allowed. Allowed versions: 1")
         return
     }
-    for (let x of Object.keys(mapping["averages"])) columns.push(x.replaceAll(" ", "_"))
-    for (let x of Object.keys(mapping["calculated"])) columns.push(x.replaceAll(" ", "_"))
-    for (let x of Object.keys(mapping["calculated_averages"])) columns.push(x.replaceAll(" ", "_"))
+    for (let x in mapping["data"]) {
+        columns.push(x)
+    }
     setHeader()
 }
 // Processes scouting_data based on information from mapping
 function processData() {
     handleMapping() // Adds columns
     let data = {}
-    // Loops through every scouting submission
     for (let i of scouting_data) {
         let teamFormat, team
         team = i[mapping["team"]["key"]] // todo: actually fix this bit
@@ -302,98 +301,14 @@ function processData() {
             data[team]["matches"].push(i)
         }
     }
-    // Adds data to team_data
     for (let i of Object.keys(data)) {
-        for (let av of Object.keys(data[i]["averages"])) { // Averages up all data that needs to be averaged
-            let total = 0
-            for (let x of data[i]["averages"][av]) total += x
-            team_data[i][av] = Math.round((total/data[i]["averages"][av].length)*rounding)/rounding
-        }
 
-        for (let cav of Object.keys(data[i]["calculated_averages"])) { // Averages up all the data that needs to be averaged
-            let total = 0
-            for (let x of data[i]["calculated_averages"][cav]) total += x
-            team_data[i][cav] = Math.round((total/data[i]["calculated_averages"][cav].length)*rounding)/rounding
-        }
-
-        for (let calc of Object.keys(data[i]["calculated"])) team_data[i][calc] = data[i]["calculated"][calc]
-
-        if (team_data[i]["graphs"] === undefined) team_data[i]["graphs"] = {}
-        for (let graph of Object.keys(data[i]["graphs"])) team_data[i]["graphs"][graph] = data[i]["graphs"][graph]
-
-        team_data[i]["matches"] = data[i]["matches"]
     }
     regenTable()
 }
 // Evaluates an expression
-function evaluate(i, exp) {
-    if (i["pi"] === undefined) i["pi"] = Math.PI
-    if (i["PI"] === undefined) i["PI"] = Math.PI
-    if (i["pI"] === undefined) i["pI"] = Math.PI
-    if (i["Pi"] === undefined) i["Pi"] = Math.PI
-    if (i["e"] === undefined) i["e"] = Math.E
-    if (i["E"] === undefined) i["E"] = Math.E
-
-    if (exp === undefined) return NaN
-    else if (exp.length === 3) {
-        let a = exp[0]
-        let op = exp[1]
-        let b = exp[2]
-
-        if (typeof a === "object") a = evaluate(i, a)
-        else if (typeof a === "string") a = i[a]
-        a = parseFloat(a)
-        if (isNaN(a) && op !== "=")  a = 0
-
-
-        if (typeof b === "object") b = evaluate(i, b)
-        else if (typeof b === "string") b = i[b]
-        b = parseFloat(b)
-        if (isNaN(b) && op !== "=") b = 0
-
-        switch (op) {
-            case "+": return a + b
-            case "-": return a - b
-            case "*": return a * b
-            case "/": return a / b
-            case "^":
-            case "pow": return Math.pow(a, b)
-            case "=": return i[exp[0]] == exp[2] ? 1 : 0
-        }
-    } else if (exp.length === 2) {
-        let op = exp[0].toLowerCase().trim()
-        let b = exp[1]
-
-        if (typeof b === "object") b = evaluate(i, b)
-        else if (typeof b === "string") b = i[b]
-        b = parseFloat(b)
-        if (isNaN(b)) b = 0
-
-        switch (op) {
-            case "abs": return Math.abs(b)
-            case "sin": return Math.sin(b)
-            case "cos": return Math.cos(b)
-            case "tan": return Math.tan(b)
-            case "asin": return Math.asin(b)
-            case "acos": return Math.acos(b)
-            case "atan": return Math.atan(b)
-            case "floor": return Math.floor(b)
-            case "ceil": return Math.ceil(b)
-            case "log10": return Math.log10(b)
-            case "round": return Math.round(b)
-            case "sign": return Math.sign(b)
-            case "sqrt": return Math.sqrt(b)
-            case "cbrt": return Math.cbrt(b)
-        }
-    } else if (exp.length === 1) {
-        let a = exp[0]
-        if (typeof a === "object") a = evaluate(i, a)
-        else if (typeof a === "string") a = i[a]
-        a = parseFloat(a)
-        if (isNaN(a)) a = 0
-        return a
-    } else if (exp.length === 0) return 0
-    else return NaN
+function evaluate(data, exp) {
+    return 0
 }
 // Adds button functionality to clear mappings and scouting data
 document.querySelector("#foot_clearDataMappings").onclick = function() {
