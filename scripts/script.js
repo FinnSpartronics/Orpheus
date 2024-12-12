@@ -237,77 +237,50 @@ function handleMapping() {
 function processData() {
     handleMapping() // Adds columns
     let data = {}
-    for (let i of scouting_data) {
-        let teamFormat, team
-        team = i[mapping["team"]["key"]] // todo: actually fix this bit
-        /*if (typeof mapping["team"] === "object") { // If it's an object, no need to detect format
-            team = i[mapping["team"]["key"]].toString().trim()
-            teamFormat = mapping["team"]["format"].trim().toLowerCase()
-        } else { // Detect format of team number
-            team = i[mapping["team"]].toString().trim()
-            if (team.startsWith("frc") && !isNaN(parseInt(team.substring(3, team.length)))) teamFormat = "frc#" // Checks if it is frc# format
-            else if (!isNaN(parseInt(team))) teamFormat = "#" // Checks if it is team number format
-            else teamFormat = "name" // If none of the above, it assumes team name format.
-        }
-        if (teamFormat === "frc#") team = team.substring(3, team.length) // Gets team number
+
+    const teamFormat = mapping["team"]["format"]
+
+    let constants = {
+        "pi": Math.PI,
+        "e": Math.E,
+    }
+    for (let konstant of Object.keys(mapping["constants"])) {
+        constants[konstant] = evaluate({}, constants, mapping["constants"][konstant])
+    }
+    console.log(constants)
+
+    for (let match of scouting_data) {
+        let team = match[mapping["team"]["key"]]
+        if (teamFormat === "frc#") team = team.splice(0, 3)
         if (teamFormat === "name") {
-            if (usingTBA)
-                for (let key of Object.keys(team_data)) { // Loops through all teams in team_data to see if they are
-                    if (team_data[key].Name.toLowerCase().trim() === team) {
-                        team = key
-                        break
-                    }
-                }
-            else
-                console.log("Cannot use teamFormat mapping type name when TBA is disabled (for now)") // Todo - add team name format support when TBA is disabled
-        }*/
-        // If in # format, nothing needs to be done.
+            for (let teamKey of Object.keys(team_data)) {
+                if (team_data[teamKey].Name.trim().toLowerCase() === name.trim().toLowerCase()) team = teamKey
+            }
+        }
 
         if (!usingTBA) team_data[team] = {Team_Number: team, Icon: "https://api.frc-colors.com/internal/team/" + team + "/avatar.png"}
         if (typeof team_data[team] !== "undefined") { // Only does calculations if team exists (in case someone put 4951 instead of 4915, no reason to include typos or teams that aren't in the event)
-            if (typeof data[team] === "undefined") data[team] = {"averages": {}, "calculated": {}, "calculated_averages": {}, "graphs": {}, "matches": []}
-            for (let average of Object.keys(mapping["averages"])) {
-                let averageKey = average.replaceAll(" ", "_") // Removes spaces
-                if (typeof data[team]["averages"][averageKey] === "undefined") data[team]["averages"][averageKey] = []
-
-                let x = i[mapping["averages"][average]]
-                if (typeof x !== "number") x = parseFloat(x)
-                if (!isNaN(x)) // Ignores NaN values, caused by a field not being filled in during scouting
-                    data[team]["averages"][averageKey].push(x)
-            }
-            for (let calculated of Object.keys(mapping["calculated"])) {
-                let calculatedKey = calculated.replaceAll(" ", "_")
-                if (typeof data[team]["calculated"][calculatedKey] === "undefined") data[team]["calculated"][calculatedKey] = 0
-                let e = evaluate(i, mapping["calculated"][calculated])
-                if (!isNaN(e)) // Ignores NaN values, caused by a field not being filled in during scouting
-                    data[team]["calculated"][calculatedKey] += e
-            }
-            for (let calculated of Object.keys(mapping["calculated_averages"])) {
-                let calculatedKey = calculated.replaceAll(" ", "_")
-                if (typeof data[team]["calculated_averages"][calculatedKey] === "undefined") data[team]["calculated_averages"][calculatedKey] = []
-                let e = evaluate(i, mapping["calculated_averages"][calculated])
-                if (!isNaN(e)) // Ignores NaN values, caused by a field not being filled in during scouting
-                    data[team]["calculated_averages"][calculatedKey].push(e)
+            if (typeof data[team] === "undefined") {
+                data[team] = {"graphs": {}, "matches": []}
+                for (let column of Object.keys(mapping["data"])) data[team][column] = []
             }
 
-            for (let graph of Object.keys(mapping["graphs"])) {
-                let graphKey = graph.replaceAll(" ", "_")
-                if (typeof data[team]["graphs"][graphKey] === "undefined") data[team]["graphs"][graphKey] = {}
-                let e = evaluate(i, mapping["graphs"][graph])
-                if (!isNaN(e)) // Ignores NaN values, caused by a field not being filled in during scouting
-                    data[team]["graphs"][graphKey][i[mapping["match"]["number"]]] = e
-            }
+            data[team]["matches"].push(match)
+        }
 
-            data[team]["matches"].push(i)
+        for (let column of Object.keys(mapping["data"])) {
+            let name = column
+            column = mapping["data"][name]
+
+            data[team][column].push(evaluate(scouting_data, constants, mapping["data"][column]))
         }
     }
-    for (let i of Object.keys(data)) {
 
-    }
+    // Add all the stuff now
     regenTable()
 }
 // Evaluates an expression
-function evaluate(data, exp) {
+function evaluate(data, constants, expression) {
     return 0
 }
 // Adds button functionality to clear mappings and scouting data
@@ -1234,7 +1207,6 @@ document.querySelector("#top_keyboard").onclick = function() {
 document.addEventListener("keydown", (e) => {
     if (!keyboardControls || brieflyDisableKeyboard) return
     let key = e.key.toLowerCase()
-    console.log(key)
     if (key === "d" || key === "arrowright") {
         let currentIndex = columns.indexOf(selectedSort)
         if (currentIndex !== columns.length-1) {
