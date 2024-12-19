@@ -1,4 +1,161 @@
-let functions = ["sin", "!", "logbase"]
+// Position 1 for after, otherwise assumed to be default
+let functions = {
+    logbase: {
+        params: 2,
+        func: (a,b) => Math.log(a)/Math.log(b)
+    },
+    //#region Math. functions
+    abs: {
+        params: 1,
+        func: (a) => Math.abs(a)
+    },
+    acos: {
+        params: 1,
+        func: (a) => Math.acos(a)
+    },
+    acosh: {
+        params: 1,
+        func: (a) => Math.acosh(a)
+    },
+    asin: {
+        params: 1,
+        func: (a) => Math.asin(a)
+    },
+    asinh: {
+        params: 1,
+        func: (a) => Math.asinh(a)
+    },
+    atan: {
+        params: 1,
+        func: (a) => Math.atan(a)
+    },
+    atan2: {
+        params: 2,
+        func: (a, b) => Math.atan2(a, b)
+    },
+    atanh: {
+        params: 1,
+        func: (a) => Math.atanh(a)
+    },
+    cbrt: {
+        params: 1,
+        func: (a) => Math.cbrt(a)
+    },
+    ceil: {
+        params: 1,
+        func: (a) => Math.ceil(a)
+    },
+    clz32: {
+        params: 1,
+        func: (a) => Math.clz32(a)
+    },
+    cos: {
+        params: 1,
+        func: (a) => Math.cos(a)
+    },
+    cosh: {
+        params: 1,
+        func: (a) => Math.cosh(a)
+    },
+    exp: {
+        params: 1,
+        func: (a) => Math.exp(a)
+    },
+    expm1: {
+        params: 1,
+        func: (a) => Math.expm1(a)
+    },
+    floor: {
+        params: 1,
+        func: (a) => Math.floor(a)
+    },
+    fround: {
+        params: 1,
+        func: (a) => Math.fround(a)
+    },
+    hypot: {
+        params: 2,
+        func: (a, b) => Math.hypot(a, b)
+    },
+    imul: {
+        params: 2,
+        func: (a, b) => Math.imul(a, b)
+    },
+    log: {
+        params: 1,
+        func: (a) => Math.log(a)
+    },
+    log1p: {
+        params: 1,
+        func: (a) => Math.log1p(a)
+    },
+    log2: {
+        params: 1,
+        func: (a) => Math.log2(a)
+    },
+    log10: {
+        params: 1,
+        func: (a) => Math.log10(a)
+    },
+    max: {
+        params: 2,
+        func: (a, b) => Math.max(a, b)
+    },
+    min: {
+        params: 2,
+        func: (a, b) => Math.min(a, b)
+    },
+    pow: {
+        params: 2,
+        func: (a, b) => Math.pow(a, b)
+    },
+    random: {
+        params: 0,
+        func: () => Math.random()
+    },
+    round: {
+        params: 1,
+        func: (a) => Math.round(a)
+    },
+    sign: {
+        params: 1,
+        func: (a) => Math.sign(a)
+    },
+    sin: {
+        params: 1,
+        func: (a) => Math.sin(a)
+    },
+    sinh: {
+        params: 1,
+        func: (a) => Math.sinh(a)
+    },
+    sqrt: {
+        params: 1,
+        func: (a) => Math.sqrt(a)
+    },
+    tan: {
+        params: 1,
+        func: (a) => Math.tan(a)
+    },
+    tanh: {
+        params: 1,
+        func: (a) => Math.tanh(a)
+    },
+    trunc: {
+        params: 1,
+        func: (a) => Math.trunc(a)
+    },
+    //#endregion
+    "!": {
+        params: 1,
+        position: 1,
+        func: (a) => {
+            let result = 1
+            for (let x = 1; x <= a; x++) result *= x
+            return result
+        }
+    },
+}
 
 function ev(data, constants, expression) {
     let tmpConstants = {}
@@ -29,22 +186,18 @@ function ev(data, constants, expression) {
                     postfix[i] = constants[x]
                     i--
                 } else { // Function
-                    if (x === "!") {
-                        let num = stack.pop()
-                        let result = 1
-                        for (let x = 1; x <= num; x++) result *= x
-                        stack.push(result)
+                    if (Object.keys(functions).includes(x)) {
+                        if (functions[x].params === 1)
+                            stack.push(functions[x].func(stack.pop()))
+                        else if (functions[x].params === 2) {
+                            let a = stack.pop()
+                            let b = stack.pop()
+                            stack.push(functions[x].func(b, a))
+                        }
+                        else alert("Function has too many params")
+                    } else {
+                        // Throw an error?
                     }
-                    if (x === "logbase") {
-                        let a = parseFloat(stack.pop())
-                        let b = parseFloat(stack.pop())
-                        stack.push(Math.log(a)/Math.log(b))
-                    }
-                    if (x === "sin") {
-                        let a = parseFloat(stack.pop())
-                        stack.push(Math.sin(a))
-                    }
-
                 }
             }
         } else {
@@ -82,7 +235,7 @@ function infix(exp) {
     }
 
     function precedence(x) {
-        if (functions.includes(x)) return 0
+        if (Object.keys(functions).includes(x)) return 0
         switch(x) {
             case "+":
             case "-": return 1
@@ -130,8 +283,8 @@ function infix(exp) {
     return postfix
 }
 
-let x = ev([],[], "5 sin + 2")
-console.log("5 sin + 2")
+let x = ev([],[], "2 5 pow")
+console.log("5 sin")
 console.log(x)
 
 //let x1 = ev({"x": 3, "pi": 17}, {"pi": Math.PI}, "20 20 logbase")
