@@ -2,7 +2,24 @@
 let functions = {
     logbase: {
         params: 2,
-        func: (a,b) => Math.log(a)/Math.log(b)
+        func: (base,x) => Math.log(base)/Math.log(x)
+    },
+    "!": {
+        params: 1,
+        position: 1,
+        func: (a) => {
+            let result = 1
+            for (let x = 1; x <= a; x++) result *= x
+            return result
+        }
+    },
+    "factorial": {
+        params: 1,
+        func: (a) => {
+            let result = 1
+            for (let x = 1; x <= a; x++) result *= x
+            return result
+        }
     },
     //#region Math. functions
     abs: {
@@ -146,15 +163,6 @@ let functions = {
         func: (a) => Math.trunc(a)
     },
     //#endregion
-    "!": {
-        params: 1,
-        position: 1,
-        func: (a) => {
-            let result = 1
-            for (let x = 1; x <= a; x++) result *= x
-            return result
-        }
-    },
 }
 
 function ev(data, constants, expression) {
@@ -164,8 +172,10 @@ function ev(data, constants, expression) {
     }
     constants = tmpConstants
 
-    let postfix = infix(expression)
+    let postfix = toInfix(expression)
+    //console.log(postfix)
     let stack = []
+    let fStack
     for (let i = 0; i < postfix.length; i++) {
         let x = postfix[i]
         if (isNaN(parseFloat(x))) {
@@ -187,33 +197,73 @@ function ev(data, constants, expression) {
                     i--
                 } else { // Function
                     if (Object.keys(functions).includes(x)) {
-                        if (functions[x].params === 1)
-                            stack.push(functions[x].func(stack.pop()))
-                        else if (functions[x].params === 2) {
-                            let a = stack.pop()
-                            let b = stack.pop()
-                            stack.push(functions[x].func(b, a))
+                        if (functions[x].position === 1) {
+                            console.log(JSON.stringify(stack), x)
+                            if (functions[x].params === 1) {
+                                stack.push(functions[x].func(stack.pop()))
+                            } else if (functions[x].params === 2) {
+                                let a = stack.pop()
+                                let b = stack.pop()
+                                stack.push(functions[x].func(b, a))
+                            }
+                            else alert("Function has too many params")
+                        } else {
+                            fStack = {
+                                func: functions[x].func,
+                                params: functions[x].params,
+                                stack: []
+                            }
                         }
-                        else alert("Function has too many params")
                     } else {
                         // Throw an error?
                     }
                 }
             }
         } else {
-            stack.push(x)
+            if (fStack !== undefined) {
+                if (fStack.params === fStack.stack.length) {
+                    if (fStack.params === 1) {
+                        stack.push(fStack.func(fStack.stack.pop()))
+                        fStack = undefined
+                        i--
+                    }
+                    else if (fStack.params === 2) {
+                        let b = fStack.stack.pop()
+                        stack.push(fStack.func(b, fStack.stack.pop()))
+                        fStack = undefined
+                        i --
+                    } else alert("too many parameters")
+                } else fStack.stack.push(x)
+            }
+            else stack.push(x)
         }
     }
+    if (fStack !== undefined) {
+        if (fStack.params === 1) {
+            stack.push(fStack.func(fStack.stack.pop()))
+            fStack = undefined
+        }
+        else if (fStack.params === 2) {
+            let b = fStack.stack.pop()
+            stack.push(fStack.func(b, fStack.stack.pop()))
+            fStack = undefined
+        } else alert("too many parameters")
+    }
+    //console.log(stack.length)
     return stack.pop()
 }
 
-function infix(exp) {
+function toInfix(exp) {
     let infix = []
     let current = ""
     for (let x of (exp+" ")) {
         if (/\d/g.test(x)) current += x
         else if (x === "." && current.trim().length === 0)  {
             current = "0."
+        }
+        else if (x.trim() === ",") {
+            infix.push(current)
+            current = ""
         }
         else if (/[+\-*/^%()!]/g.test(x)) {
             if (current.trim() !== "")
@@ -263,9 +313,8 @@ function infix(exp) {
                 else if (stack.includes("(")) stack.push(x)
                 else if (precedence(stack[stack.length - 1]) < precedence(x)) stack.push(x)
                 else {
-                    while (true) {
-                        if (precedence(stack[stack.length - 1]) >= precedence(x)) postfix.push(stack.pop())
-                        else break
+                    while (precedence(stack[stack.length - 1]) >= precedence(x) && stack.length > 0) {
+                        postfix.push(stack.pop())
                     }
                     stack.push(x)
                 }
@@ -283,8 +332,7 @@ function infix(exp) {
     return postfix
 }
 
-let x = ev([],[], "2 5 pow")
-console.log("5 sin")
+let x = ev([],[], "logbase(2,16)!+4") //4! = 24
 console.log(x)
 
 //let x1 = ev({"x": 3, "pi": 17}, {"pi": Math.PI}, "20 20 logbase")
