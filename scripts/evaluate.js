@@ -4,15 +4,6 @@ let functions = {
         params: 2,
         func: (base,x) => Math.log(base)/Math.log(x)
     },
-    "!": {
-        params: 1,
-        position: 1,
-        func: (a) => {
-            let result = 1
-            for (let x = 1; x <= a; x++) result *= x
-            return result
-        }
-    },
     "factorial": {
         params: 1,
         func: (a) => {
@@ -21,7 +12,7 @@ let functions = {
             return result
         }
     },
-    //#region Math. functions
+    //#region Math.* functions
     abs: {
         params: 1,
         func: (a) => Math.abs(a)
@@ -163,7 +154,19 @@ let functions = {
         func: (a) => Math.trunc(a)
     },
     //#endregion
+
 }
+
+/**
+ * Idea: when theres a function, find the parameters, then evaluate each of those parameters individually
+ * Then, replace that function with the evaluated value.
+ *
+ * So the chain of events would be like:
+ * logbase(1+1,2*2*2*2) + 2 * 5
+ * logbase(2,16) + 2 * 5
+ * 4 + 2 * 5
+ * solve
+ **/
 
 function ev(data, constants, expression) {
     let tmpConstants = {}
@@ -172,10 +175,9 @@ function ev(data, constants, expression) {
     }
     constants = tmpConstants
 
-    let postfix = toInfix(expression)
+    let postfix = toPostfix(expression)
     //console.log(postfix)
     let stack = []
-    let fStack
     for (let i = 0; i < postfix.length; i++) {
         let x = postfix[i]
         if (isNaN(parseFloat(x))) {
@@ -195,65 +197,16 @@ function ev(data, constants, expression) {
                 } else if (Object.keys(constants).includes(x)) {
                     postfix[i] = constants[x]
                     i--
-                } else { // Function
-                    if (Object.keys(functions).includes(x)) {
-                        if (functions[x].position === 1) {
-                            console.log(JSON.stringify(stack), x)
-                            if (functions[x].params === 1) {
-                                stack.push(functions[x].func(stack.pop()))
-                            } else if (functions[x].params === 2) {
-                                let a = stack.pop()
-                                let b = stack.pop()
-                                stack.push(functions[x].func(b, a))
-                            }
-                            else alert("Function has too many params")
-                        } else {
-                            fStack = {
-                                func: functions[x].func,
-                                params: functions[x].params,
-                                stack: []
-                            }
-                        }
-                    } else {
-                        // Throw an error?
-                    }
                 }
             }
         } else {
-            if (fStack !== undefined) {
-                if (fStack.params === fStack.stack.length) {
-                    if (fStack.params === 1) {
-                        stack.push(fStack.func(fStack.stack.pop()))
-                        fStack = undefined
-                        i--
-                    }
-                    else if (fStack.params === 2) {
-                        let b = fStack.stack.pop()
-                        stack.push(fStack.func(b, fStack.stack.pop()))
-                        fStack = undefined
-                        i --
-                    } else alert("too many parameters")
-                } else fStack.stack.push(x)
-            }
-            else stack.push(x)
+            stack.push(x)
         }
     }
-    if (fStack !== undefined) {
-        if (fStack.params === 1) {
-            stack.push(fStack.func(fStack.stack.pop()))
-            fStack = undefined
-        }
-        else if (fStack.params === 2) {
-            let b = fStack.stack.pop()
-            stack.push(fStack.func(b, fStack.stack.pop()))
-            fStack = undefined
-        } else alert("too many parameters")
-    }
-    //console.log(stack.length)
     return stack.pop()
 }
 
-function toInfix(exp) {
+function toPostfix(exp) {
     let infix = []
     let current = ""
     for (let x of (exp+" ")) {
@@ -285,7 +238,6 @@ function toInfix(exp) {
     }
 
     function precedence(x) {
-        if (Object.keys(functions).includes(x)) return 0
         switch(x) {
             case "+":
             case "-": return 1
@@ -332,7 +284,41 @@ function toInfix(exp) {
     return postfix
 }
 
-let x = ev([],[], "logbase(2,16)!+4") //4! = 24
+function evaluate(data, constants, exp) {
+    let deepness = 0
+    let beginIndex
+    let endIndex
+
+    let index = 0
+
+    let finalExp = exp
+
+    while (finalExp.includes("(") && index <= finalExp.length) {
+        if (finalExp[index] === "(") {
+            deepness++
+            beginIndex = index
+        }
+        else if (finalExp[index] === ")" || finalExp[index] === ",") {
+            endIndex = index
+            beginIndex++
+            console.log(finalExp.substring(beginIndex,endIndex))
+            console.log(ev(data, constants, finalExp.substring(beginIndex,endIndex)))
+
+            let simplified = ev(data, constants, finalExp.substring(beginIndex,endIndex))
+            finalExp = finalExp.substring(0, beginIndex-1) + simplified + finalExp.substring(endIndex+1, finalExp.length)
+            index = -1
+
+            console.log(finalExp)
+
+            deepness = 0
+        }
+        index++
+    }
+    return ev(data, constants, finalExp)
+}
+
+let x = evaluate([],[], "5+5+5+5+5+(5*5)") //4! = 24
+//x = ev([],[], "4!+4") //4! = 24
 console.log(x)
 
 //let x1 = ev({"x": 3, "pi": 17}, {"pi": Math.PI}, "20 20 logbase")
