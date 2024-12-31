@@ -37,8 +37,8 @@ let hiddenColumns = JSON.parse(JSON.stringify(defaultHiddenColumns))
 let selectedSort = "Team_Number"
 let sortDirection = 1
 
-let rounding = 3
-rounding = Math.pow(10, rounding)
+let roundingDigits = 3
+let rounding = Math.pow(10, roundingDigits)
 
 let keyboardControls = true
 let brieflyDisableKeyboard = false
@@ -517,6 +517,12 @@ function element(team) {
         columnEl.className = "data"
         // If undefined, leave empty. Else, display the data. If data is a float, round it. Else, leave as is.
         columnEl.innerText = team_data[team][column] === undefined ? "" : (isNaN(parseFloat(team_data[team][column])) ? team_data[team][column] : Math.round(rounding * parseFloat(team_data[team][column])) / rounding)
+        if (mapping["data"][column] !== undefined) {
+            if (mapping["data"][column]["display"] !== undefined) {
+                if (mapping["data"][column]["display"] === "percentage" || mapping["data"][column]["display"] === "percent" || mapping["data"][column]["display"] === "%")
+                    columnEl.innerText = (100 * Math.round(rounding * parseFloat(team_data[team][column])) / rounding) + "%"
+            }
+        }
         if ((""+team_data[team][column]).length > 10) columnEl.style.fontSize = Math.max(1.2 - ((.025) * ((""+team_data[team][column]).length-10)), .7) + "rem"
         if (columnEl.innerText.toString() === "NaN") columnEl.classList.add("NaN")
         el.appendChild(columnEl)
@@ -574,15 +580,15 @@ function openTeam(team, comparisons) {
 
     if (commentsEnabled) {
         for (let match of data.matches) {
-            console.log(match)
             if ((""+match[mapping["match"]["notes"]]).trim() !== "")
-                if (showNamesInTeamComments)
-                    comments = comments + match[mapping["notes"]] + "    -" + match[mapping["scouter"]] + " (" + match[mapping["match"]["number"]] + ")\n\n"
-                else
-                    comments = comments + match[mapping["notes"]] + " (Match " + match[mapping["match"]["number"]] + ")\n\n"
+                if (match[mapping["match"]["notes"]] !== 0)
+                    if (showNamesInTeamComments)
+                        comments = comments + match[mapping["match"]["notes"]] + "    -" + match[mapping["match"]["scouter_name_key"]] + " (" + match[mapping["match"]["number_key"]] + ")\n\n"
+                    else
+                        comments = comments + match[mapping["match"]["notes"]] + " (Match " + match[mapping["match"]["number_key"]] + ")\n\n"
         }
         comments = comments.trim()
-    } else comments = "No note data"
+    } else comments = "No comments"
 
     // General Layout Assembly
     let holder = document.createElement("div")
