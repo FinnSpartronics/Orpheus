@@ -158,7 +158,6 @@ function ev(data, constants, expression) {
 function toPostfix(exp) {
     let infix = []
     let current = ""
-    let currentlyNegative = 0
     for (let x of (exp+" ")) {
         if (/\d/g.test(x)) current += x
         else if (x === "." && current.trim().length === 0)  {
@@ -166,24 +165,11 @@ function toPostfix(exp) {
         }
         else if (x.trim() === ",") {
             infix.push(current)
-            if (currentlyNegative) {
-                currentlyNegative = false
-                infix.push(")")
-            }
             current = ""
         }
         else if (/[+\-*/^%()!]/g.test(x)) {
             if (current.trim() !== "") {
                 infix.push(current)
-                if (currentlyNegative) {
-                    currentlyNegative = false
-                    infix.push(")")
-                }
-            }
-            if (x === "-") {
-                infix.push("(")
-                infix.push("0")
-                currentlyNegative = true
             }
             infix.push(x)
             current = ""
@@ -196,22 +182,16 @@ function toPostfix(exp) {
                 }
                 else {
                     infix.push(current)
-                    if (currentlyNegative) {
-                        currentlyNegative = false
-                        infix.push(")")
-                    }
                 }
             } else {
                 infix.push(current)
-                if (currentlyNegative) {
-                    currentlyNegative = false
-                    infix.push(")")
-                }
             }
             current = ""
         }
         else if (x !== " ") current += x
     }
+
+    // Convert all -x to (0-x)
 
     function precedence(x) {
         switch(x) {
@@ -305,10 +285,10 @@ function evaluate(data, constants, exp) {
     return ev(data, constants, finalExp)
 }
 
-let exp = "sin(cos(tan(2)))"
-let x = evaluate({},{}, exp)
+//let exp = "(x+2-5)"
+//let x = evaluate({"x": 5},{}, exp)
 //console.log(exp)
-console.log(x)
+//console.log(x)
 
 
 // Todo: variables with spaces in their names

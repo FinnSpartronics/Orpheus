@@ -245,7 +245,8 @@ function processData() {
         "e": Math.E,
     }
     for (let konstant of Object.keys(mapping["constants"])) {
-        constants[konstant] = evaluate({}, constants, mapping["constants"][konstant])
+        console.log(konstant, mapping["constants"][konstant])
+        constants[konstant] = evaluate({}, constants, "" + mapping["constants"][konstant])
     }
     console.log(constants)
 
@@ -262,27 +263,43 @@ function processData() {
         if (typeof team_data[team] !== "undefined") { // Only does calculations if team exists (in case someone put 4951 instead of 4915, no reason to include typos or teams that aren't in the event)
             if (typeof data[team] === "undefined") {
                 data[team] = {"graphs": {}, "matches": []}
-                for (let column of Object.keys(mapping["data"])) data[team][column] = []
+                for (let column of Object.keys(mapping["data"])) {
+                    data[team][column] = []
+                    if (mapping["data"][column].graph) data[team]["graphs"][column] = {}
+                }
             }
 
             data[team]["matches"].push(match)
-        }
 
-        for (let column of Object.keys(mapping["data"])) {
-            let name = column
-            column = mapping["data"][name]
+            for (let column of Object.keys(mapping["data"])) {
+                data[team][column].push(evaluate(scouting_data, constants, mapping["data"][column].value))
 
-            data[team][column].push(evaluate(scouting_data, constants, mapping["data"][column]))
+                if (mapping["data"][column].graph) data[team]["graphs"][column][match[mapping["match"]["number_key"]]] = evaluate(scouting_data, constants, mapping["data"][column].value)
+            }
         }
     }
 
+    console.log(data)
     // Add all the stuff now
+    for (let t of Object.keys(data)) {
+        team_data[t].graphs = {}
+        for (let column of Object.keys(mapping["data"])) {
+            switch (mapping["data"][column]["format"]) {
+                case "mean": {
+                    let num = 0
+                    for (let x of data[t][column])
+                        num += x
+                    num /= data[t][column].length
+                    team_data[t][column] = num
+                    break;
+                }
+            }
+        }
+    }
+
     regenTable()
 }
-// Evaluates an expression
-function evaluate(data, constants, expression) {
-    return 0
-}
+
 // Adds button functionality to clear mappings and scouting data
 document.querySelector("#foot_clearDataMappings").onclick = function() {
     if (confirm("Are you sure? This is irreversible")) {
