@@ -55,3 +55,11 @@ dialog {
     top: 0;
     z-index: 9999;
 }
+
+footer {
+    display: flex;
+    width: 100%;
+}
+footer a {
+    margin: 0 .1rem;
+}
