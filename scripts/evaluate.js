@@ -120,6 +120,7 @@ let functions = {
 function ev(data, constants, expression) {
     let tmpVars = {}
     for (let x of Object.keys(data)) {
+        if (data[x] === "") data[x] = 0
         tmpVars["["+x+"]"] = data[x]
     }
     let variables = tmpVars

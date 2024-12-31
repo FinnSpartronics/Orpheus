@@ -245,10 +245,8 @@ function processData() {
         "e": Math.E,
     }
     for (let konstant of Object.keys(mapping["constants"])) {
-        console.log(konstant, mapping["constants"][konstant])
         constants[konstant] = evaluate({}, constants, "" + mapping["constants"][konstant])
     }
-    console.log(constants)
 
     for (let match of scouting_data) {
         let team = match[mapping["team"]["key"]]
@@ -272,9 +270,12 @@ function processData() {
             data[team]["matches"].push(match)
 
             for (let column of Object.keys(mapping["data"])) {
-                data[team][column].push(evaluate(match, constants, mapping["data"][column].value))
+                let x = evaluate(match, constants, mapping["data"][column].value)
+                if (!isNaN(x)) { // todo: add ignore condition check here and decide of the isNaN check should stay forever or need to be added manually by user in mapping
+                    data[team][column].push(x)
 
-                if (mapping["data"][column].graph) data[team]["graphs"][column][match[mapping["match"]["number_key"]]] = evaluate(scouting_data, constants, mapping["data"][column].value)
+                    if (mapping["data"][column].graph) data[team]["graphs"][column][match[mapping["match"]["number_key"]]] = evaluate(scouting_data, constants, mapping["data"][column].value)
+                }
             }
         }
     }
@@ -290,6 +291,24 @@ function processData() {
                     for (let x of data[t][column])
                         num += x
                     num /= data[t][column].length
+                    team_data[t][column] = num
+                    break;
+                }
+                case "median": {
+                    let nums = []
+                    for (let x of data[t][column])
+                        nums.push(x)
+                    nums.sort((a, b) => a - b)
+                    if (nums.length % 2) // If true then even, else odd.
+                        team_data[t][column] = (nums[Math.floor((nums.length-1)/2)] + nums[Math.ceil((nums.length-1)/2)])/2
+                    else
+                        team_data[t][column] = nums[Math.floor((nums.length-1)/2)]
+                    break;
+                }
+                case "sum": {
+                    let num = 0
+                    for (let x of data[t][column])
+                        num += x
                     team_data[t][column] = num
                     break;
                 }
