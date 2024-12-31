@@ -1,157 +1,117 @@
 // Position 1 for after, otherwise assumed to be default
 let functions = {
     logbase: {
-        params: 2,
-        func: (base,x) => Math.log(base)/Math.log(x)
+        func: (a) => Math.log(a[1])/Math.log(a[0])
     },
     "factorial": {
-        params: 1,
         func: (a) => {
             let result = 1
-            for (let x = 1; x <= a; x++) result *= x
+            for (let x = 1; x <= a[0]; x++) result *= x
             return result
         }
     },
     //#region Math.* functions
     abs: {
-        params: 1,
-        func: (a) => Math.abs(a)
+        func: (a) => Math.abs(a[0])
     },
     acos: {
-        params: 1,
-        func: (a) => Math.acos(a)
+        func: (a) => Math.acos(a[0])
     },
     acosh: {
-        params: 1,
-        func: (a) => Math.acosh(a)
+        func: (a) => Math.acosh(a[0])
     },
     asin: {
-        params: 1,
-        func: (a) => Math.asin(a)
+        func: (a) => Math.asin(a[0])
     },
     asinh: {
-        params: 1,
-        func: (a) => Math.asinh(a)
+        func: (a) => Math.asinh(a[0])
     },
     atan: {
-        params: 1,
-        func: (a) => Math.atan(a)
+        func: (a) => Math.atan(a[0])
     },
     atan2: {
-        params: 2,
-        func: (a, b) => Math.atan2(a, b)
+        func: (a) => Math.atan2(a[0], a[1])
     },
     atanh: {
-        params: 1,
-        func: (a) => Math.atanh(a)
+        func: (a) => Math.atanh(a[0])
     },
     cbrt: {
-        params: 1,
-        func: (a) => Math.cbrt(a)
+        func: (a) => Math.cbrt(a[0])
     },
     ceil: {
-        params: 1,
-        func: (a) => Math.ceil(a)
-    },
-    clz32: {
-        params: 1,
-        func: (a) => Math.clz32(a)
+        func: (a) => Math.ceil(a[0])
     },
     cos: {
-        params: 1,
-        func: (a) => Math.cos(a)
+        func: (a) => Math.cos(a[0])
     },
     cosh: {
-        params: 1,
-        func: (a) => Math.cosh(a)
+        func: (a) => Math.cosh(a[0])
     },
     exp: {
-        params: 1,
-        func: (a) => Math.exp(a)
+        func: (a) => Math.exp(a[0])
     },
     expm1: {
-        params: 1,
-        func: (a) => Math.expm1(a)
+        func: (a) => Math.expm1(a[0])
     },
     floor: {
-        params: 1,
-        func: (a) => Math.floor(a)
+        func: (a) => Math.floor(a[0])
     },
     fround: {
-        params: 1,
-        func: (a) => Math.fround(a)
+        func: (a) => Math.fround(a[0])
     },
     hypot: {
-        params: 2,
-        func: (a, b) => Math.hypot(a, b)
+        func: (a) => Math.hypot(...a)
     },
     imul: {
-        params: 2,
-        func: (a, b) => Math.imul(a, b)
+        func: (a) => Math.imul(a[0], a[1])
     },
     log: {
-        params: 1,
-        func: (a) => Math.log(a)
-    },
-    log1p: {
-        params: 1,
-        func: (a) => Math.log1p(a)
-    },
-    log2: {
-        params: 1,
-        func: (a) => Math.log2(a)
+        func: (a) => Math.log(a[0])
     },
     log10: {
-        params: 1,
-        func: (a) => Math.log10(a)
+        func: (a) => Math.log10(a[0])
+    },
+    log1p: {
+        func: (a) => Math.log1p(a[0])
+    },
+    log2: {
+        func: (a) => Math.log2(a[0])
     },
     max: {
-        params: 2,
-        func: (a, b) => Math.max(a, b)
+        func: (a) => Math.max(...a)
     },
     min: {
-        params: 2,
-        func: (a, b) => Math.min(a, b)
+        func: (a) => Math.min(...a)
     },
     pow: {
-        params: 2,
-        func: (a, b) => Math.pow(a, b)
+        func: (a) => Math.pow(a[0], a[1])
     },
     random: {
-        params: 0,
         func: () => Math.random()
     },
     round: {
-        params: 1,
-        func: (a) => Math.round(a)
+        func: (a) => Math.round(a[0])
     },
     sign: {
-        params: 1,
-        func: (a) => Math.sign(a)
+        func: (a) => Math.sign(a[0])
     },
     sin: {
-        params: 1,
-        func: (a) => Math.sin(a)
+        func: (a) => Math.sin(a[0])
     },
     sinh: {
-        params: 1,
-        func: (a) => Math.sinh(a)
+        func: (a) => Math.sinh(a[0])
     },
     sqrt: {
-        params: 1,
-        func: (a) => Math.sqrt(a)
+        func: (a) => Math.sqrt(a[0])
     },
     tan: {
-        params: 1,
-        func: (a) => Math.tan(a)
+        func: (a) => Math.tan(a[0])
     },
     tanh: {
-        params: 1,
-        func: (a) => Math.tanh(a)
+        func: (a) => Math.tanh(a[0])
     },
     trunc: {
-        params: 1,
-        func: (a) => Math.trunc(a)
+        func: (a) => Math.trunc(a[0])
     },
     //#endregion
 
@@ -293,33 +253,53 @@ function evaluate(data, constants, exp) {
 
     let finalExp = exp
 
+    let item = ""
+    let outerFunction = false
+
     while (finalExp.includes("(") && index <= finalExp.length) {
         if (finalExp[index] === "(") {
             deepness++
             beginIndex = index
+            if (Object.keys(functions).includes(item.trim())) outerFunction = item
+            else outerFunction = false
+            item = ""
         }
-        else if (finalExp[index] === ")" || finalExp[index] === ",") {
+        else if (finalExp[index] === ")") {
             endIndex = index
+
             beginIndex++
-            console.log(finalExp.substring(beginIndex,endIndex))
-            console.log(ev(data, constants, finalExp.substring(beginIndex,endIndex)))
 
-            let simplified = ev(data, constants, finalExp.substring(beginIndex,endIndex))
-            finalExp = finalExp.substring(0, beginIndex-1) + simplified + finalExp.substring(endIndex+1, finalExp.length)
+            if (outerFunction) {
+                let params = []
+                for (let x of finalExp.substring(beginIndex,endIndex).split(","))
+                    params.push(parseFloat(ev(data,constants,x)))
+                console.log(params)
+                let simplified = ev(data, constants, functions[outerFunction.trim()].func(params))
+                finalExp = finalExp.substring(0, beginIndex-1 - outerFunction.length) + simplified + finalExp.substring(endIndex+1, finalExp.length)
+            } else {
+                let simplified = ev(data, constants, finalExp.substring(beginIndex,endIndex))
+                finalExp = finalExp.substring(0, beginIndex-1) + simplified + finalExp.substring(endIndex+1, finalExp.length)
+            }
             index = -1
-
-            console.log(finalExp)
+            item = ""
 
             deepness = 0
+        } else {
+            if (item === "" || (isNaN(parseFloat(item)) === isNaN(finalExp[index])))
+                item += finalExp[index]
+            else item = ""
         }
         index++
     }
     return ev(data, constants, finalExp)
 }
 
-let x = evaluate([],[], "5+5+5+5+5+(5*5)") //4! = 24
-//x = ev([],[], "4!+4") //4! = 24
+let exp = "tan(2)"
+let x = evaluate({},{}, exp)
+console.log(exp)
 console.log(x)
 
 //let x1 = ev({"x": 3, "pi": 17}, {"pi": Math.PI}, "20 20 logbase")
 //console.log(x1) // 13
+
+// Todo: variables with spaces in their names
