@@ -159,7 +159,7 @@ function loadEvent() {
                             if (match["comp_level"] === "qm")
                                 team_data[team["team_number"]].TBA["matches"][match["match_number"]] = match
                         }
-                        team_data[team["team_number"]]["Winrate"] = Math.round(rounding * (matchesWon / data.length)) / rounding
+                        team_data[team["team_number"]]["Winrate"] = (matchesWon / data.length)
                         regenTable()
                     })
                 }
@@ -272,7 +272,7 @@ function processData() {
             data[team]["matches"].push(match)
 
             for (let column of Object.keys(mapping["data"])) {
-                data[team][column].push(evaluate(scouting_data, constants, mapping["data"][column].value))
+                data[team][column].push(evaluate(match, constants, mapping["data"][column].value))
 
                 if (mapping["data"][column].graph) data[team]["graphs"][column][match[mapping["match"]["number_key"]]] = evaluate(scouting_data, constants, mapping["data"][column].value)
             }
@@ -493,7 +493,8 @@ function element(team) {
     for (let column of columns) {
         let columnEl = document.createElement("div")
         columnEl.className = "data"
-        columnEl.innerText = team_data[team][column] === undefined ? "" : team_data[team][column]
+        // If undefined, leave empty. Else, display the data. If data is a float, round it. Else, leave as is.
+        columnEl.innerText = team_data[team][column] === undefined ? "" : (isNaN(parseFloat(team_data[team][column])) ? team_data[team][column] : Math.round(rounding * parseFloat(team_data[team][column])) / rounding)
         if ((""+team_data[team][column]).length > 10) columnEl.style.fontSize = Math.max(1.2 - ((.025) * ((""+team_data[team][column]).length-10)), .7) + "rem"
         if (columnEl.innerText.toString() === "NaN") columnEl.classList.add("NaN")
         el.appendChild(columnEl)

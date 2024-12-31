@@ -118,14 +118,14 @@ let functions = {
 }
 
 function ev(data, constants, expression) {
-    let tmpConstants = {}
-    for (let x of Object.keys(constants)) {
-        tmpConstants["["+x+"]"] = constants[x]
+    let tmpVars = {}
+    for (let x of Object.keys(data)) {
+        tmpVars["["+x+"]"] = data[x]
     }
-    constants = tmpConstants
+    let variables = tmpVars
 
     let postfix = toPostfix(expression)
-    //console.log(postfix)
+    //console.log(postfix, variables)
     let stack = []
     for (let i = 0; i < postfix.length; i++) {
         let x = postfix[i]
@@ -140,11 +140,11 @@ function ev(data, constants, expression) {
                 if (x === "^") stack.push(Math.pow(b,a))
                 if (x === "%") stack.push(b%a)
             } else {
-                if (Object.keys(data).includes(x)) {
-                    postfix[i] = data[x]
-                    i--
-                } else if (Object.keys(constants).includes(x)) {
+                if (Object.keys(constants).includes(x)) {
                     postfix[i] = constants[x]
+                    i--
+                } else if (Object.keys(variables).includes(x)) {
+                    postfix[i] = variables[x]
                     i--
                 }
             }
@@ -282,7 +282,7 @@ function evaluate(data, constants, exp) {
         }
         index++
     }
-    return ev(data, constants, finalExp)
+    return parseFloat(ev(data, constants, finalExp))
 }
 
 //let exp = "(x+2-5)"
@@ -290,6 +290,4 @@ function evaluate(data, constants, exp) {
 //console.log(exp)
 //console.log(x)
 
-
-// Todo: variables with spaces in their names
 // Todo: Fix stuff breaking when doing -num instead 0-num
