@@ -1070,6 +1070,18 @@ function graphElement(data, name, teams, width, height) {
     })
 
     let expressions = []
+    expressions.push({
+        latex: "T_{eamListX}=" + (maxX * 1.15)
+    })
+    expressions.push({
+        latex: "T_{eamListY}=" + (1.2 * maxY - maxY * .05)
+    })
+    expressions.push({
+        latex: "\\left(T_{eamListX},T_{eamListY}\\right)",
+        pointOpacity: .1,
+        color: Desmos.Colors.BLACK,
+        dragMode: Desmos.DragModes.XY
+    })
     for (let i = 0; i < data.length; i++) {
         expressions.push({
             type:"table",
@@ -1085,13 +1097,14 @@ function graphElement(data, name, teams, width, height) {
         expressions.push({latex: "y_{" + i + "}\\sim a_{" + i + "}x_{" + i + "} + b_{" + i + "}", hidden: true})
         expressions.push({latex: "a_{" + i + "}" + "x + " + "b_{" + i + "}" + " = y", color: desmosColors[i], lineWidth: (projectorMode ? 12 : 6), lineOpacity: (projectorMode ? .8 : .6), label: teams[i] + " " + teamName})
         expressions.push({
-            latex: "(" + maxX * 1.15 + "," + ((1.2 - ((i + 1)*.05)) * maxY ) + ")",
+            latex: "(T_{eamListX},T_{eamListY}-" + (i * .05 * maxY) + ")",
             label: teams[i] + " " + teamName.substring(0, 20) + (teamName.length >= 20 ? "..." : ""),
             showLabel: true,
             labelOrientation: Desmos.LabelOrientations.LEFT,
             color: desmosColors[i],
             labelSize: (projectorMode ? "1.5" : "1"),
-            pointSize: (projectorMode ? 24 : 16)
+            pointSize: (projectorMode ? 24 : 16),
+            dragMode: Desmos.DragModes.NONE
         })
         expressions.push({
             latex: "(x_{" + i + "}, y_{" + i + "})",
