@@ -113,7 +113,52 @@ let functions = {
         func: (a) => Math.trunc(a[0])
     },
     //#endregion
-
+    //#region Logic
+    equal: {
+        func: (a) => {
+            if (isNaN(parseFloat(a[0]))) {
+                return (""+a[0]).replaceAll("'","") == (""+a[1]).replaceAll("'","") ? 1 : 0
+            }
+            return a[0] == a[1] ? 1 : 0
+        }
+    },
+    equals: {
+        func: (a) => {
+            if (isNaN(parseFloat(a[0]))) {
+                return (""+a[0]).replaceAll("'","") == (""+a[1]).replaceAll("'","") ? 1 : 0
+            }
+            return a[0] == a[1] ? 1 : 0
+        }
+    },
+    greater: {
+        func: (a) => a[0] > a[1] ? 1 : 0
+    },
+    "greater=": {
+        func: (a) => a[0] >= a[1] ? 1 : 0
+    },
+    less: {
+        func: (a) => a[0] < a[1] ? 1 : 0
+    },
+    "less=": {
+        func: (a) => a[0] <= a[1] ? 1 : 0
+    },
+    "or": {
+        func: (a) => a[0] + a[1] > 0 ? 1 : 0
+    },
+    "and": {
+        func: (a) => a[0] + a[1] === 2 ? 1 : 0
+    },
+    "not": {
+        func: (a) => a[0] == 0 ? 1 : 0
+    },
+    "if": {
+        func: (a) => {
+            if (a[0]) return a[1]
+            if (a[2] === undefined) return 0
+            return a[2]
+        }
+    }
+    //#endregion
 }
 
 function ev(data, constants, expression) {
@@ -247,15 +292,17 @@ function evaluate(data, constants, exp) {
     let item = ""
     let outerFunction = false
 
+    let inQuotes = false
+
     while (finalExp.includes("(") && index <= finalExp.length) {
-        if (finalExp[index] === "(") {
+        if (finalExp[index] === "(" && !inQuotes) {
             deepness++
             beginIndex = index
             if (Object.keys(functions).includes(item.trim())) outerFunction = item
             else outerFunction = false
             item = ""
         }
-        else if (finalExp[index] === ")") {
+        else if (finalExp[index] === ")" && !inQuotes) {
             endIndex = index
 
             beginIndex++
@@ -263,7 +310,21 @@ function evaluate(data, constants, exp) {
             if (outerFunction) {
                 let params = []
                 for (let x of finalExp.substring(beginIndex,endIndex).split(",")) {
-                    params.push(parseFloat(ev(data,constants,x)))
+                    if (isNaN(parseFloat(ev(data,constants,x)))) {
+                        let tmpVars = {}
+                        for (let x of Object.keys(data)) {
+                            if (data[x] === "") data[x] = 0
+                            tmpVars["["+x+"]"] = data[x]
+                        }
+                        let variables = tmpVars
+                        if (Object.keys(constants).includes(x)) {
+                            x = constants[x]
+                        } else if (Object.keys(variables).includes(x)) {
+                            x = variables[x]
+                        }
+                        params.push(x)
+                    }
+                    else params.push(parseFloat(ev(data,constants,x)))
                 }
                 let simplified = ev(data, constants, functions[outerFunction.trim()].func(params))
                 finalExp = finalExp.substring(0, beginIndex-1 - outerFunction.length) + simplified + finalExp.substring(endIndex+1, finalExp.length)
@@ -273,9 +334,12 @@ function evaluate(data, constants, exp) {
             }
             index = -1
             item = ""
+            inQuotes = false
 
             deepness = 0
-        } else {
+        }
+        else if (finalExp[index] === "'") inQuotes = !inQuotes
+        else {
             if (item === "" || (isNaN(parseFloat(item)) === isNaN(finalExp[index])))
                 item += finalExp[index]
             else item = ""
@@ -284,10 +348,5 @@ function evaluate(data, constants, exp) {
     }
     return parseFloat(ev(data, constants, finalExp))
 }
-
-//let exp = "(x+2-5)"
-//let x = evaluate({"x": 5},{}, exp)
-//console.log(exp)
-//console.log(x)
 
 // Todo: Fix stuff breaking when doing -num instead 0-num

@@ -243,6 +243,8 @@ function processData() {
     let constants = {
         "pi": Math.PI,
         "e": Math.E,
+        "true": 1,
+        "false": 0,
     }
     for (let konstant of Object.keys(mapping["constants"])) {
         constants[konstant] = evaluate({}, constants, "" + mapping["constants"][konstant])
