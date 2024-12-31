@@ -193,36 +193,32 @@ function toPostfix(exp) {
             case "*":
             case "/":
             case "%": return 2
-            default: return 3
+            case "^": return 3
+            default: return -1
         }
     }
 
     let stack = []
     let postfix = []
 
+    console.log(infix)
     for (let x of infix) {
         if (/[+\-*/^%()]/g.test(x)) {
-            if (x === "(") stack.push("(")
-            if (x === ")") {
-                while (true) {
-                    let a = stack.pop()
-                    if (a !== "(") postfix.push(a)
-                    else break
+            if (x === "(") stack.push(x)
+            else if (x === ")") {
+                while (stack[stack.length - 1] !== "(") {
+                    postfix.push(stack.pop())
                 }
-            } else {
-                if (stack.length === 0) stack.push(x)
-                else if (stack.includes("(")) stack.push(x)
-                else if (precedence(stack[stack.length - 1]) < precedence(x)) stack.push(x)
-                else {
-                    while (precedence(stack[stack.length - 1]) >= precedence(x) && stack.length > 0) {
-                        postfix.push(stack.pop())
-                    }
-                    stack.push(x)
-                }
+                stack.pop()
             }
-        } else {
-            postfix.push(x)
-        }
+            else {
+                while (stack.length > 0 && (precedence(x) <= precedence(stack[stack.length-1]))) {
+                    let x = stack.pop()
+                    if (x !== "(") postfix.push(x)
+                }
+                stack.push(x)
+            }
+        } else postfix.push(x)
     }
     while (stack.length > 0) {
         let x = stack.pop()
@@ -285,13 +281,11 @@ function evaluate(data, constants, exp) {
     return ev(data, constants, finalExp)
 }
 
-let exp = "sin(2+2)"
+let exp = "(1+1)*5-2"
 let x = evaluate({},{}, exp)
 console.log(exp)
 console.log(x)
 
-//let x1 = ev({"x": 3, "pi": 17}, {"pi": Math.PI}, "20 20 logbase")
-//console.log(x1) // 13
 
 // Todo: variables with spaces in their names
 // Todo: Fix stuff breaking when doing -num instead 0-num
