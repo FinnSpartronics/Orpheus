@@ -283,7 +283,8 @@ function processData() {
     console.log(data)
     // Add all the stuff now
     for (let t of Object.keys(data)) {
-        team_data[t].graphs = {}
+        team_data[t]["graphs"] = data[t]["graphs"]
+        team_data[t]["matches"] = data[t]["matches"]
         for (let column of Object.keys(mapping["data"])) {
             switch (mapping["data"][column]["format"]) {
                 case "mean": {
@@ -566,14 +567,20 @@ function openTeam(team, comparisons) {
     // Start of team page element assembly
     let data = team_data[team]
 
+    let commentsEnabled = mapping["match"]["notes"] !== undefined // todo: check
     let comments = ""
-    for (let match of data.matches)
-        if (match[mapping["notes"]].trim() !== "")
-            if (showNamesInTeamComments)
-                comments = comments + match[mapping["notes"]] + "    -" + match[mapping["scouter"]] + " (" + match[mapping["match"]["number"]] + ")\n\n"
-            else
-                comments = comments + match[mapping["notes"]] + " (Match " + match[mapping["match"]["number"]] + ")\n\n"
-    comments = comments.trim()
+
+    if (commentsEnabled) {
+        for (let match of data.matches) {
+            console.log(match)
+            if ((""+match[mapping["match"]["notes"]]).trim() !== "")
+                if (showNamesInTeamComments)
+                    comments = comments + match[mapping["notes"]] + "    -" + match[mapping["scouter"]] + " (" + match[mapping["match"]["number"]] + ")\n\n"
+                else
+                    comments = comments + match[mapping["notes"]] + " (Match " + match[mapping["match"]["number"]] + ")\n\n"
+        }
+        comments = comments.trim()
+    } else comments = "No note data"
 
     // General Layout Assembly
     let holder = document.createElement("div")
@@ -1469,7 +1476,6 @@ document.addEventListener("contextmenu", (e) => {
         optionEl("Back to Table", closeTeam)
 
     let context = e.target.getAttribute("data-context")
-    console.log(context)
     if (context === "star") {
         optionEl("Star All", () => {
             for (let x in team_data) set_star(x, true)
