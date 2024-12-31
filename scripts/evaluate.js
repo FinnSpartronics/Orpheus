@@ -1,162 +1,70 @@
 let functions = {
-    logbase: {
-        func: (a) => Math.log(a[1])/Math.log(a[0])
+    logbase: (a) => Math.log(a[1])/Math.log(a[0]),
+    factorial: (a) => {
+        let result = 1;
+        for (let x = 1; x <= a[0]; x++) result *= x;
+        return result;
     },
-    "factorial": {
-        func: (a) => {
-            let result = 1
-            for (let x = 1; x <= a[0]; x++) result *= x
-            return result
-        }
-    },
-    //#region Math.* functions
-    abs: {
-        func: (a) => Math.abs(a[0])
-    },
-    acos: {
-        func: (a) => Math.acos(a[0])
-    },
-    acosh: {
-        func: (a) => Math.acosh(a[0])
-    },
-    asin: {
-        func: (a) => Math.asin(a[0])
-    },
-    asinh: {
-        func: (a) => Math.asinh(a[0])
-    },
-    atan: {
-        func: (a) => Math.atan(a[0])
-    },
-    atan2: {
-        func: (a) => Math.atan2(a[0], a[1])
-    },
-    atanh: {
-        func: (a) => Math.atanh(a[0])
-    },
-    cbrt: {
-        func: (a) => Math.cbrt(a[0])
-    },
-    ceil: {
-        func: (a) => Math.ceil(a[0])
-    },
-    cos: {
-        func: (a) => Math.cos(a[0])
-    },
-    cosh: {
-        func: (a) => Math.cosh(a[0])
-    },
-    exp: {
-        func: (a) => Math.exp(a[0])
-    },
-    expm1: {
-        func: (a) => Math.expm1(a[0])
-    },
-    floor: {
-        func: (a) => Math.floor(a[0])
-    },
-    fround: {
-        func: (a) => Math.fround(a[0])
-    },
-    hypot: {
-        func: (a) => Math.hypot(...a)
-    },
-    imul: {
-        func: (a) => Math.imul(a[0], a[1])
-    },
-    log: {
-        func: (a) => Math.log(a[0])
-    },
-    log10: {
-        func: (a) => Math.log10(a[0])
-    },
-    log1p: {
-        func: (a) => Math.log1p(a[0])
-    },
-    log2: {
-        func: (a) => Math.log2(a[0])
-    },
-    max: {
-        func: (a) => Math.max(...a)
-    },
-    min: {
-        func: (a) => Math.min(...a)
-    },
-    pow: {
-        func: (a) => Math.pow(a[0], a[1])
-    },
-    random: {
-        func: () => Math.random()
-    },
-    round: {
-        func: (a) => Math.round(a[0])
-    },
-    sign: {
-        func: (a) => Math.sign(a[0])
-    },
-    sin: {
-        func: (a) => Math.sin(a[0])
-    },
-    sinh: {
-        func: (a) => Math.sinh(a[0])
-    },
-    sqrt: {
-        func: (a) => Math.sqrt(a[0])
-    },
-    tan: {
-        func: (a) => Math.tan(a[0])
-    },
-    tanh: {
-        func: (a) => Math.tanh(a[0])
-    },
-    trunc: {
-        func: (a) => Math.trunc(a[0])
-    },
+    //#region Math. functions
+    abs: (a) => Math.abs(a[0]),
+    acos: (a) => Math.acos(a[0]),
+    acosh: (a) => Math.acosh(a[0]),
+    asin: (a) => Math.asin(a[0]),
+    asinh: (a) => Math.asinh(a[0]),
+    atan: (a) => Math.atan(a[0]),
+    atan2: (a) => Math.atan2(a[0], a[1]),
+    atanh: (a) => Math.atanh(a[0]),
+    cbrt: (a) => Math.cbrt(a[0]),
+    ceil: (a) => Math.ceil(a[0]),
+    cos: (a) => Math.cos(a[0]),
+    cosh: (a) => Math.cosh(a[0]),
+    exp: (a) => Math.exp(a[0]),
+    expm1: (a) => Math.expm1(a[0]),
+    floor: (a) => Math.floor(a[0]),
+    fround: (a) => Math.fround(a[0]),
+    hypot: (a) => Math.hypot(...a),
+    imul: (a) => Math.imul(a[0], a[1]),
+    log: (a) => Math.log(a[0]),
+    log10: (a) => Math.log10(a[0]),
+    log1p: (a) => Math.log1p(a[0]),
+    log2: (a) => Math.log2(a[0]),
+    max: (a) => Math.max(...a),
+    min: (a) => Math.min(...a),
+    pow: (a) => Math.pow(a[0], a[1]),
+    random: () => Math.random(),
+    round: (a) => Math.round(a[0]),
+    sign: (a) => Math.sign(a[0]),
+    sin: (a) => Math.sin(a[0]),
+    sinh: (a) => Math.sinh(a[0]),
+    sqrt: (a) => Math.sqrt(a[0]),
+    tan: (a) => Math.tan(a[0]),
+    tanh: (a) => Math.tanh(a[0]),
+    trunc: (a) => Math.trunc(a[0]),
     //#endregion
     //#region Logic
-    equal: {
-        func: (a) => {
-            if (isNaN(parseFloat(a[0]))) {
-                return (""+a[0]).replaceAll("'","") == (""+a[1]).replaceAll("'","") ? 1 : 0
-            }
-            return a[0] == a[1] ? 1 : 0
+    equal: (a) => {
+        if (isNaN(parseFloat(a[0]))) {
+            return (""+a[0]).replaceAll("'","") == (""+a[1]).replaceAll("'","") ? 1 : 0;
         }
+        return a[0] == a[1] ? 1 : 0;
     },
-    equals: {
-        func: (a) => {
-            if (isNaN(parseFloat(a[0]))) {
-                return (""+a[0]).replaceAll("'","") == (""+a[1]).replaceAll("'","") ? 1 : 0
-            }
-            return a[0] == a[1] ? 1 : 0
+    equals: (a) => {
+        if (isNaN(parseFloat(a[0]))) {
+            return (""+a[0]).replaceAll("'","") == (""+a[1]).replaceAll("'","") ? 1 : 0;
         }
+        return a[0] == a[1] ? 1 : 0;
     },
-    greater: {
-        func: (a) => a[0] > a[1] ? 1 : 0
-    },
-    "greater=": {
-        func: (a) => a[0] >= a[1] ? 1 : 0
-    },
-    less: {
-        func: (a) => a[0] < a[1] ? 1 : 0
-    },
-    "less=": {
-        func: (a) => a[0] <= a[1] ? 1 : 0
-    },
-    "or": {
-        func: (a) => a[0] + a[1] > 0 ? 1 : 0
-    },
-    "and": {
-        func: (a) => a[0] + a[1] === 2 ? 1 : 0
-    },
-    "not": {
-        func: (a) => a[0] == 0 ? 1 : 0
-    },
-    "if": {
-        func: (a) => {
-            if (a[0]) return a[1]
-            if (a[2] === undefined) return 0
-            return a[2]
-        }
+    greater: (a) => a[0] > a[1] ? 1 : 0,
+    "greater=": (a) => a[0] >= a[1] ? 1 : 0,
+    less: (a) => a[0] < a[1] ? 1 : 0,
+    "less=": (a) => a[0] <= a[1] ? 1 : 0,
+    or: (a) => a[0] + a[1] > 0 ? 1 : 0,
+    and: (a) => a[0] + a[1] === 2 ? 1 : 0,
+    not: (a) => a[0] == 0 ? 1 : 0,
+    "if": (a) => {
+        if (a[0]) return a[1];
+        if (a[2] === undefined) return 0;
+        return a[2];
     }
     //#endregion
 }
@@ -326,7 +234,7 @@ function evaluate(data, constants, exp) {
                     }
                     else params.push(parseFloat(ev(data,constants,x)))
                 }
-                let simplified = ev(data, constants, functions[outerFunction.trim()].func(params))
+                let simplified = ev(data, constants, functions[outerFunction.trim()](params))
                 finalExp = finalExp.substring(0, beginIndex-1 - outerFunction.length) + simplified + finalExp.substring(endIndex+1, finalExp.length)
             } else {
                 let simplified = ev(data, constants, finalExp.substring(beginIndex,endIndex))
