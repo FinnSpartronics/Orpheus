@@ -274,7 +274,7 @@ function processData() {
                 if (!isNaN(x)) { // todo: add ignore condition check here and decide of the isNaN check should stay forever or need to be added manually by user in mapping
                     data[team][column].push(x)
 
-                    if (mapping["data"][column].graph) data[team]["graphs"][column][match[mapping["match"]["number_key"]]] = evaluate(scouting_data, constants, mapping["data"][column].value)
+                    if (mapping["data"][column].graph) data[team]["graphs"][column][match[mapping["match"]["number_key"]]] = x
                 }
             }
         }
@@ -1078,14 +1078,12 @@ function graphElement(data, name, teams, width, height) {
                 {latex: "y_{" + i + "}", values: numArrToStrArr(Object.values(data[i])), hidden: true},
             ]
         })
-        let v1 = alphabet[i*2]
-        let v2 = alphabet[(i*2)+1]
 
         let teamName = ""
         if (usingTBA) teamName = team_data[teams[i]].Name
 
-        expressions.push({latex: "y_{" + i + "}\\sim " + v1 + "x_{" + i + "} + " + v2, hidden: true})
-        expressions.push({latex: v1 + "x + " + v2 + " = y", color: desmosColors[i], lineWidth: (projectorMode ? 12 : 6), lineOpacity: (projectorMode ? .8 : .6), label: teams[i] + " " + teamName})
+        expressions.push({latex: "y_{" + i + "}\\sim a_{" + i + "}x_{" + i + "} + b_{" + i + "}", hidden: true})
+        expressions.push({latex: "a_{" + i + "}" + "x + " + "b_{" + i + "}" + " = y", color: desmosColors[i], lineWidth: (projectorMode ? 12 : 6), lineOpacity: (projectorMode ? .8 : .6), label: teams[i] + " " + teamName})
         expressions.push({
             latex: "(" + maxX * 1.15 + "," + ((1.2 - ((i + 1)*.05)) * maxY ) + ")",
             label: teams[i] + " " + teamName.substring(0, 20) + (teamName.length >= 20 ? "..." : ""),

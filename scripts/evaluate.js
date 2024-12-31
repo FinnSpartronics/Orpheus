@@ -1,4 +1,3 @@
-// Position 1 for after, otherwise assumed to be default
 let functions = {
     logbase: {
         func: (a) => Math.log(a[1])/Math.log(a[0])
