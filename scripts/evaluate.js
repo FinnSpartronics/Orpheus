@@ -158,6 +158,7 @@ function ev(data, constants, expression) {
 function toPostfix(exp) {
     let infix = []
     let current = ""
+    let currentlyNegative = 0
     for (let x of (exp+" ")) {
         if (/\d/g.test(x)) current += x
         else if (x === "." && current.trim().length === 0)  {
@@ -165,11 +166,25 @@ function toPostfix(exp) {
         }
         else if (x.trim() === ",") {
             infix.push(current)
+            if (currentlyNegative) {
+                currentlyNegative = false
+                infix.push(")")
+            }
             current = ""
         }
         else if (/[+\-*/^%()!]/g.test(x)) {
-            if (current.trim() !== "")
+            if (current.trim() !== "") {
                 infix.push(current)
+                if (currentlyNegative) {
+                    currentlyNegative = false
+                    infix.push(")")
+                }
+            }
+            if (x === "-") {
+                infix.push("(")
+                infix.push("0")
+                currentlyNegative = true
+            }
             infix.push(x)
             current = ""
         }
@@ -179,8 +194,20 @@ function toPostfix(exp) {
                 if (regex.test(infix[infix.length - 1].replaceAll(/[\[,\]]/g, "")) && regex.test(current.replaceAll(/[\[,\]]/g, ""))) {
                     infix[infix.length - 1] += " " + current
                 }
-                else infix.push(current)
-            } else infix.push(current)
+                else {
+                    infix.push(current)
+                    if (currentlyNegative) {
+                        currentlyNegative = false
+                        infix.push(")")
+                    }
+                }
+            } else {
+                infix.push(current)
+                if (currentlyNegative) {
+                    currentlyNegative = false
+                    infix.push(")")
+                }
+            }
             current = ""
         }
         else if (x !== " ") current += x
@@ -201,7 +228,6 @@ function toPostfix(exp) {
     let stack = []
     let postfix = []
 
-    console.log(infix)
     for (let x of infix) {
         if (/[+\-*/^%()]/g.test(x)) {
             if (x === "(") stack.push(x)
@@ -226,7 +252,6 @@ function toPostfix(exp) {
             postfix.push(x)
     }
 
-    console.log(postfix)
     return postfix
 }
 
@@ -261,7 +286,6 @@ function evaluate(data, constants, exp) {
                     params.push(parseFloat(ev(data,constants,x)))
                 }
                 let simplified = ev(data, constants, functions[outerFunction.trim()].func(params))
-                console.log(simplified, outerFunction, functions[outerFunction.trim()], functions[outerFunction.trim()].func([2]))
                 finalExp = finalExp.substring(0, beginIndex-1 - outerFunction.length) + simplified + finalExp.substring(endIndex+1, finalExp.length)
             } else {
                 let simplified = ev(data, constants, finalExp.substring(beginIndex,endIndex))
@@ -281,9 +305,9 @@ function evaluate(data, constants, exp) {
     return ev(data, constants, finalExp)
 }
 
-let exp = "(1+1)*5-2"
+let exp = "sin(cos(tan(2)))"
 let x = evaluate({},{}, exp)
-console.log(exp)
+//console.log(exp)
 console.log(x)
 
 
