@@ -117,17 +117,6 @@ let functions = {
 
 }
 
-/**
- * Idea: when theres a function, find the parameters, then evaluate each of those parameters individually
- * Then, replace that function with the evaluated value.
- *
- * So the chain of events would be like:
- * logbase(1+1,2*2*2*2) + 2 * 5
- * logbase(2,16) + 2 * 5
- * 4 + 2 * 5
- * solve
- **/
-
 function ev(data, constants, expression) {
     let tmpConstants = {}
     for (let x of Object.keys(constants)) {
@@ -241,6 +230,7 @@ function toPostfix(exp) {
             postfix.push(x)
     }
 
+    console.log(postfix)
     return postfix
 }
 
@@ -271,10 +261,11 @@ function evaluate(data, constants, exp) {
 
             if (outerFunction) {
                 let params = []
-                for (let x of finalExp.substring(beginIndex,endIndex).split(","))
+                for (let x of finalExp.substring(beginIndex,endIndex).split(",")) {
                     params.push(parseFloat(ev(data,constants,x)))
-                console.log(params)
+                }
                 let simplified = ev(data, constants, functions[outerFunction.trim()].func(params))
+                console.log(simplified, outerFunction, functions[outerFunction.trim()], functions[outerFunction.trim()].func([2]))
                 finalExp = finalExp.substring(0, beginIndex-1 - outerFunction.length) + simplified + finalExp.substring(endIndex+1, finalExp.length)
             } else {
                 let simplified = ev(data, constants, finalExp.substring(beginIndex,endIndex))
@@ -294,7 +285,7 @@ function evaluate(data, constants, exp) {
     return ev(data, constants, finalExp)
 }
 
-let exp = "tan(2)"
+let exp = "sin(2+2)"
 let x = evaluate({},{}, exp)
 console.log(exp)
 console.log(x)
@@ -303,3 +294,4 @@ console.log(x)
 //console.log(x1) // 13
 
 // Todo: variables with spaces in their names
+// Todo: Fix stuff breaking when doing -num instead 0-num
