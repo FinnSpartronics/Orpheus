@@ -229,7 +229,8 @@ function handleMapping() {
         return
     }
     for (let x in mapping["data"]) {
-        columns.push(x)
+        if (mapping["data"][x]["hidden"]) hiddenColumns.push(x)
+        else columns.push(x)
     }
     setHeader()
 }
@@ -250,7 +251,23 @@ function processData() {
         constants[konstant] = evaluate({}, constants, "" + mapping["constants"][konstant])
     }
 
-    for (let match of scouting_data) {
+    let ratioVars = []
+    let variables = []
+    let standard = []
+    let ratios = []
+    for (let x of Object.keys(mapping["data"])) {
+        if (mapping["data"][x]["variable"] && mapping["data"][x]["format"] === "ratio")
+            ratioVars.push(x)
+        else if (mapping["data"][x]["variable"])
+            variables.push(x)
+        else if (mapping["data"][x]["format"] === "ratio")
+            ratios.push(x)
+        else
+            standard.push(x)
+    }
+    console.log(ratioVars, variables, standard, ratios)
+
+    function getTeam(match) {
         let team = match[mapping["team"]["key"]]
         if (teamFormat === "frc#") team = team.splice(0, 3)
         if (teamFormat === "name") {
@@ -258,32 +275,97 @@ function processData() {
                 if (team_data[teamKey].Name.trim().toLowerCase() === name.trim().toLowerCase()) team = teamKey
             }
         }
+        return team
+    }
+
+    // Setup Loop
+    for (let match of scouting_data) {
+        let team = getTeam(match)
 
         if (!usingTBA) team_data[team] = {Team_Number: team, Icon: "https://api.frc-colors.com/internal/team/" + team + "/avatar.png"}
         if (typeof team_data[team] !== "undefined") { // Only does calculations if team exists (in case someone put 4951 instead of 4915, no reason to include typos or teams that aren't in the event)
             if (typeof data[team] === "undefined") {
-                data[team] = {"graphs": {}, "matches": []}
+                data[team] = {"graphs": {}, "matches": [], "variables": {}}
                 for (let column of Object.keys(mapping["data"])) {
                     data[team][column] = []
                     if (mapping["data"][column].graph) data[team]["graphs"][column] = {}
                 }
+                for (let variable of variables)
+                    data[team]["variables"][variable] = []
             }
 
             data[team]["matches"].push(match)
+        }
+    }
 
-            for (let column of Object.keys(mapping["data"])) {
-                let x = evaluate(match, constants, mapping["data"][column].value)
-                if (!isNaN(x)) { // todo: add ignore condition check here and decide of the isNaN check should stay forever or need to be added manually by user in mapping
-                    data[team][column].push(x)
+    // todo: ratio variable loop
 
-                    if (mapping["data"][column].graph) data[team]["graphs"][column][match[mapping["match"]["number_key"]]] = x
-                }
+    // Variable Loop
+    for (let match of scouting_data) {
+        let team = getTeam(match)
+
+        for (let column of variables) {
+            let x = evaluate(match, constants, mapping["data"][column].value)
+            if (!isNaN(x)) { // todo: add ignore condition check here and decide of the isNaN check should stay forever or need to be added manually by user in mapping
+                data[team][column].push(x)
+                data[team]["variables"][column].push(x)
+
+                if (mapping["data"][column].graph) data[team]["graphs"][column][match[mapping["match"]["number_key"]]] = x
             }
         }
     }
 
-    console.log(data)
-    // Add all the stuff now
+    // Variable to actual value // todo: add ratio variables too
+    for (let team of Object.keys(data))
+        for (let column of variables) {
+            switch (mapping["data"][column]["format"]) {
+                case "mean": {
+                    let num = 0
+                    for (let x of data[team][column])
+                        num += x
+                    num /= data[team][column].length
+                    data[team]["variables"][column] = num
+                    break;
+                }
+                case "median": {
+                    let nums = []
+                    for (let x of data[t][column])
+                        nums.push(x)
+                    nums.sort((a, b) => a - b)
+                    if (nums.length % 2) // If true then even, else odd.
+                        data[team]["variables"][column] = (nums[Math.floor((nums.length-1)/2)] + nums[Math.ceil((nums.length-1)/2)])/2
+                    else
+                        data[team]["variables"][column] = nums[Math.floor((nums.length-1)/2)]
+                    break;
+                }
+                case "sum": {
+                    let num = 0
+                    for (let x of data[team][column])
+                        num += x
+                    data[team]["variables"][column] = num
+                    break;
+                }
+            }
+        }
+
+    // Standard Loop
+    for (let match of scouting_data) {
+        let team = getTeam(match)
+
+        for (let column of standard) {
+            let x = evaluate(Object.assign({}, data[team]["variables"], match), constants, mapping["data"][column].value)
+            if (!isNaN(x)) { // todo: add ignore condition check here and decide of the isNaN check should stay forever or need to be added manually by user in mapping
+                data[team][column].push(x)
+
+                if (mapping["data"][column].graph) data[team]["graphs"][column][match[mapping["match"]["number_key"]]] = x
+            }
+        }
+    }
+    console.log(data[4915])
+
+    // ratio loop
+
+    // Adds data to team_data
     for (let t of Object.keys(data)) {
         team_data[t]["graphs"] = data[t]["graphs"]
         team_data[t]["matches"] = data[t]["matches"]
@@ -1514,7 +1596,6 @@ document.addEventListener("contextmenu", (e) => {
     }
     if (context === "column") {
         let column = parseInt(e.target.getAttribute("data-context-index"))
-        console.log(column)
         optionEl("Hide column", () => {
             setColumnVisibility(column, false)
         })
