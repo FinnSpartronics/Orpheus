@@ -83,7 +83,7 @@ function ev(data, constants, expression) {
     let stack = []
     for (let i = 0; i < postfix.length; i++) {
         let x = postfix[i]
-        if (isNaN(parseFloat(x))) {
+        if (isNaN(parseFloat(x)) && typeof x !== "number") {
             if (x.match(/[+\-*/^%]/g)) {
                 let a = parseFloat(stack.pop())
                 let b = parseFloat(stack.pop())

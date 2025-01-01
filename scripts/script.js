@@ -463,6 +463,21 @@ function processData() {
         }
     }
 
+    // Handles all "display string" cases
+    for (let t of Object.keys(data)) {
+        for (let column of Object.keys(mapping["data"])) {
+            if (typeof mapping["data"][column]["display"] === "object") {
+                let value = team_data[t][column]
+                team_data[t][column] = NaN
+                let vars = Object.assign({}, data[t]["variables"], {"value": value})
+                for (let x of Object.keys(mapping["data"][column]["display"])) {
+                    if (evaluate(vars, constants, mapping["data"][column]["display"][x]))
+                        team_data[t][column] = x
+                }
+            }
+        }
+    }
+
     regenTable()
 }
 
@@ -667,7 +682,9 @@ function element(team) {
                     columnEl.innerText = (100 * Math.round(rounding * parseFloat(team_data[team][column])) / rounding) + "%"
             }
         }
-        if (isNaN(team_data[team][column])) columnEl.innerText = "-"
+        if (isNaN(team_data[team][column]) && typeof team_data[team][column] === "number") {
+            columnEl.innerText = "-"
+        }
         if ((""+team_data[team][column]).length > 10) columnEl.style.fontSize = Math.max(1.2 - ((.025) * ((""+team_data[team][column]).length-10)), .7) + "rem"
         el.appendChild(columnEl)
     }
