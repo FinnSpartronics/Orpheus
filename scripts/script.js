@@ -287,18 +287,47 @@ function processData() {
             if (typeof data[team] === "undefined") {
                 data[team] = {"graphs": {}, "matches": [], "variables": {}}
                 for (let column of Object.keys(mapping["data"])) {
-                    data[team][column] = []
+                    if (mapping["data"][column]["format"] === "ratio") {
+                        data[team][column] = {
+                            "num": [],
+                            "den": [],
+                        }
+                    }
+                    else data[team][column] = []
                     if (mapping["data"][column].graph) data[team]["graphs"][column] = {}
                 }
                 for (let variable of variables)
-                    data[team]["variables"][variable] = []
+                    if (mapping["data"][variable]["format"] === "ratio") {
+                        data[team]["variables"][variable] = {
+                            "num": [],
+                            "den": [],
+                        }
+                    }
+                    else data[team]["variables"][variable] = []
             }
 
             data[team]["matches"].push(match)
         }
     }
 
-    // todo: ratio variable loop
+    // Ratio variable loop
+    for (let match of scouting_data) {
+        let team = getTeam(match)
+
+        for (let column of ratioVars) {
+            let num = evaluate(Object.assign({}, data[team]["variables"], match), constants, mapping["data"][column].value)
+            let den = evaluate(Object.assign({}, data[team]["variables"], match), constants, mapping["data"][column].denominator)
+            if (!isNaN(num) && !isNaN(den)) { // todo: add ignore condition check here and decide of the isNaN check should stay forever or need to be added manually by user in mapping
+                data[team][column]["num"].push(num)
+                data[team][column]["den"].push(den)
+
+                data[team]["variables"][column]["num"].push(num)
+                data[team]["variables"][column]["den"].push(den)
+
+                if (mapping["data"][column].graph) data[team]["graphs"][column][match[mapping["match"]["number_key"]]] = (num / den)
+            }
+        }
+    }
 
     // Variable Loop
     for (let match of scouting_data) {
@@ -315,7 +344,7 @@ function processData() {
         }
     }
 
-    // Variable to actual value // todo: add ratio variables too
+    // Variable to actual value
     for (let team of Object.keys(data))
         for (let column of variables) {
             switch (mapping["data"][column]["format"]) {
@@ -329,7 +358,7 @@ function processData() {
                 }
                 case "median": {
                     let nums = []
-                    for (let x of data[t][column])
+                    for (let x of data[team][column])
                         nums.push(x)
                     nums.sort((a, b) => a - b)
                     if (nums.length % 2) // If true then even, else odd.
@@ -343,6 +372,14 @@ function processData() {
                     for (let x of data[team][column])
                         num += x
                     data[team]["variables"][column] = num
+                    break;
+                }
+                case "ratio": {
+                    let num = 0
+                    let den = 0
+                    for (let x of data[team][column]["num"]) num += x
+                    for (let x of data[team][column]["den"]) den += x
+                    data[team]["variables"][column] = (num / den)
                     break;
                 }
             }
@@ -361,9 +398,22 @@ function processData() {
             }
         }
     }
-    console.log(data[4915])
 
     // ratio loop
+    for (let match of scouting_data) {
+        let team = getTeam(match)
+
+        for (let column of ratios) {
+            let num = evaluate(Object.assign({}, data[team]["variables"], match), constants, mapping["data"][column].value)
+            let den = evaluate(Object.assign({}, data[team]["variables"], match), constants, mapping["data"][column].denominator)
+            if (!isNaN(num) && !isNaN(den)) { // todo: add ignore condition check here and decide of the isNaN check should stay forever or need to be added manually by user in mapping
+                data[team][column]["num"].push(num)
+                data[team][column]["den"].push(den)
+
+                if (mapping["data"][column].graph) data[team]["graphs"][column][match[mapping["match"]["number_key"]]] = (num / den)
+            }
+        }
+    }
 
     // Adds data to team_data
     for (let t of Object.keys(data)) {
@@ -395,6 +445,14 @@ function processData() {
                     for (let x of data[t][column])
                         num += x
                     team_data[t][column] = num
+                    break;
+                }
+                case "ratio": {
+                    let num = 0
+                    let den = 0
+                    for (let x of data[t][column]["num"]) num += x
+                    for (let x of data[t][column]["den"]) den += x
+                    team_data[t][column] = (num / den)
                     break;
                 }
             }
