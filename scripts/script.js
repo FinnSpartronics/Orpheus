@@ -313,6 +313,7 @@ function processData() {
     // Ratio variable loop
     for (let match of scouting_data) {
         let team = getTeam(match)
+        if (typeof team_data[team] === "undefined") continue
 
         for (let column of ratioVars) {
             let num = evaluate(Object.assign({}, data[team]["variables"], match), constants, mapping["data"][column].value)
@@ -332,6 +333,7 @@ function processData() {
     // Variable Loop
     for (let match of scouting_data) {
         let team = getTeam(match)
+        if (typeof team_data[team] === "undefined") continue
 
         for (let column of variables) {
             let x = evaluate(match, constants, mapping["data"][column].value)
@@ -388,6 +390,7 @@ function processData() {
     // Standard Loop
     for (let match of scouting_data) {
         let team = getTeam(match)
+        if (typeof team_data[team] === "undefined") continue
 
         for (let column of standard) {
             let x = evaluate(Object.assign({}, data[team]["variables"], match), constants, mapping["data"][column].value)
@@ -402,6 +405,7 @@ function processData() {
     // ratio loop
     for (let match of scouting_data) {
         let team = getTeam(match)
+        if (typeof team_data[team] === "undefined") continue
 
         for (let column of ratios) {
             let num = evaluate(Object.assign({}, data[team]["variables"], match), constants, mapping["data"][column].value)
@@ -663,8 +667,8 @@ function element(team) {
                     columnEl.innerText = (100 * Math.round(rounding * parseFloat(team_data[team][column])) / rounding) + "%"
             }
         }
+        if (isNaN(team_data[team][column])) columnEl.innerText = "-"
         if ((""+team_data[team][column]).length > 10) columnEl.style.fontSize = Math.max(1.2 - ((.025) * ((""+team_data[team][column]).length-10)), .7) + "rem"
-        if (columnEl.innerText.toString() === "NaN") columnEl.classList.add("NaN")
         el.appendChild(columnEl)
     }
 

@@ -24,7 +24,6 @@
     --bg: rgb(247, 247, 247);
     --line: rgb(214, 214, 214);
     --font: rgb(31,31,31);
-    --fontNaN: rgb(198, 167, 167);
     --highlight: rgb(222, 237, 250);
     --star: rgb(244, 228, 0);
     --icon_bg: white;
@@ -40,7 +39,6 @@
     --bg: rgb(53, 55, 59);
     --line: rgb(122, 122, 122);
     --font: rgb(220,220,220);
-    --fontNaN: rgb(122, 80, 80);
     --highlight: rgb(134, 81, 159);
     --star: var(--font);
     --icon_bg: var(--bg);
@@ -56,7 +54,6 @@
     --bg: rgb(0, 103, 185);
     --line: rgb(122, 122, 122);
     --font: rgb(244, 228, 0);
-    --fontNaN: rgb(122, 80, 80);
     --highlight: rgba(0,0,0, .3);
     --star: var(--font);
     --icon_bg: var(--bg);

@@ -97,9 +97,6 @@ div.icon {
 .data.dragging {
     position: absolute;
 }
-.data.NaN {
-    color: var(--fontNaN)
-}
 
 h1 {
     margin: 0;
