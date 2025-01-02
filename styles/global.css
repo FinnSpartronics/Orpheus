@@ -19,6 +19,16 @@
     -webkit-text-stroke-width: 1px;
     -webkit-text-stroke-color: var(--font);
 }
+.ignore.filled {
+    font-variation-settings:
+            'FILL' 1,
+            'wght' 1600,
+            'GRAD' 0,
+            'opsz' 48;
+    color: var(--red);
+    -webkit-text-stroke-width: 1px;
+    -webkit-text-stroke-color: var(--font);
+}
 
 :root {
     --bg: rgb(247, 247, 247);

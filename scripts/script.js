@@ -1,4 +1,3 @@
-// TODO: Add a mode to the mapping that calculates everything and then divides by something else (for example Total Notes/(Total Notes + Missed notes) for accuracy)
 //#region Local Storage Keys
 const YEAR = "scouting_4915_year"
 const TBA_KEY  = "scouting_4915_apikey"
@@ -25,6 +24,9 @@ let theme = 0
 
 let starred = []
 let usingStar = true
+let ignored = []
+let usingIgnore = true
+let showIgnoredTeams = false
 
 let loading = 0
 
@@ -49,8 +51,6 @@ let tieValue = 0.5
 
 let desmosColors
 const desmosScriptSrc = "https://www.desmos.com/api/v1.10/calculator.js?apiKey=dcb31709b452b1cf9dc26972add0fda6"
-
-const alphabet = "abcdefghijklmnopqrstuvwxyz".split('')
 
 let showNamesInTeamComments = true
 
@@ -613,6 +613,10 @@ function setHeader() {
     if (tableMode === "team") header = document.querySelector(".table-head.team-table")
     while (header.children.length > 0) header.children[0].remove()
 
+    let starIgnoreHolder = document.createElement("div")
+    starIgnoreHolder.className = "star-ignore-holder"
+    header.appendChild(starIgnoreHolder)
+
     let starToggle = document.createElement("span")
     starToggle.id = "select_star"
     starToggle.className = "material-symbols-outlined ar star"
@@ -620,7 +624,16 @@ function setHeader() {
     starToggle.innerText = "star"
     starToggle.addEventListener("click", star_toggle)
     starToggle.setAttribute("data-context", "star")
-    header.appendChild(starToggle)
+    starIgnoreHolder.appendChild(starToggle)
+
+    let ignoreToggle = document.createElement("span")
+    ignoreToggle.id = "select_ignore"
+    ignoreToggle.className = "material-symbols-outlined ar ignore"
+    if (usingIgnore) ignoreToggle.classList.add("filled")
+    ignoreToggle.innerText = "block"
+    ignoreToggle.addEventListener("click", ignore_toggle)
+    ignoreToggle.setAttribute("data-context", "ignore")
+    starIgnoreHolder.appendChild(ignoreToggle)
 
     if (showTeamIcons) {
         let iconPlaceholder = document.createElement("div")
@@ -649,6 +662,8 @@ function setHeader() {
 }
 // Creates the element for a row in the table for the given team
 function element(team) {
+    if (ignored.includes(team) && !showIgnoredTeams && tableMode !== "team") return
+
     let el = document.createElement("div")
     el.classList.add("row")
     el.id = team
@@ -662,6 +677,13 @@ function element(team) {
     starEl.onclick = () => star(team)
     starEl.innerText = "star"
     controls.appendChild(starEl)
+
+    let ignoreEl = document.createElement("span")
+    ignoreEl.className = "material-symbols-outlined ar ignore"
+    if (ignored.includes(team)) ignoreEl.classList.add("filled")
+    ignoreEl.onclick = () => ignore(team)
+    ignoreEl.innerText = "block"
+    controls.appendChild(ignoreEl)
 
     el.appendChild(controls)
 
@@ -724,6 +746,25 @@ function regenTable() {
     clearTable()
     if (tableMode === "team") for (let team of tableTeams) element(team)
     else for (let team of Object.keys(team_data)) element(team)
+
+    if (!showIgnoredTeams && ignored.length > 0) {
+        let el = document.createElement("div")
+        el.className = "row ignoredlist"
+        el.style.order = Math.pow(10,20)
+
+        el.innerText = ignored.length + " teams ignored."
+
+        if (tableMode !== "team") document.querySelector(".table.main-table").appendChild(el)
+
+        let showButton = document.createElement("button")
+        showButton.innerText = "Show Ignored Teams"
+        showButton.addEventListener("click", () => {
+            showIgnoredTeams = true
+            regenTable()
+        })
+        el.appendChild(showButton)
+
+    }
 }
 //#endregion
 
@@ -884,6 +925,17 @@ function openTeam(team, comparisons) {
     starEl.innerText = "star"
     teamName.appendChild(starEl)
 
+    let ignoreEl = document.createElement("span")
+    ignoreEl.className = "material-symbols-outlined ar team-star ignore"
+    if (ignored.includes(team)) ignoreEl.classList.add("filled")
+    ignoreEl.onclick = function() {
+        ignore(team)
+        if (ignored.includes(team)) ignoreEl.classList.add("filled")
+        else ignoreEl.classList.remove("filled")
+    }
+    ignoreEl.innerText = "block"
+    teamName.appendChild(ignoreEl)
+
     if (usingTBA) {
         if (!projectorMode) {
             let teamDescriptionRemainder = document.createElement("div")
@@ -929,7 +981,7 @@ function openTeam(team, comparisons) {
         }
         let x = prompt("Enter a team number to add to comparison").trim()
         if (x === null) return
-        if (comparisons.includes(x)) return
+        if (comparisons.includes(x) || x === team) return
         if (team_data[x] !== undefined) {
             comparisons.push(x)
             addComparisonElement(x)
@@ -960,6 +1012,17 @@ function openTeam(team, comparisons) {
         }
         starEl.innerText = "star"
         compareEl.appendChild(starEl)
+
+        let ignoreEl = document.createElement("span")
+        ignoreEl.className = "material-symbols-outlined ar team-compare-star ignore"
+        if (ignored.includes(c)) ignoreEl.classList.add("filled")
+        ignoreEl.onclick = function() {
+            ignore(team)
+            if (ignored.includes(team)) ignoreEl.classList.add("filled")
+            else ignoreEl.classList.remove("filled")
+        }
+        ignoreEl.innerText = "block"
+        compareEl.appendChild(ignoreEl)
 
         let compareTeamName = document.createElement("div")
         compareTeamName.innerText = c
@@ -1562,9 +1625,10 @@ document.addEventListener("keyup", (e) => {
 })
 //#endregion
 
-//#region Sorting, Stars
+//#region Sorting, Stars, Ignore
 function sort(team) {
     let starOffset = ((starred.includes(team) && usingStar) ? -Math.pow(10,9) : 0)
+    let ignoreOffset = ((ignored.includes(team) && usingIgnore) ? Math.pow(10,9) : 0)
     if (typeof team_data[Object.keys(team_data)[0]][selectedSort] == "string") {
         let arr = []
         for (let i of Object.keys(team_data)) {
@@ -1587,7 +1651,7 @@ function sort(team) {
 
         let index = isNaN(team_data[team][selectedSort]) || team_data[team][selectedSort] == undefined ? sortDirection * -10000 : team_data[team][selectedSort] /max
         if (sortDirection === 1) index = 1-index
-        return starOffset + Math.floor(10000*index)
+        return ignoreOffset + starOffset + Math.floor(10000*index)
     }
 }
 function changeSort(to) {
@@ -1608,10 +1672,7 @@ function changeSort(to) {
     regenTable()
 }
 function star(i) {
-    if (starred.includes(i)) starred.splice(starred.indexOf(i),1)
-    else starred.push(i)
-
-    regenTable()
+    set_star(i, !starred.includes(i))
 }
 function star_toggle() {
     usingStar = !usingStar
@@ -1620,9 +1681,35 @@ function star_toggle() {
 }
 function set_star(team, to) {
     if (starred.includes(team)) starred.splice(starred.indexOf(team), 1)
-    if (to) starred.push(team)
+    if (to) {
+        starred.push(team)
+        set_ignore(team, false)
+    }
     regenTable()
 }
+function ignore(i) {
+    set_ignore(i, !ignored.includes(i))
+}
+function ignore_toggle() {
+    usingIgnore = !usingIgnore
+    document.querySelector("#select_ignore").classList.toggle("filled")
+    regenTable()
+}
+function set_ignore(team, to) {
+    if (ignored.includes(team)) ignored.splice(ignored.indexOf(team), 1)
+    if (to) {
+        ignored.push(team)
+        set_star(team, false)
+    }
+    regenTable()
+}
+
+document.querySelector("#top_show_hide_ignored").addEventListener("click", () => {
+    showIgnoredTeams = !showIgnoredTeams
+    document.querySelector("#top_show_hide_ignored").innerText = "Ignored Teams: " + (showIgnoredTeams ? "Shown" : "Hidden")
+    regenTable()
+})
+
 //#endregion
 
 //#region File and API loading functions (+ download, API Toggles)
@@ -1759,6 +1846,27 @@ document.addEventListener("contextmenu", (e) => {
         optionEl("Flip starred teams", () => {
             for (let x in team_data) star(x)
         })
+    }
+    if (context === "ignore") {
+        optionEl("Ignore All", () => {
+            for (let x in team_data) set_ignore(x, true)
+        })
+        optionEl("Unignore All", () => {
+            for (let x in team_data) set_ignore(x, false)
+        })
+        optionEl("Flip ignored teams", () => {
+            for (let x in team_data) ignore(x)
+        })
+        if (showIgnoredTeams)
+            optionEl("Hide ignored teams", () => {
+                showIgnoredTeams = false
+                regenTable()
+            })
+        else
+            optionEl("Show ignored teams", () => {
+                showIgnoredTeams = true
+                regenTable()
+            })
     }
     if (context === "icon-column") {
         optionEl("Hide icons", () => {
