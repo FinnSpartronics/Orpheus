@@ -56,6 +56,7 @@ let showNamesInTeamComments = true
 
 let usingTBA
 let usingTBAMatches
+let usingTBAMedia
 let usingDesmos
 let usingFrcColors
 
@@ -142,6 +143,7 @@ function loadEvent() {
         load("event/" + year + window.localStorage.getItem(EVENT) + "/teams", function (data) {
             event_data = data
             for (let team of data) {
+                // Todo - just replace all team["team_number"] with a variable you don't need to keep getting it 3 trillion times
                 team_data[team["team_number"]] = {}
                 team_data[team["team_number"]].Team_Number = team["team_number"]
                 team_data[team["team_number"]].Name = team["nickname"]
@@ -161,6 +163,21 @@ function loadEvent() {
                         }
                         team_data[team["team_number"]]["Winrate"] = (matchesWon / data.length)
                         regenTable()
+                    })
+                }
+                if (usingTBAMedia) {
+                    loading++
+                    load("team/frc" + team["team_number"] + "/media/" + year, function (data) {
+                        loading--
+                        checkLoading()
+                        team_data[team["team_number"]].TBA.images = []
+
+                        for (let x of data) {
+                            if (x.type === "avatar" && !usingFrcColors) team_data[team["team_number"]].Icon = "data:image/png;base64," + x.details["base64Image"]
+                            else if (x.type === "imgur") team_data[team["team_number"]].TBA.images.push({type: "image", src: x["direct_url"]})
+                            else if (x.type === "youtube") team_data[team["team_number"]].TBA.images.push({type: "youtube", src: x["foreign_key"]})
+                            else console.log("Unsupported media type: " + x.type + ". (Team " + team["team_number"] + ")")
+                        }
                     })
                 }
                 regenTable()
@@ -265,7 +282,6 @@ function processData() {
         else
             standard.push(x)
     }
-    console.log(ratioVars, variables, standard, ratios)
 
     function getTeam(match) {
         let team = match[mapping["team"]["key"]]
@@ -583,7 +599,7 @@ function setProjectorModeSheet() {
             return
         }
     }
-    console.log("Couldn't find a projector mode stylesheet")
+    console.error("Couldn't find a projector mode stylesheet")
 }
 //#endregion
 
@@ -781,6 +797,81 @@ function openTeam(team, comparisons) {
     else teamName.innerText = data.Team_Number + " " + data.Name.substring(0, 20) + (data.Name.length > 20 ? "..." : "")
     teamName.title = data.Name
     teamDescription.appendChild(teamName)
+
+    let imageButton = document.createElement("button")
+    imageButton.innerText = "View Media"
+    imageButton.addEventListener("click", () => {
+        document.querySelector(".sticky-header").hidden = true
+
+        let bg = document.createElement("div")
+        bg.className = "team-image-display-bg"
+        document.body.appendChild(bg)
+
+        let imageCycleCounter = document.createElement("div")
+        imageCycleCounter.className = "team-image-display-counter"
+        bg.appendChild(imageCycleCounter)
+
+        let panel = document.createElement("div")
+        panel.className = "team-image-display"
+
+        let imageDisplay = document.createElement("div")
+        imageDisplay.className = "team-image-display-holder"
+
+        let imageIndex = 0
+
+        function updateImage() {
+            imageCycleCounter.innerText = "(" + (imageIndex+1) + "/" + data.TBA.images.length + ")"
+            imageDisplay.innerHTML = ""
+            let media = data.TBA.images[imageIndex]
+            if (media.type === "image") {
+                let mediaHolder = document.createElement("img")
+                mediaHolder.src = media.src
+                imageDisplay.appendChild(mediaHolder)
+            }
+            if (media.type === "youtube") {
+                let mediaHolder = document.createElement("iframe")
+                mediaHolder.setAttribute("allow", "fullscreen")
+                mediaHolder.src = "https://www.youtube.com/embed/" + media.src
+                mediaHolder.width = "600"
+                mediaHolder.height = "500"
+                imageDisplay.appendChild(mediaHolder)
+            }
+        }
+
+        if (data.TBA.images.length > 1) {
+            let leftButton = document.createElement("span")
+            leftButton.innerText = "arrow_back"
+            let rightButton = document.createElement("span")
+            rightButton.innerText = "arrow_forward"
+            leftButton.className = rightButton.className = "material-symbols-outlined"
+            leftButton.addEventListener("click", () => {
+                imageIndex--
+                if (imageIndex < 0) imageIndex += data.TBA.images.length
+                updateImage()
+            })
+            rightButton.addEventListener("click", () => {
+                imageIndex = (imageIndex + 1) % data.TBA.images.length
+                updateImage()
+            })
+            panel.appendChild(leftButton)
+            panel.appendChild(imageDisplay)
+            panel.appendChild(rightButton)
+        } else panel.appendChild(imageDisplay)
+
+        updateImage()
+
+        bg.appendChild(panel)
+
+        let closeImages = document.createElement("button")
+        closeImages.innerText = "Close Media"
+        closeImages.addEventListener("click", () => {
+            bg.remove()
+            document.querySelector(".sticky-header").hidden = false
+        })
+        bg.appendChild(closeImages)
+    })
+    if (usingTBAMedia && data.TBA.images.length > 0)
+        teamDescription.appendChild(imageButton)
 
     let starEl = document.createElement("span")
     starEl.className = "material-symbols-outlined ar team-star"
@@ -1409,11 +1500,9 @@ function setColumnVisibility(index, to) {
     setColumnEditPanel()
 }
 function changeColumnOrder(col) {
-    console.log(col)
     let current = columns.indexOf(col)
     let target = (Math.max(Math.min((parseInt(document.querySelector("#order_"+col.replaceAll(".","")).value)), columns.length-1), 0))
     let direction = Math.sign(target-current)
-    console.log(current, target, direction)
     while (columns.indexOf(col) !== target) {
         let i = columns.indexOf(col)
         columns[i] = columns[i+direction] + ""
@@ -1606,6 +1695,10 @@ document.querySelector("#top_toggle_use_tbamatch").addEventListener("click", () 
     usingTBAMatches = !usingTBAMatches
     setEnabledAPIS()
 })
+document.querySelector("#top_toggle_use_tbamedia").addEventListener("click", () => {
+    usingTBAMedia = !usingTBAMedia
+    setEnabledAPIS()
+})
 document.querySelector("#top_toggle_use_desmos").addEventListener("click", () => {
     usingDesmos = !usingDesmos
     setEnabledAPIS()
@@ -1617,7 +1710,7 @@ document.querySelector("#top_toggle_use_frcolors").addEventListener("click", () 
 
 // Sets the localStorage enabled apis
 function setEnabledAPIS() {
-    window.localStorage.setItem(ENABLED_APIS, JSON.stringify({tbaevent: usingTBA, tbamatch: usingTBAMatches, desmos: usingDesmos, frccolors: usingFrcColors}))
+    window.localStorage.setItem(ENABLED_APIS, JSON.stringify({tbaevent: usingTBA, tbamatch: usingTBAMatches, tbamedia: usingTBAMedia, desmos: usingDesmos, frccolors: usingFrcColors}))
     location.reload()
 }
 //#endregion
@@ -1749,8 +1842,8 @@ document.querySelector("#version_slot").innerText = toolName + " v"+version
 // Apis
 let apis = window.localStorage.getItem(ENABLED_APIS)
 if (apis === null) {
-    window.localStorage.setItem(ENABLED_APIS, JSON.stringify({tbaevent: true, tbamatch: true, desmos: true, frccolors: true}))
-    apis = {tbaevent: true, tbamatch: true, desmos: true, frccolors: true}
+    window.localStorage.setItem(ENABLED_APIS, JSON.stringify({tbaevent: true, tbamatch: true, tbamedia: true, desmos: true, frccolors: true}))
+    apis = {tbaevent: true, tbamatch: true, tbamedia: true, desmos: true, frccolors: true}
 } else apis = JSON.parse(apis)
 
 usingTBA = apis.tbaevent
@@ -1759,8 +1852,15 @@ document.querySelector("#top_toggle_use_tbaevent").innerText = "TBA API: " + (us
 usingTBAMatches = apis.tbamatch
 document.querySelector("#top_toggle_use_tbamatch").innerText = "TBA API (Matches): " + (usingTBAMatches ? "Enabled" : "Disabled")
 if (!usingTBA) {
-    document.querySelector("#top_toggle_use_tbamatch").innerText = "TBA API (Matches): Disabled"
+    document.querySelector("#top_toggle_use_tbamatch").innerText = "TBA API (Media): Disabled"
     document.querySelector("#top_toggle_use_tbamatch").disabled = true
+}
+
+usingTBAMedia = apis.tbamedia
+document.querySelector("#top_toggle_use_tbamedia").innerText = "TBA API (Media): " + (usingTBAMedia ? "Enabled" : "Disabled")
+if (!usingTBA) {
+    document.querySelector("#top_toggle_use_tbamedia").innerText = "TBA API (Media): Disabled"
+    document.querySelector("#top_toggle_use_tbamedia").disabled = true
 }
 
 usingDesmos = apis.desmos
@@ -1780,7 +1880,7 @@ if (usingDesmos) {
 
 usingFrcColors = apis.frccolors
 document.querySelector("#top_toggle_use_frcolors").innerText = "FRC Colors API: " + (usingFrcColors ? "Enabled" : "Disabled")
-showTeamIcons = usingFrcColors
+showTeamIcons = usingFrcColors || (usingTBA && usingTBAMedia)
 
 // Final Prep
 if (usingTBA && (window.localStorage.getItem(TBA_KEY) == null || window.localStorage.getItem(TBA_KEY).trim() === "" || window.localStorage.getItem(TBA_KEY) === "null")) {
