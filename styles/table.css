@@ -42,6 +42,10 @@
     justify-content: center;
     gap: 1rem;
 }
+.row.divider {
+    height: 0;
+    border: 1px solid var(--font)
+}
 
 .icon {
     width: 3.5rem;
@@ -89,6 +93,9 @@ div.icon {
 }
 .data.highlighted {
     background: var(--highlight);
+}
+.data.small.highlighted {
+    font-weight: 1000;
 }
 .data.top {
     padding-top: 4px;

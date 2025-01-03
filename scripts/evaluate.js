@@ -44,13 +44,13 @@ let functions = {
     //#region Logic
     equal: (a) => {
         if (isNaN(parseFloat(a[0]))) {
-            return (""+a[0]).replaceAll("'","") == (""+a[1]).replaceAll("'","") ? 1 : 0;
+            return (""+a[0]).replaceAll("'","").trim() == (""+a[1]).replaceAll("'","").trim() ? 1 : 0;
         }
         return a[0] == a[1] ? 1 : 0;
     },
     equals: (a) => {
         if (isNaN(parseFloat(a[0]))) {
-            return (""+a[0]).replaceAll("'","") == (""+a[1]).replaceAll("'","") ? 1 : 0;
+            return (""+a[0]).replaceAll("'","").trim() == (""+a[1]).replaceAll("'","").trim() ? 1 : 0;
         }
         return a[0] == a[1] ? 1 : 0;
     },

@@ -31,7 +31,7 @@ let showIgnoredTeams = false
 let loading = 0
 
 let showTeamIcons = true
-const defaultColumns = ["Team_Number", "Name", "Winrate"]
+const defaultColumns = ["Team_Number"]
 let columns = JSON.parse(JSON.stringify(defaultColumns))
 const defaultHiddenColumns = ["TBA", "Icon", "graphs", "matches"]
 let hiddenColumns = JSON.parse(JSON.stringify(defaultHiddenColumns))
@@ -176,7 +176,8 @@ function loadEvent() {
                             if (x.type === "avatar" && !usingFrcColors) team_data[team["team_number"]].Icon = "data:image/png;base64," + x.details["base64Image"]
                             else if (x.type === "imgur") team_data[team["team_number"]].TBA.images.push({type: "image", src: x["direct_url"]})
                             else if (x.type === "youtube") team_data[team["team_number"]].TBA.images.push({type: "youtube", src: x["foreign_key"]})
-                            else console.log("Unsupported media type: " + x.type + ". (Team " + team["team_number"] + ")")
+                            else if (x.type !== "avatar") console.log("Unsupported media type: " + x.type + ". (Team " + team["team_number"] + ")")
+                            // Avatars are supported but ignored if frcColors is off, but the "unsupported media type avatar" was a bit annoying in console so this removes it.
                         }
                     })
                 }
@@ -429,6 +430,8 @@ function processData() {
             if (!isNaN(num) && !isNaN(den)) { // todo: add ignore condition check here and decide of the isNaN check should stay forever or need to be added manually by user in mapping
                 data[team][column]["num"].push(num)
                 data[team][column]["den"].push(den)
+
+                console.log(num, den, num/den)
 
                 if (mapping["data"][column].graph) data[team]["graphs"][column][match[mapping["match"]["number_key"]]] = (num / den)
             }
@@ -747,24 +750,42 @@ function regenTable() {
     if (tableMode === "team") for (let team of tableTeams) element(team)
     else for (let team of Object.keys(team_data)) element(team)
 
-    if (!showIgnoredTeams && ignored.length > 0) {
-        let el = document.createElement("div")
-        el.className = "row ignoredlist"
-        el.style.order = Math.pow(10,20)
+    if (ignored.length > 0) {
+        if (!showIgnoredTeams) {
+            let el = document.createElement("div")
+            el.className = "row ignoredlist"
+            el.style.order = Math.pow(10,20)
 
-        el.innerText = ignored.length + " teams ignored."
+            el.innerText = ignored.length + " teams ignored."
 
-        if (tableMode !== "team") document.querySelector(".table.main-table").appendChild(el)
+            if (tableMode !== "team") document.querySelector(".table.main-table").appendChild(el)
 
-        let showButton = document.createElement("button")
-        showButton.innerText = "Show Ignored Teams"
-        showButton.addEventListener("click", () => {
-            showIgnoredTeams = true
-            regenTable()
-        })
-        el.appendChild(showButton)
+            let showButton = document.createElement("button")
+            showButton.innerText = "Show Ignored Teams"
+            showButton.addEventListener("click", () => {
+                showIgnoredTeams = true
+                regenTable()
+            })
+            el.appendChild(showButton)
+        } else if (usingIgnore) {
+            let el = document.createElement("div")
+            el.className = "row divider"
+            el.style.order = Math.pow(10,8)
 
+            if (tableMode === "team") document.querySelector(".table.team-table").appendChild(el)
+            else document.querySelector(".table.main-table").appendChild(el)
+        }
     }
+
+    if (starred.length > 0 && usingStar) {
+        let el = document.createElement("div")
+        el.className = "row divider"
+        el.style.order = -Math.pow(10,8)
+
+        if (tableMode === "team") document.querySelector(".table.team-table").appendChild(el)
+        else document.querySelector(".table.main-table").appendChild(el)
+    }
+
 }
 //#endregion
 
@@ -1399,12 +1420,6 @@ function graphElement(data, name, teams, width, height) {
     expressions.push({
         latex: "T_{eamListY}=" + (1.2 * maxY - maxY * .05)
     })
-    expressions.push({
-        latex: "\\left(T_{eamListX},T_{eamListY}\\right)",
-        pointOpacity: .1,
-        color: Desmos.Colors.BLACK,
-        dragMode: Desmos.DragModes.XY
-    })
     for (let i = 0; i < data.length; i++) {
         expressions.push({
             type:"table",
@@ -1428,6 +1443,12 @@ function graphElement(data, name, teams, width, height) {
             labelSize: (projectorMode ? "1.5" : "1"),
             pointSize: (projectorMode ? 24 : 16),
             dragMode: Desmos.DragModes.NONE
+        })
+        expressions.push({
+            latex: "\\left(T_{eamListX},T_{eamListY}-" + (i * .05 * maxY) + "\\right)",
+            pointOpacity: 0,
+            color: Desmos.Colors.BLACK,
+            dragMode: Desmos.DragModes.XY
         })
         expressions.push({
             latex: "(x_{" + i + "}, y_{" + i + "})",
@@ -1761,6 +1782,7 @@ function download(filename, text) {
 }
 
 document.querySelector("#top_toggle_use_allapi").addEventListener("click", () => {
+    usingTBAMedia = true
     usingTBAMatches = true
     usingTBA = true
     usingDesmos = true
@@ -1768,6 +1790,7 @@ document.querySelector("#top_toggle_use_allapi").addEventListener("click", () =>
     setEnabledAPIS()
 })
 document.querySelector("#top_toggle_use_noneapi").addEventListener("click", () => {
+    usingTBAMedia = false
     usingTBAMatches = false
     usingTBA = false
     usingDesmos = false
@@ -1956,17 +1979,25 @@ if (apis === null) {
 
 usingTBA = apis.tbaevent
 document.querySelector("#top_toggle_use_tbaevent").innerText = "TBA API: " + (usingTBA ? "Enabled" : "Disabled")
+if (usingTBA) {
+    defaultColumns.push("Name")
+}
 
 usingTBAMatches = apis.tbamatch
 document.querySelector("#top_toggle_use_tbamatch").innerText = "TBA API (Matches): " + (usingTBAMatches ? "Enabled" : "Disabled")
 if (!usingTBA) {
+    usingTBAMatches = false
     document.querySelector("#top_toggle_use_tbamatch").innerText = "TBA API (Media): Disabled"
     document.querySelector("#top_toggle_use_tbamatch").disabled = true
+}
+if (usingTBAMatches) {
+    defaultColumns.push("Winrate")
 }
 
 usingTBAMedia = apis.tbamedia
 document.querySelector("#top_toggle_use_tbamedia").innerText = "TBA API (Media): " + (usingTBAMedia ? "Enabled" : "Disabled")
 if (!usingTBA) {
+    usingTBAMedia = false
     document.querySelector("#top_toggle_use_tbamedia").innerText = "TBA API (Media): Disabled"
     document.querySelector("#top_toggle_use_tbamedia").disabled = true
 }
