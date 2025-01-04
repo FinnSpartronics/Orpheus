@@ -6,7 +6,10 @@ const SCOUTING_DATA  = "scouting_4915_scouting_data"
 const MAPPING  = "scouting_4915_mapping"
 const THEME = "scouting_4915_theme"
 const ENABLED_APIS = "scouting_4915_apis"
-const LOCAL_STORAGE_KEYS = [YEAR, TBA_KEY, EVENT, SCOUTING_DATA, MAPPING, THEME, ENABLED_APIS]
+const SETTINGS = "scouting_4915_settings_general"
+const COLUMNS = "scouting_4915_settings_columns"
+const TEAM_SAVES = "scouting_4915_settings_starignore"
+const LOCAL_STORAGE_KEYS = [YEAR, TBA_KEY, EVENT, SCOUTING_DATA, MAPPING, THEME, ENABLED_APIS, SETTINGS, COLUMNS, TEAM_SAVES]
 //#endregion
 
 //#region Variables
@@ -28,7 +31,7 @@ let starred = []
 let usingStar = true
 let ignored = []
 let usingIgnore = true
-let showIgnoredTeams = false
+let showIgnoredTeams
 
 let loading = 0
 
@@ -44,7 +47,7 @@ let sortDirection = 1
 let roundingDigits = 3
 let rounding = Math.pow(10, roundingDigits)
 
-let keyboardControls = true
+let keyboardControls
 let brieflyDisableKeyboard = false
 
 let year
@@ -54,7 +57,7 @@ let tieValue = 0.5
 let desmosColors
 const desmosScriptSrc = "https://www.desmos.com/api/v1.10/calculator.js?apiKey=dcb31709b452b1cf9dc26972add0fda6"
 
-let showNamesInTeamComments = true
+let showNamesInTeamComments
 
 let usingTBA
 let usingTBAMatches
@@ -1517,6 +1520,8 @@ function graphElement(data, name, teams, width, height) {
 document.querySelector("#top_show_hide_comment_names").onclick = function() {
     showNamesInTeamComments = !showNamesInTeamComments
     if (openedTeam !== undefined) openTeam(openedTeam)
+    document.querySelector("#top_show_hide_comment_names").innerText = "Names in Comments: " + (showNamesInTeamComments ? "Shown" : "Hidden")
+    saveGeneralSettings()
 }
 
 //#endregion
@@ -1651,6 +1656,7 @@ function changeColumnOrder(col) {
 document.querySelector("#top_keyboard").onclick = function() {
     keyboardControls = !keyboardControls
     document.querySelector("#top_keyboard").innerText = "Keyboard Controls: " + (keyboardControls ? "Enabled" : "Disabled")
+    saveGeneralSettings()
 }
 document.addEventListener("keydown", (e) => {
     if (!keyboardControls || brieflyDisableKeyboard) return
@@ -1780,6 +1786,7 @@ document.querySelector("#top_show_hide_ignored").addEventListener("click", () =>
     showIgnoredTeams = !showIgnoredTeams
     document.querySelector("#top_show_hide_ignored").innerText = "Ignored Teams: " + (showIgnoredTeams ? "Shown" : "Hidden")
     regenTable()
+    saveGeneralSettings()
 })
 
 //#endregion
@@ -1982,6 +1989,17 @@ function closeContextMenu() {
 }
 //#endregion
 
+//#region Save Settings
+function saveGeneralSettings() {
+    window.localStorage.setItem(SETTINGS, JSON.stringify({
+        "keyboardControls": keyboardControls,
+        "showNamesInTeamComments": showNamesInTeamComments,
+        "showIgnoredTeams": showIgnoredTeams,
+    }))
+}
+
+//#endregion
+
 //#region Init
 
 // Year
@@ -2066,6 +2084,22 @@ if (usingDesmos) {
         desmosColors = [Desmos.Colors.RED, Desmos.Colors.BLUE, Desmos.Colors.GREEN, Desmos.Colors.PURPLE, Desmos.Colors.ORANGE, Desmos.Colors.BLACK]
     })
 }
+
+// General Settings Setup
+if (window.localStorage.getItem(SETTINGS) === null) {
+    window.localStorage.setItem(SETTINGS, JSON.stringify({
+        "keyboardControls": true,
+        "showNamesInTeamComments": true,
+        "showIgnoredTeams": true
+    }))
+}
+let generalSettings = JSON.parse(window.localStorage.getItem(SETTINGS))
+keyboardControls = generalSettings.keyboardControls
+document.querySelector("#top_keyboard").innerText = "Keyboard Controls: " + (keyboardControls ? "Enabled" : "Disabled")
+showNamesInTeamComments = generalSettings.showNamesInTeamComments
+document.querySelector("#top_show_hide_comment_names").innerText = "Names in Comments: " + (showNamesInTeamComments ? "Shown" : "Hidden")
+showIgnoredTeams = generalSettings.showIgnoredTeams
+document.querySelector("#top_show_hide_ignored").innerText = "Ignored Teams: " + (showIgnoredTeams ? "Shown" : "Hidden")
 
 // Welcome Checklist
 doingInitialSetup = false
