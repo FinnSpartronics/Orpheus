@@ -250,6 +250,10 @@ function handleMapping() {
         if (mapping["data"][x]["hidden"]) hiddenColumns.push(x)
         else columns.push(x)
     }
+    if (mapping["match"]["notes"] === undefined || mapping["match"]["scouter_name_key"] === undefined) { // If no notes, then cannot toggle names
+        document.querySelector("#top_show_hide_comment_names").disabled = true
+        showNamesInTeamComments = false
+    }
     setHeader()
 }
 // Processes scouting_data based on information from mapping
@@ -339,6 +343,7 @@ function processData() {
     for (let match of scouting_data) {
         let team = getTeam(match)
         if (typeof team_data[team] === "undefined") continue
+        if (match[mapping["match"]["number_key"]] > 999) continue // Extraneous Match Number
 
         for (let column of ratioVars) {
             let num = evaluate(Object.assign(Object.assign({"match": match[mapping["match"]["number_key"]]}, match), data[team]["variables"], match), constants, mapping["data"][column].value)
@@ -359,6 +364,7 @@ function processData() {
     for (let match of scouting_data) {
         let team = getTeam(match)
         if (typeof team_data[team] === "undefined") continue
+        if (match[mapping["match"]["number_key"]] > 999) continue // Extraneous Match Number
 
         for (let column of variables) {
             let x = evaluate(Object.assign({"match": match[mapping["match"]["number_key"]]}, match), constants, mapping["data"][column].value)
@@ -416,6 +422,7 @@ function processData() {
     for (let match of scouting_data) {
         let team = getTeam(match)
         if (typeof team_data[team] === "undefined") continue
+        if (match[mapping["match"]["number_key"]] > 999) continue // Extraneous Match Number
 
         for (let column of standard) {
             let x = evaluate(Object.assign({"match": match[mapping["match"]["number_key"]]}, data[team]["variables"], match), constants, mapping["data"][column].value)
@@ -431,6 +438,7 @@ function processData() {
     for (let match of scouting_data) {
         let team = getTeam(match)
         if (typeof team_data[team] === "undefined") continue
+        if (match[mapping["match"]["number_key"]] > 999) continue // Extraneous Match Number
 
         for (let column of ratios) {
             let num = evaluate(Object.assign({"match": match[mapping["match"]["number_key"]]}, data[team]["variables"], match), constants, mapping["data"][column].value)
@@ -1143,21 +1151,22 @@ function openTeam(team, comparisons) {
     addGraph()
 
     let commentsHolder = document.createElement("div")
-    commentsHolder.className = "comments-holder"
-    graphCommentsHolder.appendChild(commentsHolder)
-
     let commentsTitle = document.createElement("div")
-    commentsTitle.className = "comments-title"
-    commentsTitle.innerText = "Team Comments"
-    commentsHolder.appendChild(commentsTitle)
-
     let commentsEl = document.createElement("div")
-    commentsEl.className = "team-comments"
-    if (!usingDesmos)
-        commentsEl.classList.add("nograph")
-    commentsEl.innerText = comments
-    commentsHolder.appendChild(commentsEl)
+    if (commentsEnabled) {
+        commentsHolder.className = "comments-holder"
+        graphCommentsHolder.appendChild(commentsHolder)
 
+        commentsTitle.className = "comments-title"
+        commentsTitle.innerText = "Team Comments"
+        commentsHolder.appendChild(commentsTitle)
+
+        commentsEl.className = "team-comments"
+        if (!usingDesmos)
+            commentsEl.classList.add("nograph")
+        commentsEl.innerText = comments
+        commentsHolder.appendChild(commentsEl)
+    }
 
     let teamTableHead = document.createElement("div")
     teamTableHead.className = "row table-head team-table b"
@@ -1193,7 +1202,8 @@ function openTeam(team, comparisons) {
     })
     holder.insertBefore(teamInfoDrag, teamData)
 
-    commentsEl.style.maxHeight = graphHolder.style.width = graphHolder.style.height = graphHeight + "px"
+    graphHolder.style.width = graphHolder.style.height = graphHeight + "px"
+    if (commentsEnabled) commentsEl.style.maxHeight = graphHeight + "px"
     let graphDrag = document.createElement("div")
     graphDrag.className = "drag height padding"
     graphDrag.addEventListener("mousedown", (e) => {
