@@ -298,6 +298,7 @@ function processData() {
 
     // True if should be skipped, false if not
     function checkSkip(val, vars, match, expressions) {
+        if (expressions === undefined) return false
         for (let exp of expressions)
             if(evaluate(Object.assign({"value": val, "match": match[mapping["match"]["number_key"]]}, vars, match), constants, exp))
                 return true
@@ -507,6 +508,8 @@ function processData() {
                     team_data[t][column] = (num / den)
                     break;
                 }
+                default:
+                    team_data[t][column] = "Missing Format"
             }
         }
     }
