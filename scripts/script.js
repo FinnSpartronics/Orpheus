@@ -58,7 +58,6 @@ let usingTBA
 let usingTBAMatches
 let usingTBAMedia
 let usingDesmos
-let usingFrcColors
 
 let projectorMode = false
 
@@ -149,7 +148,6 @@ function loadEvent() {
                 team_data[team["team_number"]].Name = team["nickname"]
                 team_data[team["team_number"]].TBA = team
                 team_data[team["team_number"]].TBA["matches"] = {}
-                team_data[team["team_number"]].Icon = "https://api.frc-colors.com/internal/team/" + team["team_number"] + "/avatar.png"
                 if (usingTBAMatches) {
                     loading++
                     load("team/frc" + team["team_number"] + "/event/" + year + window.localStorage.getItem(EVENT) + "/matches", function (data) {
@@ -173,11 +171,10 @@ function loadEvent() {
                         team_data[team["team_number"]].TBA.images = []
 
                         for (let x of data) {
-                            if (x.type === "avatar" && !usingFrcColors) team_data[team["team_number"]].Icon = "data:image/png;base64," + x.details["base64Image"]
+                            if (x.type === "avatar") team_data[team["team_number"]].Icon = "data:image/png;base64," + x.details["base64Image"]
                             else if (x.type === "imgur") team_data[team["team_number"]].TBA.images.push({type: "image", src: x["direct_url"]})
                             else if (x.type === "youtube") team_data[team["team_number"]].TBA.images.push({type: "youtube", src: x["foreign_key"]})
-                            else if (x.type !== "avatar") console.log("Unsupported media type: " + x.type + ". (Team " + team["team_number"] + ")")
-                            // Avatars are supported but ignored if frcColors is off, but the "unsupported media type avatar" was a bit annoying in console so this removes it.
+                            else console.log("Unsupported media type: " + x.type + ". (Team " + team["team_number"] + ")")
                         }
                     })
                 }
@@ -311,7 +308,7 @@ function processData() {
     for (let match of scouting_data) {
         let team = getTeam(match)
 
-        if (!usingTBA) team_data[team] = {Team_Number: team, Icon: "https://api.frc-colors.com/internal/team/" + team + "/avatar.png"}
+        if (!usingTBA) team_data[team] = {Team_Number: team}
         if (typeof team_data[team] !== "undefined") { // Only does calculations if team exists (in case someone put 4951 instead of 4915, no reason to include typos or teams that aren't in the event)
             if (typeof data[team] === "undefined") {
                 data[team] = {"graphs": {}, "matches": [], "variables": {}, "processed_matches": []}
@@ -1531,7 +1528,7 @@ function setColumnEditPanel() {
     columnEditPanel.appendChild(button)
     columnEditPanel.appendChild(document.createElement("margin"))
 
-    if (usingFrcColors) {
+    if (usingTBA && usingTBAMedia) {
         let iconCheckbox = document.createElement("input")
         iconCheckbox.type = "checkbox"
         iconCheckbox.id = "checkbox_enableIcons"
@@ -1820,7 +1817,6 @@ document.querySelector("#top_toggle_use_allapi").addEventListener("click", () =>
     usingTBAMatches = true
     usingTBA = true
     usingDesmos = true
-    usingFrcColors = true
     setEnabledAPIS()
 })
 document.querySelector("#top_toggle_use_noneapi").addEventListener("click", () => {
@@ -1828,7 +1824,6 @@ document.querySelector("#top_toggle_use_noneapi").addEventListener("click", () =
     usingTBAMatches = false
     usingTBA = false
     usingDesmos = false
-    usingFrcColors = false
     setEnabledAPIS()
 })
 document.querySelector("#top_toggle_use_tbaevent").addEventListener("click", () => {
@@ -1847,14 +1842,10 @@ document.querySelector("#top_toggle_use_desmos").addEventListener("click", () =>
     usingDesmos = !usingDesmos
     setEnabledAPIS()
 })
-document.querySelector("#top_toggle_use_frcolors").addEventListener("click", () => {
-    usingFrcColors = !usingFrcColors
-    setEnabledAPIS()
-})
 
 // Sets the localStorage enabled apis
 function setEnabledAPIS() {
-    window.localStorage.setItem(ENABLED_APIS, JSON.stringify({tbaevent: usingTBA, tbamatch: usingTBAMatches, tbamedia: usingTBAMedia, desmos: usingDesmos, frccolors: usingFrcColors}))
+    window.localStorage.setItem(ENABLED_APIS, JSON.stringify({tbaevent: usingTBA, tbamatch: usingTBAMatches, tbamedia: usingTBAMedia, desmos: usingDesmos}))
     location.reload()
 }
 //#endregion
@@ -2007,8 +1998,8 @@ document.querySelector("#version_slot").innerText = toolName + " v"+version
 // Apis
 let apis = window.localStorage.getItem(ENABLED_APIS)
 if (apis === null) {
-    window.localStorage.setItem(ENABLED_APIS, JSON.stringify({tbaevent: true, tbamatch: true, tbamedia: true, desmos: true, frccolors: true}))
-    apis = {tbaevent: true, tbamatch: true, tbamedia: true, desmos: true, frccolors: true}
+    window.localStorage.setItem(ENABLED_APIS, JSON.stringify({tbaevent: true, tbamatch: true, tbamedia: true, desmos: true}))
+    apis = {tbaevent: true, tbamatch: true, tbamedia: true, desmos: true,}
 } else apis = JSON.parse(apis)
 
 usingTBA = apis.tbaevent
@@ -2035,6 +2026,7 @@ if (!usingTBA) {
     document.querySelector("#top_toggle_use_tbamedia").innerText = "TBA API (Media): Disabled"
     document.querySelector("#top_toggle_use_tbamedia").disabled = true
 }
+showTeamIcons = (usingTBA && usingTBAMedia)
 
 usingDesmos = apis.desmos
 document.querySelector("#top_toggle_use_desmos").innerText = "Desmos API: " + (usingDesmos ? "Enabled" : "Disabled")
@@ -2050,10 +2042,6 @@ if (usingDesmos) {
         desmosColors = [Desmos.Colors.RED, Desmos.Colors.BLUE, Desmos.Colors.GREEN, Desmos.Colors.PURPLE, Desmos.Colors.ORANGE, Desmos.Colors.BLACK]
     })
 }
-
-usingFrcColors = apis.frccolors
-document.querySelector("#top_toggle_use_frcolors").innerText = "FRC Colors API: " + (usingFrcColors ? "Enabled" : "Disabled")
-showTeamIcons = usingFrcColors || (usingTBA && usingTBAMedia)
 
 // Final Prep
 if (usingTBA && (window.localStorage.getItem(TBA_KEY) == null || window.localStorage.getItem(TBA_KEY).trim() === "" || window.localStorage.getItem(TBA_KEY) === "null")) {
