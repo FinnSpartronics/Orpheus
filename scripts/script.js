@@ -27,10 +27,10 @@ let mapping
 
 let theme = 0
 
-let starred = []
-let usingStar = true
-let ignored = []
-let usingIgnore = true
+let starred
+let usingStar
+let ignored
+let usingIgnore
 let showIgnoredTeams
 
 let loading = 0
@@ -129,7 +129,9 @@ document.querySelector("#top_load_event").onclick = function() {
     else if (x !== "") {
         window.localStorage.setItem(EVENT, x.toLowerCase())
         window.location.reload()
+        clearSavedTeams()
     }
+
 }
 document.querySelector("#top_year").onclick = function() {
     let x = prompt("Change year").trim()
@@ -137,6 +139,7 @@ document.querySelector("#top_year").onclick = function() {
     else if (x !== "") {
         window.localStorage.setItem(YEAR, x)
         window.location.reload()
+        clearSavedTeams()
     }
 }
 function loadEvent() {
@@ -1756,6 +1759,7 @@ function star_toggle() {
     usingStar = !usingStar
     document.querySelector("#select_star").classList.toggle("filled")
     regenTable()
+    saveTeams()
 }
 function set_star(team, to) {
     if (starred.includes(team)) starred.splice(starred.indexOf(team), 1)
@@ -1764,6 +1768,7 @@ function set_star(team, to) {
         set_ignore(team, false)
     }
     regenTable()
+    saveTeams()
 }
 function ignore(i) {
     set_ignore(i, !ignored.includes(i))
@@ -1772,6 +1777,7 @@ function ignore_toggle() {
     usingIgnore = !usingIgnore
     document.querySelector("#select_ignore").classList.toggle("filled")
     regenTable()
+    saveTeams()
 }
 function set_ignore(team, to) {
     if (ignored.includes(team)) ignored.splice(ignored.indexOf(team), 1)
@@ -1780,6 +1786,7 @@ function set_ignore(team, to) {
         set_star(team, false)
     }
     regenTable()
+    saveTeams()
 }
 
 document.querySelector("#top_show_hide_ignored").addEventListener("click", () => {
@@ -1997,7 +2004,22 @@ function saveGeneralSettings() {
         "showIgnoredTeams": showIgnoredTeams,
     }))
 }
-
+function saveTeams() {
+    window.localStorage.setItem(TEAM_SAVES, JSON.stringify({
+        "starred": starred,
+        "ignored": ignored,
+        "usingStar": usingStar,
+        "usingIgnore": usingIgnore
+    }))
+}
+function clearSavedTeams() {
+    window.localStorage.setItem(TEAM_SAVES, JSON.stringify({
+        "starred": [],
+        "ignored": [],
+        "usingStar": true,
+        "usingIgnore": true,
+    }))
+}
 //#endregion
 
 //#region Init
@@ -2009,6 +2031,30 @@ if (year === null || year < 1992) {
     window.location.reload()
 }
 document.querySelector("#top_year").innerText = year
+
+// General Settings Setup
+if (window.localStorage.getItem(SETTINGS) === null) {
+    window.localStorage.setItem(SETTINGS, JSON.stringify({
+        "keyboardControls": true,
+        "showNamesInTeamComments": true,
+        "showIgnoredTeams": true
+    }))
+}
+let generalSettings = JSON.parse(window.localStorage.getItem(SETTINGS))
+keyboardControls = generalSettings.keyboardControls
+document.querySelector("#top_keyboard").innerText = "Keyboard Controls: " + (keyboardControls ? "Enabled" : "Disabled")
+showNamesInTeamComments = generalSettings.showNamesInTeamComments
+document.querySelector("#top_show_hide_comment_names").innerText = "Names in Comments: " + (showNamesInTeamComments ? "Shown" : "Hidden")
+showIgnoredTeams = generalSettings.showIgnoredTeams
+document.querySelector("#top_show_hide_ignored").innerText = "Ignored Teams: " + (showIgnoredTeams ? "Shown" : "Hidden")
+
+// Stars and Ignore setup
+if (window.localStorage.getItem(TEAM_SAVES) === null) clearSavedTeams()
+let teamSaves = JSON.parse(window.localStorage.getItem(TEAM_SAVES))
+starred = teamSaves.starred
+ignored = teamSaves.ignored
+usingStar = teamSaves.usingStar
+usingIgnore = teamSaves.usingIgnore
 
 // Loading saved mappings or data
 scouting_data = window.localStorage.getItem(SCOUTING_DATA)
@@ -2084,22 +2130,6 @@ if (usingDesmos) {
         desmosColors = [Desmos.Colors.RED, Desmos.Colors.BLUE, Desmos.Colors.GREEN, Desmos.Colors.PURPLE, Desmos.Colors.ORANGE, Desmos.Colors.BLACK]
     })
 }
-
-// General Settings Setup
-if (window.localStorage.getItem(SETTINGS) === null) {
-    window.localStorage.setItem(SETTINGS, JSON.stringify({
-        "keyboardControls": true,
-        "showNamesInTeamComments": true,
-        "showIgnoredTeams": true
-    }))
-}
-let generalSettings = JSON.parse(window.localStorage.getItem(SETTINGS))
-keyboardControls = generalSettings.keyboardControls
-document.querySelector("#top_keyboard").innerText = "Keyboard Controls: " + (keyboardControls ? "Enabled" : "Disabled")
-showNamesInTeamComments = generalSettings.showNamesInTeamComments
-document.querySelector("#top_show_hide_comment_names").innerText = "Names in Comments: " + (showNamesInTeamComments ? "Shown" : "Hidden")
-showIgnoredTeams = generalSettings.showIgnoredTeams
-document.querySelector("#top_show_hide_ignored").innerText = "Ignored Teams: " + (showIgnoredTeams ? "Shown" : "Hidden")
 
 // Welcome Checklist
 doingInitialSetup = false
