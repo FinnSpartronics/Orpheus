@@ -795,7 +795,20 @@ function regenTable() {
                 showIgnoredTeams = true
                 regenTable()
             })
+
             el.appendChild(showButton)
+
+            let remaining = []
+            for (let x of Object.keys(team_data))
+                if (!ignored.includes(x)) remaining.push(x)
+            if (1 < remaining.length && remaining.length <= 6) {
+                let openButton = document.createElement("button")
+                openButton.innerText = "Compare Remaining " + remaining.length + " Teams"
+                openButton.addEventListener("click", () => {
+                    openTeam(remaining[0], remaining.slice(1,remaining.length))
+                })
+                el.appendChild(openButton)
+            }
         } else if (usingIgnore) {
             let el = document.createElement("div")
             el.className = "row divider"
@@ -1894,6 +1907,10 @@ document.addEventListener("contextmenu", (e) => {
         optionEl("Flip starred teams", () => {
             for (let x in team_data) star(x)
         })
+        if (6 >= starred.length && starred.length > 1)
+            optionEl("Compare Starred Teams", () => {
+                openTeam(starred[0], starred.slice(1,starred.length))
+            })
     }
     if (context === "ignore") {
         optionEl("Ignore All", () => {
