@@ -314,7 +314,7 @@ function processData() {
         if (!usingTBA) team_data[team] = {Team_Number: team, Icon: "https://api.frc-colors.com/internal/team/" + team + "/avatar.png"}
         if (typeof team_data[team] !== "undefined") { // Only does calculations if team exists (in case someone put 4951 instead of 4915, no reason to include typos or teams that aren't in the event)
             if (typeof data[team] === "undefined") {
-                data[team] = {"graphs": {}, "matches": [], "variables": {}}
+                data[team] = {"graphs": {}, "matches": [], "variables": {}, "processed_matches": []}
                 for (let column of Object.keys(mapping["data"])) {
                     if (mapping["data"][column]["format"] === "ratio") {
                         data[team][column] = {
@@ -342,12 +342,15 @@ function processData() {
     // Ratio variable loop
     for (let match of scouting_data) {
         let team = getTeam(match)
+        let matchNum = match[mapping["match"]["number_key"]]
         if (typeof team_data[team] === "undefined") continue
         if (match[mapping["match"]["number_key"]] > 999) continue // Extraneous Match Number
+        if (data[team]["processed_matches"].includes(matchNum)) continue // Duplicate submission check
+        data[team]["processed_matches"].push(matchNum)
 
         for (let column of ratioVars) {
-            let num = evaluate(Object.assign(Object.assign({"match": match[mapping["match"]["number_key"]]}, match), data[team]["variables"], match), constants, mapping["data"][column].value)
-            let den = evaluate(Object.assign(Object.assign({"match": match[mapping["match"]["number_key"]]}, match), data[team]["variables"], match), constants, mapping["data"][column].denominator)
+            let num = evaluate(Object.assign(Object.assign({"match": matchNum}, match), data[team]["variables"], match), constants, mapping["data"][column].value)
+            let den = evaluate(Object.assign(Object.assign({"match": matchNum}, match), data[team]["variables"], match), constants, mapping["data"][column].denominator)
             if (!isNaN(num) && !isNaN(den) && !checkSkip(x, data[team]["variables"], match, mapping["data"][column]["skip"])) {
                 data[team][column]["num"].push(num)
                 data[team][column]["den"].push(den)
@@ -355,27 +358,34 @@ function processData() {
                 data[team]["variables"][column]["num"].push(num)
                 data[team]["variables"][column]["den"].push(den)
 
-                if (mapping["data"][column].graph) data[team]["graphs"][column][match[mapping["match"]["number_key"]]] = (num / den)
+                if (mapping["data"][column].graph) data[team]["graphs"][column][matchNum] = (num / den)
             }
         }
     }
+    
+    for (let x of Object.keys(data)) data[x]["processed_matches"] = []
 
     // Variable Loop
     for (let match of scouting_data) {
         let team = getTeam(match)
+        let matchNum = match[mapping["match"]["number_key"]]
         if (typeof team_data[team] === "undefined") continue
         if (match[mapping["match"]["number_key"]] > 999) continue // Extraneous Match Number
+        if (data[team]["processed_matches"].includes(matchNum)) continue // Duplicate submission check
+        data[team]["processed_matches"].push(matchNum)
 
         for (let column of variables) {
-            let x = evaluate(Object.assign({"match": match[mapping["match"]["number_key"]]}, match), constants, mapping["data"][column].value)
+            let x = evaluate(Object.assign({"match": matchNum}, match), constants, mapping["data"][column].value)
             if (!isNaN(x) && !checkSkip(x, data[team]["variables"], match, mapping["data"][column]["skip"])) {
                 data[team][column].push(x)
                 data[team]["variables"][column].push(x)
 
-                if (mapping["data"][column].graph) data[team]["graphs"][column][match[mapping["match"]["number_key"]]] = x
+                if (mapping["data"][column].graph) data[team]["graphs"][column][matchNum] = x
             }
         }
     }
+
+    for (let x of Object.keys(data)) data[x]["processed_matches"] = []
 
     // Variable to actual value
     for (let team of Object.keys(data))
@@ -421,33 +431,41 @@ function processData() {
     // Standard Loop
     for (let match of scouting_data) {
         let team = getTeam(match)
+        let matchNum = match[mapping["match"]["number_key"]]
         if (typeof team_data[team] === "undefined") continue
         if (match[mapping["match"]["number_key"]] > 999) continue // Extraneous Match Number
+        if (data[team]["processed_matches"].includes(matchNum)) continue // Duplicate submission check
+        data[team]["processed_matches"].push(matchNum)
 
         for (let column of standard) {
-            let x = evaluate(Object.assign({"match": match[mapping["match"]["number_key"]]}, data[team]["variables"], match), constants, mapping["data"][column].value)
+            let x = evaluate(Object.assign({"match": matchNum}, data[team]["variables"], match), constants, mapping["data"][column].value)
             if (!isNaN(x) && !checkSkip(x, data[team]["variables"], match, mapping["data"][column]["skip"])) {
                 data[team][column].push(x)
 
-                if (mapping["data"][column].graph) data[team]["graphs"][column][match[mapping["match"]["number_key"]]] = x
+                if (mapping["data"][column].graph) data[team]["graphs"][column][matchNum] = x
             }
         }
     }
 
+    for (let x of Object.keys(data)) data[x]["processed_matches"] = []
+
     // ratio loop
     for (let match of scouting_data) {
         let team = getTeam(match)
+        let matchNum = match[mapping["match"]["number_key"]]
         if (typeof team_data[team] === "undefined") continue
         if (match[mapping["match"]["number_key"]] > 999) continue // Extraneous Match Number
+        if (data[team]["processed_matches"].includes(matchNum)) continue // Duplicate submission check
+        data[team]["processed_matches"].push(matchNum)
 
         for (let column of ratios) {
-            let num = evaluate(Object.assign({"match": match[mapping["match"]["number_key"]]}, data[team]["variables"], match), constants, mapping["data"][column].value)
-            let den = evaluate(Object.assign({"match": match[mapping["match"]["number_key"]]}, data[team]["variables"], match), constants, mapping["data"][column].denominator)
+            let num = evaluate(Object.assign({"match": matchNum}, data[team]["variables"], match), constants, mapping["data"][column].value)
+            let den = evaluate(Object.assign({"match": matchNum}, data[team]["variables"], match), constants, mapping["data"][column].denominator)
             if (!isNaN(num) && !isNaN(den) && !checkSkip(x, data[team]["variables"], match, mapping["data"][column]["skip"])) {
                 data[team][column]["num"].push(num)
                 data[team][column]["den"].push(den)
 
-                if (mapping["data"][column].graph) data[team]["graphs"][column][match[mapping["match"]["number_key"]]] = (num / den)
+                if (mapping["data"][column].graph) data[team]["graphs"][column][matchNum] = (num / den)
             }
         }
     }
