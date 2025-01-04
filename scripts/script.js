@@ -295,6 +295,14 @@ function processData() {
         return team
     }
 
+    // True if should be skipped, false if not
+    function checkSkip(val, vars, match, expressions) {
+        for (let exp of expressions)
+            if(evaluate(Object.assign({"value": val, "match": match[mapping["match"]["number_key"]]}, vars, match), constants, exp))
+                return true
+        return false
+    }
+
     // Setup Loop
     for (let match of scouting_data) {
         let team = getTeam(match)
@@ -333,9 +341,9 @@ function processData() {
         if (typeof team_data[team] === "undefined") continue
 
         for (let column of ratioVars) {
-            let num = evaluate(Object.assign({}, data[team]["variables"], match), constants, mapping["data"][column].value)
-            let den = evaluate(Object.assign({}, data[team]["variables"], match), constants, mapping["data"][column].denominator)
-            if (!isNaN(num) && !isNaN(den)) { // todo: add ignore condition check here and decide of the isNaN check should stay forever or need to be added manually by user in mapping
+            let num = evaluate(Object.assign(Object.assign({"match": match[mapping["match"]["number_key"]]}, match), data[team]["variables"], match), constants, mapping["data"][column].value)
+            let den = evaluate(Object.assign(Object.assign({"match": match[mapping["match"]["number_key"]]}, match), data[team]["variables"], match), constants, mapping["data"][column].denominator)
+            if (!isNaN(num) && !isNaN(den) && !checkSkip(x, data[team]["variables"], match, mapping["data"][column]["skip"])) {
                 data[team][column]["num"].push(num)
                 data[team][column]["den"].push(den)
 
@@ -353,8 +361,8 @@ function processData() {
         if (typeof team_data[team] === "undefined") continue
 
         for (let column of variables) {
-            let x = evaluate(match, constants, mapping["data"][column].value)
-            if (!isNaN(x)) { // todo: add ignore condition check here and decide of the isNaN check should stay forever or need to be added manually by user in mapping
+            let x = evaluate(Object.assign({"match": match[mapping["match"]["number_key"]]}, match), constants, mapping["data"][column].value)
+            if (!isNaN(x) && !checkSkip(x, data[team]["variables"], match, mapping["data"][column]["skip"])) {
                 data[team][column].push(x)
                 data[team]["variables"][column].push(x)
 
@@ -410,8 +418,8 @@ function processData() {
         if (typeof team_data[team] === "undefined") continue
 
         for (let column of standard) {
-            let x = evaluate(Object.assign({}, data[team]["variables"], match), constants, mapping["data"][column].value)
-            if (!isNaN(x)) { // todo: add ignore condition check here and decide of the isNaN check should stay forever or need to be added manually by user in mapping
+            let x = evaluate(Object.assign({"match": match[mapping["match"]["number_key"]]}, data[team]["variables"], match), constants, mapping["data"][column].value)
+            if (!isNaN(x) && !checkSkip(x, data[team]["variables"], match, mapping["data"][column]["skip"])) {
                 data[team][column].push(x)
 
                 if (mapping["data"][column].graph) data[team]["graphs"][column][match[mapping["match"]["number_key"]]] = x
@@ -425,13 +433,11 @@ function processData() {
         if (typeof team_data[team] === "undefined") continue
 
         for (let column of ratios) {
-            let num = evaluate(Object.assign({}, data[team]["variables"], match), constants, mapping["data"][column].value)
-            let den = evaluate(Object.assign({}, data[team]["variables"], match), constants, mapping["data"][column].denominator)
-            if (!isNaN(num) && !isNaN(den)) { // todo: add ignore condition check here and decide of the isNaN check should stay forever or need to be added manually by user in mapping
+            let num = evaluate(Object.assign({"match": match[mapping["match"]["number_key"]]}, data[team]["variables"], match), constants, mapping["data"][column].value)
+            let den = evaluate(Object.assign({"match": match[mapping["match"]["number_key"]]}, data[team]["variables"], match), constants, mapping["data"][column].denominator)
+            if (!isNaN(num) && !isNaN(den) && !checkSkip(x, data[team]["variables"], match, mapping["data"][column]["skip"])) {
                 data[team][column]["num"].push(num)
                 data[team][column]["den"].push(den)
-
-                console.log(num, den, num/den)
 
                 if (mapping["data"][column].graph) data[team]["graphs"][column][match[mapping["match"]["number_key"]]] = (num / den)
             }
