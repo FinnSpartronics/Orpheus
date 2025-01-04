@@ -42,12 +42,12 @@ dialog {
     margin: 0;
 }
 
-#err {
-    color: red;
+#loading {
+    color: var(--font);
     font-size: 4rem;
     font-weight: bold;
 }
-#err.hidden {display: none;}
+#loading.hidden {display: none;}
 
 .sticky-header {
     position: sticky;
@@ -62,4 +62,28 @@ footer {
 }
 footer a {
     margin: 0 .1rem;
+}
+
+.centered {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+}
+
+.welcome {
+    width: 400px;
+    background-color: var(--bg);
+    border: 1px solid var(--font);
+    border-radius: .25rem;
+    display: flex;
+    gap: .25rem;
+    padding: 1rem;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.welcome-item {
+    display: flex;
+    align-items: center;
 }

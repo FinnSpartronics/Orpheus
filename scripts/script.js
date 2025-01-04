@@ -15,6 +15,8 @@ const MISSING_LOGO = "https://frc-cdn.firstinspires.org/eventweb_frc/ProgramLogo
 const toolName = "Orpheus"
 const version = 0.1
 
+let doingInitialSetup = false
+
 let event_data
 let scouting_data
 let team_data = {}
@@ -222,6 +224,7 @@ document.querySelector("#top_data").onclick = function() {
         if (mapping !== undefined) processData()
         window.localStorage.setItem(SCOUTING_DATA, JSON.stringify(scouting_data))
         document.querySelector("#top_data_download").disabled = false
+        if (doingInitialSetup) window.location.reload()
     })
 }
 // Import mapping button
@@ -232,6 +235,7 @@ document.querySelector("#top_mapping").onclick = function() {
         columns = JSON.parse(JSON.stringify(defaultColumns))
         hiddenColumns = JSON.parse(JSON.stringify(defaultHiddenColumns))
         if (scouting_data !== undefined) processData()
+        if (doingInitialSetup) window.location.reload()
     })
 }
 // Adds all the columns from the mapping to the columns list
@@ -749,7 +753,7 @@ function element(team) {
         columnEl.className = "data"
         // If undefined, leave empty. Else, display the data. If data is a float, round it. Else, leave as is.
         columnEl.innerText = team_data[team][column] === undefined ? "" : (isNaN(parseFloat(team_data[team][column])) ? team_data[team][column] : Math.round(rounding * parseFloat(team_data[team][column])) / rounding)
-        if (mapping["data"][column] !== undefined) {
+        if (mapping !== undefined && mapping["data"][column] !== undefined) {
             if (mapping["data"][column]["display"] !== undefined) {
                 if (mapping["data"][column]["display"] === "percentage" || mapping["data"][column]["display"] === "percent" || mapping["data"][column]["display"] === "%")
                     columnEl.innerText = (100 * Math.round(rounding * parseFloat(team_data[team][column])) / rounding) + "%"
@@ -1798,11 +1802,11 @@ async function load(sub, onload) {
 }
 function checkLoading() {
     if (loading === 0) {
-        document.querySelector("#err").className = "hidden"
+        document.querySelector("#loading").className = "hidden"
         if (scouting_data !== undefined && mapping !== undefined) processData()
     } else {
-        document.querySelector("#err").className = ""
-        document.querySelector("#err").innerHTML = "Loading Data... Do not touch anything"
+        document.querySelector("#loading").className = ""
+        document.querySelector("#loading").innerHTML = "Loading..."
     }
 }
 function loadFile(accept, listener) {
@@ -2063,21 +2067,38 @@ if (usingDesmos) {
     })
 }
 
-// Final Prep
-if (usingTBA && (window.localStorage.getItem(TBA_KEY) == null || window.localStorage.getItem(TBA_KEY).trim() === "" || window.localStorage.getItem(TBA_KEY) === "null")) {
-    document.querySelector("#err").className = ""
-    document.querySelector("#err").innerHTML = "No API Key for TheBlueAlliance"
-} else if (window.localStorage.getItem(EVENT) == null || window.localStorage.getItem(EVENT).trim() === "") {
-    document.querySelector("#err").className = ""
-    document.querySelector("#err").innerHTML = (document.querySelector("#err").innerHTML + " No Event").trim()
-} else {
-    document.querySelector("#top_load_event").innerText = window.localStorage.getItem(EVENT).toUpperCase()
-    if (usingTBA) {
-        loading++
-        checkLoading()
-        loading--
-    }
-    loadEvent()
+// Welcome Checklist
+doingInitialSetup = false
+function welcomeChecklistItem(name, checked) {
+    let el = document.createElement("div")
+    el.className = "welcome-item"
+    let icon = document.createElement("span")
+    icon.className = "material-symbols-outlined"
+    icon.innerText = (checked ? "check_circle" : "radio_button_unchecked")
+    el.appendChild(icon)
+    let text = document.createElement("div")
+    text.innerText = name
+    el.appendChild(text)
+    document.querySelector(".welcome").appendChild(el)
+
+    if (!checked) doingInitialSetup = true
 }
+document.querySelector("#setup-checklist-title").innerText = toolName + " Setup Checklist"
+welcomeChecklistItem("The Blue Alliance API Key", !usingTBA || window.localStorage.getItem(TBA_KEY) !== null)
+welcomeChecklistItem("Select an Event", !usingTBA || window.localStorage.getItem(EVENT) !== null)
+welcomeChecklistItem("Upload your scouting data", scouting_data !== undefined)
+welcomeChecklistItem("Upload a mapping for your data", mapping !== undefined)
+if (!doingInitialSetup)
+    document.querySelector(".welcome").remove()
+
+// Final Prep
+if (window.localStorage.getItem(EVENT) !== null)
+    document.querySelector("#top_load_event").innerText = window.localStorage.getItem(EVENT).toUpperCase()
+if (usingTBA) {
+    loading++
+    checkLoading()
+    loading--
+}
+loadEvent()
 
 //#endregion

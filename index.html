@@ -9,7 +9,6 @@
     <link rel="stylesheet" href="styles/inputs.css"/>
     <link rel="stylesheet" href="styles/table.css"/>
     <link rel="stylesheet" href="styles/team_showcase.css"/>
-    <link rel="stylesheet" href="styles/overrides.css"/>
     <link rel="stylesheet" href="styles/context_menu.css"/>
     <link rel="stylesheet" href="styles/projector.css" title="projector" id="projector-styles" disabled/>
     <script src="scripts/evaluate.js"></script>
@@ -56,7 +55,7 @@
                 <button id="top_show_hide_ignored">Ignored Teams: Hidden</button>
             </dialog>
 
-            <button id="top-control-data">Data</button>
+            <button id="top-control-data">Table</button>
             <dialog class="top-control-dropdown" for="top-control-data">
                 <button id="top_columns">Edit Table Columns</button>
             </dialog>
@@ -65,20 +64,24 @@
         <input id="search4915" class="nomargin" placeholder="Search for team">
 
         <h1 id="title"></h1>
-        <div id="err" class="hidden"></div>
+
+        <div id="loading"></div>
+
+        <div class="centered">
+            <div class="welcome" hidden>
+                <h1 id="setup-checklist-title">Setup Checklist</h1>
+                <a href="" id="welcome-help">HELP IDK WHAT TO DO!!!!</a> <!-- TODO: make this link go to a useful help page instead of nowhere -->
+            </div>
+        </div>
 
         <div class="row table-head main-table b">
             <div class="icon" title="Icon Placeholder"></div>
         </div>
     </div>
 
-    <div class="table main-table">
+    <div class="table main-table"></div>
 
-    </div>
-
-    <div class="team-page hidden">
-
-    </div>
+    <div class="team-page hidden"></div>
 
     <footer>
         <button id="foot_clearLocalStorage">Clear LocalStorage</button>
@@ -102,6 +105,5 @@
             <button class="context-theme" onclick="changeThemeTo(2)"><img src="https://mtssdhosting.s3.amazonaws.com/spartronics4915.com/wp-content/uploads/20151121091749/favicon.ico"></button>
         </div>
     </div>
-
 </body>
 </html>
