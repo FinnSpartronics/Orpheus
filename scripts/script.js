@@ -775,7 +775,7 @@ function element(team) {
         if (isNaN(team_data[team][column]) && typeof team_data[team][column] === "number") {
             columnEl.innerText = "-"
         }
-        if ((""+team_data[team][column]).length > 10) columnEl.style.fontSize = Math.max(1.2 - ((.025) * ((""+team_data[team][column]).length-10)), .7) + "rem"
+        if (columnEl.innerText.length > 10) columnEl.style.fontSize = Math.max(1.2 - ((.025) * (columnEl.innerText.length-10)), .7) + "rem"
         el.appendChild(columnEl)
     }
 
@@ -1893,7 +1893,11 @@ document.querySelector("#top_toggle_use_desmos").addEventListener("click", () =>
 
 // Sets the localStorage enabled apis
 function setEnabledAPIS() {
-    window.localStorage.setItem(ENABLED_APIS, JSON.stringify({tbaevent: usingTBA, tbamatch: usingTBAMatches, tbamedia: usingTBAMedia, desmos: usingDesmos}))
+    window.localStorage.setItem(ENABLED_APIS, JSON.stringify({
+        tbaevent: usingTBA,
+        tbamatch: usingTBAMatches,
+        tbamedia: usingTBAMedia,
+        desmos: usingDesmos}))
     location.reload()
 }
 //#endregion
@@ -2012,7 +2016,7 @@ function closeContextMenu() {
 }
 //#endregion
 
-//#region Save Settings
+//#region Save Settings, Load Config File
 function saveGeneralSettings() {
     window.localStorage.setItem(SETTINGS, JSON.stringify({
         "keyboardControls": keyboardControls,
@@ -2042,6 +2046,77 @@ function saveColumns() {
         "hidden": hiddenColumns
     }))
 }
+
+function exportSettings() {
+    let data = {
+        general: {
+            "keyboardControls": keyboardControls,
+            "showNamesInTeamComments": showNamesInTeamComments,
+            "showIgnoredTeams": showIgnoredTeams,
+        },
+        team: {
+            "starred": starred,
+            "ignored": ignored,
+            "usingStar": usingStar,
+            "usingIgnore": usingIgnore
+        },
+        columns: {
+            "columns": columns,
+            "hidden": hiddenColumns
+        },
+        mapping: mapping,
+        scouting_data: scouting_data,
+        year: year,
+        apis: {
+            tbaevent: usingTBA,
+            tbamatch: usingTBAMatches,
+            tbamedia: usingTBAMedia,
+            desmos: usingDesmos,
+        },
+        tbakey: window.localStorage.getItem(TBA_KEY),
+        event: window.localStorage.getItem(EVENT),
+        theme: window.localStorage.getItem(THEME)
+    }
+    download("settings.orpheus", JSON.stringify(data))
+}
+function importSettings(settings) {
+    console.log(settings)
+    keyboardControls = settings.general.keyboardControls
+    showNamesInTeamComments = settings.general.showNamesInTeamComments
+    showIgnoredTeams = settings.general.showIgnoredTeams
+    starred = settings.team.starred
+    ignored = settings.team.ignored
+    usingStar = settings.team.usingStar
+    usingIgnore = settings.team.usingIgnore
+    columns = settings.columns.columns
+    hiddenColumns = settings.columns.hidden
+    saveColumns()
+    saveGeneralSettings()
+    saveTeams()
+    mapping = settings.mapping
+    window.localStorage.setItem(MAPPING, JSON.stringify(mapping))
+    scouting_data = settings.scouting_data
+    window.localStorage.setItem(SCOUTING_DATA, JSON.stringify(scouting_data))
+    window.localStorage.setItem(YEAR, settings.year)
+    window.localStorage.setItem(EVENT, settings.event)
+    window.localStorage.setItem(TBA_KEY, settings.tbakey)
+    usingTBA = settings.apis.tbaevent
+    usingTBAMatches = settings.apis.tbamatch
+    usingTBAMedia = settings.apis.tbamedia
+    usingDesmos = settings.apis.desmos
+    setEnabledAPIS()
+    changeThemeTo(settings.theme)
+    window.location.reload()
+}
+
+document.querySelector("#top_export_settings").addEventListener("click", exportSettings)
+document.querySelector("#top_import_settings").addEventListener("click", () => {
+    loadFile(["orpheus"], (a) => {
+        let data = JSON.parse(a)
+        importSettings(data)
+    })
+})
+
 //#endregion
 
 //#region Init
