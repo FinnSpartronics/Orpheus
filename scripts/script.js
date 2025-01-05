@@ -142,6 +142,14 @@ document.querySelector("#top_year").onclick = function() {
         clearSavedTeams()
     }
 }
+document.querySelector("#top_clear_event").onclick = function() {
+    clearSavedTeams()
+    starred = []
+    ignored = []
+    usingStar = true
+    usingIgnore = true
+    setHeader()
+}
 function loadEvent() {
     loading++
     columns = JSON.parse(JSON.stringify(defaultColumns))
