@@ -152,8 +152,6 @@ document.querySelector("#top_clear_event").onclick = function() {
 }
 function loadEvent() {
     loading++
-    columns = JSON.parse(JSON.stringify(defaultColumns))
-    hiddenColumns = JSON.parse(JSON.stringify(defaultHiddenColumns))
     if (usingTBA) {
         load("event/" + year + window.localStorage.getItem(EVENT) + "/teams", function (data) {
             event_data = data
@@ -248,6 +246,7 @@ document.querySelector("#top_mapping").onclick = function() {
         window.localStorage.setItem(MAPPING, JSON.stringify(mapping))
         columns = JSON.parse(JSON.stringify(defaultColumns))
         hiddenColumns = JSON.parse(JSON.stringify(defaultHiddenColumns))
+        handleMapping()
         if (scouting_data !== undefined) processData()
         if (doingInitialSetup) window.location.reload()
     })
@@ -270,10 +269,10 @@ function handleMapping() {
         showNamesInTeamComments = false
     }
     setHeader()
+    saveColumns()
 }
 // Processes scouting_data based on information from mapping
 function processData() {
-    handleMapping() // Adds columns
     let data = {}
 
     const teamFormat = mapping["team"]["format"]
@@ -1636,6 +1635,7 @@ function setColumnEditPanel() {
         setHeader()
     })
     columnEditPanel.appendChild(deselectAllButton)
+    saveColumns()
 }
 function toggleColumn(col) {
     if (columns.includes(col))
@@ -1643,6 +1643,7 @@ function toggleColumn(col) {
     else columns.push(col)
     setHeader()
     setColumnEditPanel()
+    saveColumns()
 }
 function setColumnVisibility(index, to) {
     if (to) columns.push(index)
@@ -1662,6 +1663,7 @@ function changeColumnOrder(col) {
 
     setHeader()
     setColumnEditPanel()
+    saveColumns()
 }
 
 document.querySelector("#top_keyboard").onclick = function() {
@@ -1706,11 +1708,15 @@ document.addEventListener("keydown", (e) => {
     setHeader()
     regenTable()
     setColumnEditPanel()
+    saveColumns()
 })
 document.addEventListener("keyup", (e) => {
     if (!keyboardControls || brieflyDisableKeyboard) return
     let key = e.key.toLowerCase()
     if (key === "control") controlPressed = false
+})
+document.querySelector("#top_column_reset").addEventListener("click", () => {
+    handleMapping()
 })
 //#endregion
 
@@ -1993,6 +1999,8 @@ document.addEventListener("contextmenu", (e) => {
     if (context === null) {
         contextMenu.setAttribute("empty", "empty")
     }
+
+    saveColumns()
 })
 
 document.addEventListener("click", closeContextMenu)
@@ -2026,6 +2034,12 @@ function clearSavedTeams() {
         "ignored": [],
         "usingStar": true,
         "usingIgnore": true,
+    }))
+}
+function saveColumns() {
+    window.localStorage.setItem(COLUMNS, JSON.stringify({
+        "columns": columns,
+        "hidden": hiddenColumns
     }))
 }
 //#endregion
@@ -2071,6 +2085,13 @@ document.querySelector("#top_data_download").disabled = scouting_data === undefi
 mapping = window.localStorage.getItem(MAPPING)
 mapping = mapping == null ? undefined : JSON.parse(mapping)
 document.querySelector("#top_mapping_download").disabled = mapping === undefined
+
+// Loading saved columns
+if (window.localStorage.getItem(COLUMNS) !== null) {
+    let columnData = JSON.parse(window.localStorage.getItem(COLUMNS))
+    columns = columnData.columns
+    hiddenColumns = columnData.hidden
+}
 
 setHeader()
 updateTheme()
