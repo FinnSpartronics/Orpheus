@@ -3,13 +3,14 @@ const YEAR = "scouting_4915_year"
 const TBA_KEY  = "scouting_4915_apikey"
 const EVENT  = "scouting_4915_event"
 const SCOUTING_DATA  = "scouting_4915_scouting_data"
+const PIT  = "scouting_4915_pit_scouting_data"
 const MAPPING  = "scouting_4915_mapping"
 const THEME = "scouting_4915_theme"
 const ENABLED_APIS = "scouting_4915_apis"
 const SETTINGS = "scouting_4915_settings_general"
 const COLUMNS = "scouting_4915_settings_columns"
 const TEAM_SAVES = "scouting_4915_settings_starignore"
-const LOCAL_STORAGE_KEYS = [YEAR, TBA_KEY, EVENT, SCOUTING_DATA, MAPPING, THEME, ENABLED_APIS, SETTINGS, COLUMNS, TEAM_SAVES]
+const LOCAL_STORAGE_KEYS = [YEAR, PIT, TBA_KEY, EVENT, SCOUTING_DATA, MAPPING, THEME, ENABLED_APIS, SETTINGS, COLUMNS, TEAM_SAVES]
 //#endregion
 
 //#region Variables
@@ -22,6 +23,7 @@ let doingInitialSetup = false
 
 let event_data
 let scouting_data
+let pit_data = {}
 let team_data = {}
 let mapping
 
@@ -236,6 +238,24 @@ document.querySelector("#top_data").onclick = function() {
         if (mapping !== undefined) processData()
         window.localStorage.setItem(SCOUTING_DATA, JSON.stringify(scouting_data))
         document.querySelector("#top_data_download").disabled = false
+        if (doingInitialSetup) window.location.reload()
+    })
+}
+document.querySelector("#top_pit").onclick = function() {
+    loadFile(".csv,.json", (result, filetype) => {
+        if (filetype === "csv") pit_data = csvToJson(result) // Converts CSV to JSON
+        else if (filetype === "json") pit_data = JSON.parse(result) // Parses json
+        else {
+            let type = prompt("What is the filetype? (csv/json)").toLowerCase().trim()
+            if (type === "csv") pit_data = csvToJson(result) // Converts CSV to JSON
+            else if (type === "json") pit_data = JSON.parse(result) // Parses json
+            else return // If none of the above, then can't process data
+        }
+        //columns = JSON.parse(JSON.stringify(defaultColumns))
+        //hiddenColumns = JSON.parse(JSON.stringify(defaultHiddenColumns))
+        //if (mapping !== undefined) processData()
+        window.localStorage.setItem(PIT, JSON.stringify(pit_data))
+        document.querySelector("#top_pit_download").disabled = false
         if (doingInitialSetup) window.location.reload()
     })
 }
@@ -610,6 +630,7 @@ function csvToJson(csv) {
 
 // Download buttons
 document.querySelector("#top_data_download").onclick = () => download("scouting_data.json", JSON.stringify(scouting_data))
+document.querySelector("#top_pit_download").onclick = () => download("pit_data.json", JSON.stringify(pit_data))
 document.querySelector("#top_mapping_download").onclick = () => download("mapping.json", JSON.stringify(mapping))
 
 //#endregion
@@ -2094,6 +2115,7 @@ function exportSettings() {
             tbamedia: usingTBAMedia,
             desmos: usingDesmos,
         },
+        pit: pit_data,
         tbakey: window.localStorage.getItem(TBA_KEY),
         event: window.localStorage.getItem(EVENT),
         theme: window.localStorage.getItem(THEME)
@@ -2118,6 +2140,8 @@ function importSettings(settings) {
     window.localStorage.setItem(MAPPING, JSON.stringify(mapping))
     scouting_data = settings.scouting_data
     window.localStorage.setItem(SCOUTING_DATA, JSON.stringify(scouting_data))
+    pit_data = settings.pit
+    window.localStorage.setItem(PIT, JSON.stringify(pit_data))
     window.localStorage.setItem(YEAR, settings.year)
     window.localStorage.setItem(EVENT, settings.event)
     window.localStorage.setItem(TBA_KEY, settings.tbakey)
@@ -2178,6 +2202,9 @@ usingIgnore = teamSaves.usingIgnore
 scouting_data = window.localStorage.getItem(SCOUTING_DATA)
 scouting_data = scouting_data == null ? undefined : JSON.parse(scouting_data)
 document.querySelector("#top_data_download").disabled = scouting_data === undefined
+pit_data = window.localStorage.getItem(PIT)
+pit_data = pit_data == null ? undefined : JSON.parse(pit_data)
+document.querySelector("#top_pit_download").disabled = pit_data === undefined
 mapping = window.localStorage.getItem(MAPPING)
 mapping = mapping == null ? undefined : JSON.parse(mapping)
 document.querySelector("#top_mapping_download").disabled = mapping === undefined
