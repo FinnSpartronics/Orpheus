@@ -858,7 +858,7 @@ let maintainedTeamPageSettings = {
 }
 let openedTeam
 
-function openTeam(team, comparisons) {
+function openTeam(team, comparisons, hiddenCompares) {
     // Hiding table and showing team page element
     document.querySelector(".table.main-table").classList.add("hidden")
     document.querySelector(".table.main-table").innerText = ""
@@ -872,6 +872,7 @@ function openTeam(team, comparisons) {
     el.innerText = ""
 
     if (comparisons === undefined) comparisons = []
+    if (hiddenCompares === undefined) hiddenCompares = []
 
     // Start of team page element assembly
     let data = team_data[team]
@@ -1085,6 +1086,17 @@ function openTeam(team, comparisons) {
         let compareEl = document.createElement("div")
         compareEl.className = "compare-team"
 
+        let visibility = document.createElement("span")
+        visibility.className = "material-symbols-outlined ar team-compare-star"
+        visibility.onclick = function() {
+            if (hiddenCompares.includes(c)) hiddenCompares.splice(hiddenCompares.indexOf(c), 1)
+            else hiddenCompares.push(c)
+            openTeam(team, comparisons, hiddenCompares)
+        }
+        visibility.innerText = "visibility"
+        if (hiddenCompares.includes(c)) visibility.innerText = "visibility_off"
+        compareEl.appendChild(visibility)
+
         let starEl = document.createElement("span")
         starEl.className = "material-symbols-outlined ar team-compare-star"
         if (starred.includes(c)) starEl.classList.add("filled")
@@ -1194,7 +1206,13 @@ function openTeam(team, comparisons) {
         graphHolder.innerText = ""
         graphHolder.classList.remove("initial")
         // noinspection JSSuspiciousNameCombination
-        graphHolder.appendChild(graphElement(graphData, graph.replaceAll("_", " "), teams, graphHeight, graphHeight))
+
+        let graphTeams = JSON.parse(JSON.stringify(comparisons))
+        graphTeams.push(team)
+        for (let x of hiddenCompares)
+            graphTeams.splice(graphTeams.indexOf(x), 1)
+        console.log(graphTeams)
+        graphHolder.appendChild(graphElement(graphData, graph.replaceAll("_", " "), graphTeams, graphHeight, graphHeight))
     }
     addGraph()
 
@@ -1294,6 +1312,8 @@ function openTeam(team, comparisons) {
     tableMode = "team"
     tableTeams = JSON.parse(JSON.stringify(comparisons))
     tableTeams.push(team)
+    for (let x of hiddenCompares)
+        tableTeams.splice(tableTeams.indexOf(x), 1)
     generateTeamMatches(data, team, "")
     setHeader()
     regenTable()
@@ -1485,6 +1505,8 @@ function graphElement(data, name, teams, width, height) {
         latex: "T_{eamListY}=" + (1.2 * maxY - maxY * .05)
     })
     for (let i = 0; i < data.length; i++) {
+        if (teams[i] === undefined) continue
+
         expressions.push({
             type:"table",
             columns: [
