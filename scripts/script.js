@@ -1198,20 +1198,19 @@ function openTeam(team, comparisons, hiddenCompares) {
         if (!usingDesmos) return
         while (graphHolder.children.length > 0) graphHolder.children[0].remove()
         let graphData = [data.graphs[graph]]
+        let graphTeams = [team]
         for (let team of comparisons) {
-            graphData.push(team_data[team].graphs[graph])
+            if (!hiddenCompares.includes(team)) {
+                graphData.push(team_data[team].graphs[graph])
+                graphTeams.push(team)
+            }
         }
         let teams = JSON.parse(JSON.stringify(comparisons))
         teams.unshift(team)
         graphHolder.innerText = ""
         graphHolder.classList.remove("initial")
+        
         // noinspection JSSuspiciousNameCombination
-
-        let graphTeams = JSON.parse(JSON.stringify(comparisons))
-        graphTeams.push(team)
-        for (let x of hiddenCompares)
-            graphTeams.splice(graphTeams.indexOf(x), 1)
-        console.log(graphTeams)
         graphHolder.appendChild(graphElement(graphData, graph.replaceAll("_", " "), graphTeams, graphHeight, graphHeight))
     }
     addGraph()
