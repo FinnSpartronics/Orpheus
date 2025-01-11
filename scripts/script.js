@@ -947,6 +947,29 @@ function openTeam(team, comparisons, hiddenCompares) {
     teamName.title = data.Name
     teamDescription.appendChild(teamName)
 
+    let pitImages = []
+    if (mapping["pit_scouting"]["image"] !== undefined) {
+        for (let x of pit_data) {
+            let teamNum = x[mapping["pit_scouting"]["team"]["key"]]
+            if (mapping["pit_scouting"]["format"] === "frc#") teamNum = teamNum.splice(0, 3)
+            if (mapping["pit_scouting"]["format"] === "name") {
+                for (let teamKey of Object.keys(team_data)) {
+                    if (team_data[teamKey].Name.trim().toLowerCase() === teamNum.trim().toLowerCase()) teamNum = teamKey
+                }
+            }
+            console.log(teamNum)
+            if (teamNum != team) continue
+
+            if (typeof mapping["pit_scouting"]["image"] === "object") {
+                for (let key of mapping["pit_scouting"]["image"])
+                    pitImages.push(x[key])
+            }
+            else if (x[mapping["pit_scouting"]["image"]]) pitImages.push(x[mapping["pit_scouting"]["image"]])
+        }
+
+    }
+    console.log(pitImages)
+
     let imageButton = document.createElement("button")
     imageButton.innerText = "View Media"
     imageButton.addEventListener("click", () => {
@@ -969,9 +992,14 @@ function openTeam(team, comparisons, hiddenCompares) {
         let imageIndex = 0
 
         function updateImage() {
-            imageCycleCounter.innerText = "(" + (imageIndex+1) + "/" + data.TBA.images.length + ")"
+            imageCycleCounter.innerText = "(" + (imageIndex+1) + "/" + (data.TBA.images.length+pitImages.length) + ")"
             imageDisplay.innerHTML = ""
-            let media = data.TBA.images[imageIndex]
+            let media = imageIndex >= data.TBA.images.length ? pitImages[imageIndex - data.TBA.images.length] : data.TBA.images[imageIndex]
+            if (imageIndex >= data.TBA.images.length) {
+                let mediaHolder = document.createElement("img")
+                mediaHolder.src = media
+                imageDisplay.appendChild(mediaHolder)
+            }
             if (media.type === "image") {
                 let mediaHolder = document.createElement("img")
                 mediaHolder.src = media.src
@@ -987,7 +1015,7 @@ function openTeam(team, comparisons, hiddenCompares) {
             }
         }
 
-        if (data.TBA.images.length > 1) {
+        if ((data.TBA.images.length + pitImages.length) > 1) {
             let leftButton = document.createElement("span")
             leftButton.innerText = "arrow_back"
             let rightButton = document.createElement("span")
@@ -995,11 +1023,11 @@ function openTeam(team, comparisons, hiddenCompares) {
             leftButton.className = rightButton.className = "material-symbols-outlined"
             leftButton.addEventListener("click", () => {
                 imageIndex--
-                if (imageIndex < 0) imageIndex += data.TBA.images.length
+                if (imageIndex < 0) imageIndex += data.TBA.images.length + pitImages.length
                 updateImage()
             })
             rightButton.addEventListener("click", () => {
-                imageIndex = (imageIndex + 1) % data.TBA.images.length
+                imageIndex = (imageIndex + 1) % (data.TBA.images.length + pitImages.length)
                 updateImage()
             })
             panel.appendChild(leftButton)
@@ -1019,7 +1047,9 @@ function openTeam(team, comparisons, hiddenCompares) {
         })
         bg.appendChild(closeImages)
     })
-    if (usingTBAMedia && data.TBA.images.length > 0)
+
+
+    if ((usingTBAMedia && data.TBA.images.length > 0) || pitImages.length > 0)
         teamDescription.appendChild(imageButton)
 
     let starEl = document.createElement("span")
