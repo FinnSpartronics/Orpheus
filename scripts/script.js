@@ -434,6 +434,13 @@ function processData() {
                     data[team]["variables"][column] = num
                     break;
                 }
+                case "geomean": {
+                    let num = 1
+                    for (let x of data[team][column])
+                        num *= x
+                    data[team]["variables"][column] = Math.pow(num, 1/data[team][column].length)
+                    break;
+                }
                 case "median": {
                     let nums = []
                     for (let x of data[team][column])
@@ -517,6 +524,13 @@ function processData() {
                         num += x
                     num /= data[t][column].length
                     team_data[t][column] = num
+                    break;
+                }
+                case "geomean": {
+                    let num = 1
+                    for (let x of data[t][column])
+                        num *= x
+                    team_data[t][column] = Math.pow(num, 1/data[t][column].length)
                     break;
                 }
                 case "median": {
