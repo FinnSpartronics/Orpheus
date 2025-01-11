@@ -879,6 +879,9 @@ let maintainedTeamPageSettings = {
 }
 let openedTeam
 
+let commentsExpanded = true
+let pitDataExpanded = true
+
 function openTeam(team, comparisons, hiddenCompares) {
     // Hiding table and showing team page element
     document.querySelector(".table.main-table").classList.add("hidden")
@@ -1247,7 +1250,13 @@ function openTeam(team, comparisons, hiddenCompares) {
 
     commentsTitle.className = "comments-title"
     commentsTitle.innerText = "Team Comments"
+    commentsTitle.addEventListener("click", () => {
+        commentsExpanded = !commentsExpanded
+        commentsEl.hidden = !commentsExpanded
+    })
     commentsHolder.appendChild(commentsTitle)
+    if (!commentsExpanded)
+        commentsEl.hidden = true
 
     commentsEl.className = "team-comments"
     if (!usingDesmos)
@@ -1259,6 +1268,17 @@ function openTeam(team, comparisons, hiddenCompares) {
     pitDataTitle.className = "pit-data-title"
     pitDataTitle.innerText = "Pit Data"
     commentsHolder.appendChild(pitDataTitle)
+
+    let pitDataHolder = document.createElement("div")
+    pitDataHolder.className = "comments-holder"
+    commentsHolder.appendChild(pitDataHolder)
+    if (!pitDataExpanded)
+        pitDataHolder.classList.add("hidden")
+
+    pitDataTitle.addEventListener("click", () => {
+        pitDataExpanded = !pitDataExpanded
+        pitDataHolder.classList.toggle("hidden")
+    })
 
     for (let x of pit_data) {
         let teamNum = x[mapping["pit_scouting"]["team"]["key"]]
@@ -1286,7 +1306,7 @@ function openTeam(team, comparisons, hiddenCompares) {
             columnData.innerText = x[mapping["pit_scouting"]["page"][col]]
             el.appendChild(columnData)
 
-            commentsHolder.appendChild(el)
+            pitDataHolder.appendChild(el)
         }
 
         break

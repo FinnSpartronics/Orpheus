@@ -208,6 +208,7 @@
 .pit-data-title, .comments-title {
     font-size: 1.5rem;
     font-weight: bold;
+    cursor: pointer;
 }
 .pit-data-title {
     margin-top: 8px;
