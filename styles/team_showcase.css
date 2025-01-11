@@ -200,23 +200,42 @@
 
 .comments-holder {
     width: 100%;
+    min-height: 374px;
+    overflow-y: auto;
+    height: 100%;
 }
 
-.comments-title {
+.pit-data-title, .comments-title {
     font-size: 1.5rem;
     font-weight: bold;
 }
+.pit-data-title {
+    margin-top: 8px;
+}
 
 .team-comments {
-    overflow-y: auto;
     width: 100%;
     font-size: 1.1rem;
-    min-height: 374px;
+    flex-shrink: 1;
 }
 .team-comments.nograph {
     min-height: 80px;
 }
 /*#endregion*/
+
+.team-page-pit {
+    border: 1px solid var(--font);
+    border-radius: 4px;
+    width: fit-content;
+    padding: 4px;
+    display: flex;
+    margin-top: 4px;
+    gap: 16px;
+}
+
+.team-page-pit-name {
+    font-weight: bold;
+}
 
 .drag {
     background-color: var(--line);

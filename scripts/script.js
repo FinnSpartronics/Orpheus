@@ -1170,6 +1170,7 @@ function openTeam(team, comparisons, hiddenCompares) {
     teamData.className = "team-data"
     holder.appendChild(teamData)
 
+    //#region Graph
     let graph = maintainedTeamPageSettings["graph"]
     if (graph === undefined) graph = Object.keys(data.graphs)[0]
 
@@ -1235,24 +1236,63 @@ function openTeam(team, comparisons, hiddenCompares) {
         graphHolder.appendChild(graphElement(graphData, graph.replaceAll("_", " "), graphTeams, graphHeight, graphHeight))
     }
     addGraph()
+    //#endregion
 
+    //#region Comments & Pit Data
     let commentsHolder = document.createElement("div")
     let commentsTitle = document.createElement("div")
     let commentsEl = document.createElement("div")
-    if (commentsEnabled) {
-        commentsHolder.className = "comments-holder"
-        graphCommentsHolder.appendChild(commentsHolder)
+    commentsHolder.className = "comments-holder"
+    graphCommentsHolder.appendChild(commentsHolder)
 
-        commentsTitle.className = "comments-title"
-        commentsTitle.innerText = "Team Comments"
-        commentsHolder.appendChild(commentsTitle)
+    commentsTitle.className = "comments-title"
+    commentsTitle.innerText = "Team Comments"
+    commentsHolder.appendChild(commentsTitle)
 
-        commentsEl.className = "team-comments"
-        if (!usingDesmos)
-            commentsEl.classList.add("nograph")
-        commentsEl.innerText = comments
-        commentsHolder.appendChild(commentsEl)
+    commentsEl.className = "team-comments"
+    if (!usingDesmos)
+        commentsEl.classList.add("nograph")
+    commentsEl.innerText = comments
+    commentsHolder.appendChild(commentsEl)
+
+    let pitDataTitle = document.createElement("div")
+    pitDataTitle.className = "pit-data-title"
+    pitDataTitle.innerText = "Pit Data"
+    commentsHolder.appendChild(pitDataTitle)
+
+    for (let x of pit_data) {
+        let teamNum = x[mapping["pit_scouting"]["team"]["key"]]
+        if (mapping["pit_scouting"]["format"] === "frc#") teamNum = teamNum.splice(0, 3)
+        if (mapping["pit_scouting"]["format"] === "name") {
+            for (let teamKey of Object.keys(team_data)) {
+                if (team_data[teamKey].Name.trim().toLowerCase() === teamNum.trim().toLowerCase()) teamNum = teamKey
+            }
+        }
+
+        if (teamNum != team) continue
+
+        for (let col of Object.keys(mapping["pit_scouting"]["page"])) {
+            let el = document.createElement("div")
+            el.className = "team-page-pit"
+
+            let columnName = document.createElement("div")
+            columnName.className = "team-page-pit-name"
+            columnName.innerText = col
+            el.appendChild(columnName)
+
+            let columnData = document.createElement("div")
+            columnData.className = "team-page-pit-data"
+            columnData.innerText = col
+            columnData.innerText = x[mapping["pit_scouting"]["page"][col]]
+            el.appendChild(columnData)
+
+            commentsHolder.appendChild(el)
+        }
+
+        break
     }
+
+    //#endregion
 
     let teamTableHead = document.createElement("div")
     teamTableHead.className = "row table-head team-table b"
@@ -1289,7 +1329,7 @@ function openTeam(team, comparisons, hiddenCompares) {
     holder.insertBefore(teamInfoDrag, teamData)
 
     graphHolder.style.width = graphHolder.style.height = graphHeight + "px"
-    if (commentsEnabled) commentsEl.style.maxHeight = graphHeight + "px"
+    if (commentsEnabled) commentsHolder.style.maxHeight = Math.max(graphHeight, 374) + "px"
     let graphDrag = document.createElement("div")
     graphDrag.className = "drag height padding"
     graphDrag.addEventListener("mousedown", (e) => {
@@ -1302,8 +1342,8 @@ function openTeam(team, comparisons, hiddenCompares) {
         e.preventDefault()
         function bodyMove(e) {
             graphHeight = startH - (startY - e.y)
-            commentsEl.style.maxHeight = graphHolder.style.width = graphHolder.style.height = graphHeight + "px"
-            if (!usingDesmos) commentsEl.style.minHeight = commentsEl.style.maxHeight
+            commentsHolder.style.maxHeight = graphHolder.style.width = graphHolder.style.height = graphHeight + "px"
+            if (!usingDesmos) commentsHolder.style.minHeight = Math.max(graphHeight, 374) + "px"
             if (usingDesmos) graphHeight = graphHolder.offsetHeight
             else graphHeight = commentsEl.offsetHeight
             maintainedTeamPageSettings["graphHeight"] = graphHeight
