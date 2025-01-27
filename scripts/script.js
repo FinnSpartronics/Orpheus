@@ -975,7 +975,7 @@ function openTeam(team, comparisons, hiddenCompares) {
     teamDescription.appendChild(teamName)
 
     let pitImages = []
-    if (mapping["pit_scouting"]["image"] !== undefined) {
+    if (mapping["pit_scouting"] !== undefined && mapping["pit_scouting"]["image"] !== undefined && pit_data !== undefined) {
         for (let x of pit_data) {
             let teamNum = x[mapping["pit_scouting"]["team"]["key"]]
             if (mapping["pit_scouting"]["format"] === "frc#") teamNum = teamNum.splice(0, 3)
@@ -993,7 +993,6 @@ function openTeam(team, comparisons, hiddenCompares) {
             }
             else if (x[mapping["pit_scouting"]["image"]]) pitImages.push(x[mapping["pit_scouting"]["image"]])
         }
-
     }
     console.log(pitImages)
 
@@ -1074,7 +1073,6 @@ function openTeam(team, comparisons, hiddenCompares) {
         })
         bg.appendChild(closeImages)
     })
-
 
     if ((usingTBAMedia && data.TBA.images.length > 0) || pitImages.length > 0)
         teamDescription.appendChild(imageButton)
@@ -1321,52 +1319,54 @@ function openTeam(team, comparisons, hiddenCompares) {
     commentsEl.innerText = comments
     commentsHolder.appendChild(commentsEl)
 
-    let pitDataTitle = document.createElement("div")
-    pitDataTitle.className = "pit-data-title"
-    pitDataTitle.innerText = "Pit Data"
-    commentsHolder.appendChild(pitDataTitle)
+    if (mapping["pit_scouting"] !== undefined && pit_data !== undefined) {
+        let pitDataTitle = document.createElement("div")
+        pitDataTitle.className = "pit-data-title"
+        pitDataTitle.innerText = "Pit Data"
+        commentsHolder.appendChild(pitDataTitle)
 
-    let pitDataHolder = document.createElement("div")
-    pitDataHolder.className = "comments-holder"
-    commentsHolder.appendChild(pitDataHolder)
-    if (!pitDataExpanded)
-        pitDataHolder.classList.add("hidden")
+        let pitDataHolder = document.createElement("div")
+        pitDataHolder.className = "comments-holder"
+        commentsHolder.appendChild(pitDataHolder)
+        if (!pitDataExpanded)
+            pitDataHolder.classList.add("hidden")
 
-    pitDataTitle.addEventListener("click", () => {
-        pitDataExpanded = !pitDataExpanded
-        pitDataHolder.classList.toggle("hidden")
-    })
-
-    for (let x of pit_data) {
-        let teamNum = x[mapping["pit_scouting"]["team"]["key"]]
-        if (mapping["pit_scouting"]["format"] === "frc#") teamNum = teamNum.splice(0, 3)
-        if (mapping["pit_scouting"]["format"] === "name") {
-            for (let teamKey of Object.keys(team_data)) {
-                if (team_data[teamKey].Name.trim().toLowerCase() === teamNum.trim().toLowerCase()) teamNum = teamKey
+        pitDataTitle.addEventListener("click", () => {
+            pitDataExpanded = !pitDataExpanded
+            pitDataHolder.classList.toggle("hidden")
+        })
+        
+        for (let x of pit_data) {
+            let teamNum = x[mapping["pit_scouting"]["team"]["key"]]
+            if (mapping["pit_scouting"]["format"] === "frc#") teamNum = teamNum.splice(0, 3)
+            if (mapping["pit_scouting"]["format"] === "name") {
+                for (let teamKey of Object.keys(team_data)) {
+                    if (team_data[teamKey].Name.trim().toLowerCase() === teamNum.trim().toLowerCase()) teamNum = teamKey
+                }
             }
+
+            if (teamNum != team) continue
+
+            for (let col of Object.keys(mapping["pit_scouting"]["page"])) {
+                let el = document.createElement("div")
+                el.className = "team-page-pit"
+
+                let columnName = document.createElement("div")
+                columnName.className = "team-page-pit-name"
+                columnName.innerText = col
+                el.appendChild(columnName)
+
+                let columnData = document.createElement("div")
+                columnData.className = "team-page-pit-data"
+                columnData.innerText = col
+                columnData.innerText = x[mapping["pit_scouting"]["page"][col]]
+                el.appendChild(columnData)
+
+                pitDataHolder.appendChild(el)
+            }
+
+            break
         }
-
-        if (teamNum != team) continue
-
-        for (let col of Object.keys(mapping["pit_scouting"]["page"])) {
-            let el = document.createElement("div")
-            el.className = "team-page-pit"
-
-            let columnName = document.createElement("div")
-            columnName.className = "team-page-pit-name"
-            columnName.innerText = col
-            el.appendChild(columnName)
-
-            let columnData = document.createElement("div")
-            columnData.className = "team-page-pit-data"
-            columnData.innerText = col
-            columnData.innerText = x[mapping["pit_scouting"]["page"][col]]
-            el.appendChild(columnData)
-
-            pitDataHolder.appendChild(el)
-        }
-
-        break
     }
 
     //#endregion
