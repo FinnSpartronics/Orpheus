@@ -58,6 +58,11 @@ let tieValue = 0.5
 
 let desmosColors
 const desmosScriptSrc = "https://www.desmos.com/api/v1.10/calculator.js?apiKey=dcb31709b452b1cf9dc26972add0fda6"
+let graphSettings = {
+    x: "relative", // relative or absolute
+    points: true,
+    bestfit: true,
+}
 
 let showNamesInTeamComments
 
@@ -67,6 +72,7 @@ let usingTBAMedia
 let usingDesmos
 
 let projectorMode = false
+
 
 //#endregion
 
@@ -1128,6 +1134,7 @@ function openTeam(team, comparisons, hiddenCompares) {
     }
 
     let matches = document.createElement("div")
+    if (!maintainedTeamPageSettings.showMatches) matches.classList.add("hidden")
     matches.className = "matches"
     teamInfo.appendChild(matches)
 
@@ -1569,8 +1576,6 @@ function generateTeamMatches(data, team, teamsWith) {
         mEl.innerText = mEl.innerText.substring(0, mEl.innerText.length - 2)
         document.querySelector(".matches").appendChild(mEl)
     }
-
-    if (!maintainedTeamPageSettings.showMatches) mEl.classList.toggle("hidden")
 }
 
 function search() {
@@ -1637,11 +1642,19 @@ function graphElement(data, name, teams, width, height) {
     let maxY = 0
     let maxX = 0
     for (let team of data)
-        for (let x of Object.keys(team)) {
-            if (team[x] > maxY) maxY = team[x]
-            if (parseFloat(x) > maxX) maxX = x
-            if (team[x] < minY) minY = team[x]
-        }
+        if (graphSettings.x === "relative") {
+            let teamKeys = Object.keys(team)
+            for (let x in teamKeys) {
+                if (team[teamKeys[x]] > maxY) maxY = team[teamKeys[x]]
+                if (parseFloat(x) > maxX) maxX = x
+                if (team[teamKeys[x]] < minY) minY = team[teamKeys[x]]
+            }
+        } else
+            for (let x of Object.keys(team)) {
+                if (team[x] > maxY) maxY = team[x]
+                if (parseFloat(x) > maxX) maxX = x
+                if (team[x] < minY) minY = team[x]
+            }
 
     calc.setMathBounds({
         left: maxX * -.05,
@@ -1660,7 +1673,18 @@ function graphElement(data, name, teams, width, height) {
     for (let i = 0; i < data.length; i++) {
         if (teams[i] === undefined) continue
 
-        expressions.push({
+        if (graphSettings.x === "relative") {
+            let xAxis = []
+            for (let x in Object.keys(data[i])) xAxis.push(x)
+            expressions.push({
+                type:"table",
+                columns: [
+                    {latex: "x_{" + i + "}", values: numArrToStrArr(xAxis)},
+                    {latex: "y_{" + i + "}", values: numArrToStrArr(Object.values(data[i])), hidden: true},
+                ]
+            })
+        }
+        else expressions.push({
             type:"table",
             columns: [
                 {latex: "x_{" + i + "}", values: numArrToStrArr(Object.keys(data[i]))},
@@ -1672,7 +1696,9 @@ function graphElement(data, name, teams, width, height) {
         if (usingTBA) teamName = team_data[teams[i]].Name
 
         expressions.push({latex: "y_{" + i + "}\\sim a_{" + i + "}x_{" + i + "} + b_{" + i + "}", hidden: true})
-        expressions.push({latex: "a_{" + i + "}" + "x + " + "b_{" + i + "}" + " = y", color: desmosColors[i], lineWidth: (projectorMode ? 12 : 6), lineOpacity: (projectorMode ? .8 : .6), label: teams[i] + " " + teamName})
+
+        if (graphSettings.bestfit)
+            expressions.push({latex: "a_{" + i + "}" + "x + " + "b_{" + i + "}" + " = y", color: desmosColors[i], lineWidth: (projectorMode ? 12 : 6), lineOpacity: (projectorMode ? .8 : .6), label: teams[i] + " " + teamName})
         expressions.push({
             latex: "(T_{eamListX},T_{eamListY}-" + (i * .05 * maxY) + ")",
             label: teams[i] + " " + teamName.substring(0, 20) + (teamName.length >= 20 ? "..." : ""),
@@ -1689,13 +1715,14 @@ function graphElement(data, name, teams, width, height) {
             color: Desmos.Colors.BLACK,
             dragMode: Desmos.DragModes.XY
         })
-        expressions.push({
-            latex: "(x_{" + i + "}, y_{" + i + "})",
-            color: desmosColors[i],
-            label: teams[i] + " (${x_{" + i + "}},${y_{" + i + "}})",
-            labelSize: (projectorMode ? "1.5" : "1"),
-            pointSize: (projectorMode ? 22 : 11),
-        })
+        if (graphSettings.points)
+            expressions.push({
+                latex: "(x_{" + i + "}, y_{" + i + "})",
+                color: desmosColors[i],
+                label: teams[i] + " (${x_{" + i + "}},${y_{" + i + "}})",
+                labelSize: (projectorMode ? "1.5" : "1"),
+                pointSize: (projectorMode ? 22 : 11),
+            })
     }
 
     calc.setExpressions(expressions);
