@@ -900,10 +900,7 @@ function regenTable() {
 //#endregion
 
 //#region Team Pages
-let maintainedTeamPageSettings = {
-    "teamInfoWidth": 450,
-    "graphHeight": 500,
-}
+let maintainedTeamPageSettings
 let openedTeam
 
 let commentsExpanded = true
@@ -1108,10 +1105,24 @@ function openTeam(team, comparisons, hiddenCompares) {
 
         if (usingTBAMatches) {
             let matchSearch = document.createElement("input")
+
+            let showMatchesEl = document.createElement("button")
+            showMatchesEl.innerText = (maintainedTeamPageSettings.showMatches ? "Hide matches" : "Show Matches")
+            showMatchesEl.addEventListener("click", () => {
+                maintainedTeamPageSettings.showMatches = !maintainedTeamPageSettings.showMatches
+                showMatchesEl.innerText = (maintainedTeamPageSettings.showMatches ? "Hide matches" : "Show Matches")
+                matchSearch.classList.toggle("hidden")
+                document.querySelector(".matches").classList.toggle("hidden")
+                saveGeneralSettings()
+                generateTeamMatches(data, team, matchSearch.value)
+            })
+            teamInfo.appendChild(showMatchesEl)
+
             matchSearch.placeholder = "Comma separated team numbers (names coming soon)"
             matchSearch.onchange = matchSearch.onkeyup = matchSearch.oninput = function() {
                 generateTeamMatches(data, team, matchSearch.value)
             }
+            if (!maintainedTeamPageSettings.showMatches) matchSearch.classList.toggle("hidden")
             teamInfo.appendChild(matchSearch)
         }
     }
@@ -1397,6 +1408,7 @@ function openTeam(team, comparisons, hiddenCompares) {
             teamInfo.style.width = teamInfoWidth + "px"
             teamInfoWidth = teamInfo.offsetWidth
             maintainedTeamPageSettings["teamInfoWidth"] = teamInfoWidth
+            saveGeneralSettings()
         }
         function bodyUp() {
             document.body.removeEventListener("mousemove", bodyMove)
@@ -1424,12 +1436,14 @@ function openTeam(team, comparisons, hiddenCompares) {
             if (usingDesmos) graphHeight = graphHolder.offsetHeight
             else graphHeight = commentsEl.offsetHeight
             maintainedTeamPageSettings["graphHeight"] = graphHeight
+            saveGeneralSettings()
             e.preventDefault()
         }
         function bodyUp(e) {
             document.body.removeEventListener("mousemove", bodyMove)
             document.body.removeEventListener("mouseup", bodyUp)
             addGraph()
+            saveGeneralSettings()
             e.preventDefault()
         }
     })
@@ -1555,6 +1569,8 @@ function generateTeamMatches(data, team, teamsWith) {
         mEl.innerText = mEl.innerText.substring(0, mEl.innerText.length - 2)
         document.querySelector(".matches").appendChild(mEl)
     }
+
+    if (!maintainedTeamPageSettings.showMatches) mEl.classList.toggle("hidden")
 }
 
 function search() {
@@ -2181,7 +2197,8 @@ function saveGeneralSettings() {
         "keyboardControls": keyboardControls,
         "showNamesInTeamComments": showNamesInTeamComments,
         "showIgnoredTeams": showIgnoredTeams,
-        "rounding": roundingDigits
+        "rounding": roundingDigits,
+        "teamPageSettings": maintainedTeamPageSettings
     }))
 }
 function saveTeams() {
@@ -2213,6 +2230,8 @@ function exportSettings() {
             "keyboardControls": keyboardControls,
             "showNamesInTeamComments": showNamesInTeamComments,
             "showIgnoredTeams": showIgnoredTeams,
+            "rounding": roundingDigits,
+            "teamPageSettings": teamPageSettings,
         },
         team: {
             "starred": starred,
@@ -2247,6 +2266,7 @@ function importSettings(settings) {
     showIgnoredTeams = settings.general.showIgnoredTeams
     roundingDigits = settings.general.rounding
     rounding = Math.pow(10, roundingDigits)
+    maintainedTeamPageSettings = settings.general.teamPageSettings
     starred = settings.team.starred
     ignored = settings.team.ignored
     usingStar = settings.team.usingStar
@@ -2301,6 +2321,11 @@ if (window.localStorage.getItem(SETTINGS) === null) {
         "showNamesInTeamComments": true,
         "showIgnoredTeams": true,
         "rounding": 3,
+        "teamPageSettings": {
+            "teamInfoWidth": 450,
+            "graphHeight": 500,
+            "showMatches": true,
+        }
     }))
 }
 let generalSettings = JSON.parse(window.localStorage.getItem(SETTINGS))
@@ -2312,6 +2337,7 @@ showIgnoredTeams = generalSettings.showIgnoredTeams
 document.querySelector("#top_show_hide_ignored").innerText = "Ignored Teams: " + (showIgnoredTeams ? "Shown" : "Hidden")
 roundingDigits = generalSettings.rounding
 rounding = Math.pow(10, roundingDigits)
+maintainedTeamPageSettings = generalSettings.teamPageSettings
 setRoundingEl()
 
 // Stars and Ignore setup
