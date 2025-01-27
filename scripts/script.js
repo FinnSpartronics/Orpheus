@@ -647,6 +647,19 @@ document.querySelector("#top_data_download").onclick = () => download("scouting_
 document.querySelector("#top_pit_download").onclick = () => download("pit_data.json", JSON.stringify(pit_data))
 document.querySelector("#top_mapping_download").onclick = () => download("mapping.json", JSON.stringify(mapping))
 
+document.querySelector("#top_rounding").onclick = function() {
+    let x = prompt("Round to how many digits?")
+    x = parseInt(x)
+    if (isNaN(x)) return
+    roundingDigits = Math.max(Math.min(x, 16), 0)
+    rounding = Math.pow(10, roundingDigits)
+    saveGeneralSettings()
+    setRoundingEl()
+    regenTable()
+}
+function setRoundingEl() {
+    document.querySelector("#top_rounding").innerText = "Rounding: " + (roundingDigits === 0 ? "Integer" : (roundingDigits === 16 ? "Float" : roundingDigits + " digits"))
+}
 //#endregion
 
 //#region Theme, Projector Mode
@@ -2168,6 +2181,7 @@ function saveGeneralSettings() {
         "keyboardControls": keyboardControls,
         "showNamesInTeamComments": showNamesInTeamComments,
         "showIgnoredTeams": showIgnoredTeams,
+        "rounding": roundingDigits
     }))
 }
 function saveTeams() {
@@ -2231,6 +2245,8 @@ function importSettings(settings) {
     keyboardControls = settings.general.keyboardControls
     showNamesInTeamComments = settings.general.showNamesInTeamComments
     showIgnoredTeams = settings.general.showIgnoredTeams
+    roundingDigits = settings.general.rounding
+    rounding = Math.pow(10, roundingDigits)
     starred = settings.team.starred
     ignored = settings.team.ignored
     usingStar = settings.team.usingStar
@@ -2283,7 +2299,8 @@ if (window.localStorage.getItem(SETTINGS) === null) {
     window.localStorage.setItem(SETTINGS, JSON.stringify({
         "keyboardControls": true,
         "showNamesInTeamComments": true,
-        "showIgnoredTeams": true
+        "showIgnoredTeams": true,
+        "rounding": 3,
     }))
 }
 let generalSettings = JSON.parse(window.localStorage.getItem(SETTINGS))
@@ -2293,6 +2310,9 @@ showNamesInTeamComments = generalSettings.showNamesInTeamComments
 document.querySelector("#top_show_hide_comment_names").innerText = "Names in Comments: " + (showNamesInTeamComments ? "Shown" : "Hidden")
 showIgnoredTeams = generalSettings.showIgnoredTeams
 document.querySelector("#top_show_hide_ignored").innerText = "Ignored Teams: " + (showIgnoredTeams ? "Shown" : "Hidden")
+roundingDigits = generalSettings.rounding
+rounding = Math.pow(10, roundingDigits)
+setRoundingEl()
 
 // Stars and Ignore setup
 if (window.localStorage.getItem(TEAM_SAVES) === null) clearSavedTeams()
