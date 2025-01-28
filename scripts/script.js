@@ -1736,6 +1736,34 @@ document.querySelector("#top_show_hide_comment_names").onclick = function() {
     saveGeneralSettings()
 }
 
+document.querySelector("#top_graph_x").addEventListener("click", () => {
+    graphSettings.x = graphSettings.x === "relative" ? "absolute" : "relative"
+
+    document.querySelector("#top_graph_x").innerText = "X Axis: " + (graphSettings.x === "relative" ? "Relative" : "Absolute")
+
+    saveGeneralSettings()
+})
+
+document.querySelector("#top_graph_display").addEventListener("click", () => {
+    if (graphSettings.points) {
+        if (graphSettings.bestfit) {
+            graphSettings.points = false
+        } else {
+            graphSettings.bestfit = true
+        }
+    } else {
+        graphSettings.points = true
+        graphSettings.bestfit = false
+    }
+
+    if (graphSettings.points) {
+        if (graphSettings.bestfit) document.querySelector("#top_graph_display").innerText = "Graphs: Points & Lines"
+        else document.querySelector("#top_graph_display").innerText = "Graphs: Only Points"
+    } else document.querySelector("#top_graph_display").innerText = "Graphs: Only lines of best fit"
+
+    saveGeneralSettings()
+})
+
 //#endregion
 
 //#region Column Changing, Keyboard Controls
@@ -2225,7 +2253,8 @@ function saveGeneralSettings() {
         "showNamesInTeamComments": showNamesInTeamComments,
         "showIgnoredTeams": showIgnoredTeams,
         "rounding": roundingDigits,
-        "teamPageSettings": maintainedTeamPageSettings
+        "teamPageSettings": maintainedTeamPageSettings,
+        "graphSettings": graphSettings
     }))
 }
 function saveTeams() {
@@ -2259,6 +2288,7 @@ function exportSettings() {
             "showIgnoredTeams": showIgnoredTeams,
             "rounding": roundingDigits,
             "teamPageSettings": teamPageSettings,
+            "graphSettings": graphSettings
         },
         team: {
             "starred": starred,
@@ -2294,6 +2324,7 @@ function importSettings(settings) {
     roundingDigits = settings.general.rounding
     rounding = Math.pow(10, roundingDigits)
     maintainedTeamPageSettings = settings.general.teamPageSettings
+    graphSettings = settings.general.graphSettings
     starred = settings.team.starred
     ignored = settings.team.ignored
     usingStar = settings.team.usingStar
@@ -2352,6 +2383,11 @@ if (window.localStorage.getItem(SETTINGS) === null) {
             "teamInfoWidth": 450,
             "graphHeight": 500,
             "showMatches": true,
+        },
+        "graphSettings": {
+            x: "relative", // relative or absolute
+            points: true,
+            bestfit: true,
         }
     }))
 }
@@ -2364,8 +2400,16 @@ showIgnoredTeams = generalSettings.showIgnoredTeams
 document.querySelector("#top_show_hide_ignored").innerText = "Ignored Teams: " + (showIgnoredTeams ? "Shown" : "Hidden")
 roundingDigits = generalSettings.rounding
 rounding = Math.pow(10, roundingDigits)
-maintainedTeamPageSettings = generalSettings.teamPageSettings
 setRoundingEl()
+
+maintainedTeamPageSettings = generalSettings.teamPageSettings
+
+graphSettings = generalSettings.graphSettings
+document.querySelector("#top_graph_x").innerText = "X Axis: " + (graphSettings.x === "relative" ? "Relative" : "Absolute")
+if (graphSettings.points) {
+    if (graphSettings.bestfit) document.querySelector("#top_graph_display").innerText = "Graphs: Points & Lines"
+    else document.querySelector("#top_graph_display").innerText = "Graphs: Only Points"
+} else document.querySelector("#top_graph_display").innerText = "Graphs: Only lines of best fit"
 
 // Stars and Ignore setup
 if (window.localStorage.getItem(TEAM_SAVES) === null) clearSavedTeams()
@@ -2459,6 +2503,7 @@ if (usingDesmos) {
         desmosColors = [Desmos.Colors.RED, Desmos.Colors.BLUE, Desmos.Colors.GREEN, Desmos.Colors.PURPLE, Desmos.Colors.ORANGE, Desmos.Colors.BLACK]
     })
 }
+// TODO: if desmos is disabled then disable the graph settings options
 
 // Welcome Checklist
 doingInitialSetup = false
