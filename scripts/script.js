@@ -2287,7 +2287,7 @@ function exportSettings() {
             "showNamesInTeamComments": showNamesInTeamComments,
             "showIgnoredTeams": showIgnoredTeams,
             "rounding": roundingDigits,
-            "teamPageSettings": teamPageSettings,
+            "teamPageSettings": maintainedTeamPageSettings,
             "graphSettings": graphSettings
         },
         team: {
