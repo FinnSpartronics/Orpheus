@@ -509,7 +509,7 @@ function processData() {
         for (let column of ratios) {
             let num = evaluate(Object.assign({"match": matchNum}, data[team]["variables"], match), constants, mapping["data"][column].value)
             let den = evaluate(Object.assign({"match": matchNum}, data[team]["variables"], match), constants, mapping["data"][column].denominator)
-            if (!isNaN(num) && !isNaN(den) && !checkSkip(x, data[team]["variables"], match, mapping["data"][column]["skip"])) {
+            if (!isNaN(num) && !isNaN(den) && !checkSkip(num / den, data[team]["variables"], match, mapping["data"][column]["skip"])) {
                 data[team][column]["num"].push(num)
                 data[team][column]["den"].push(den)
 
