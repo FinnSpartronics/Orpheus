@@ -903,6 +903,11 @@ function regenTable() {
     }
 
 }
+
+document.querySelector(".table.main-table").addEventListener("scroll", (e) => {
+    document.querySelector(".table-head.main-table").scrollLeft = document.querySelector(".table.main-table").scrollLeft
+})
+
 //#endregion
 
 //#region Team Pages
@@ -1128,14 +1133,14 @@ function openTeam(team, comparisons, hiddenCompares) {
             matchSearch.onchange = matchSearch.onkeyup = matchSearch.oninput = function() {
                 generateTeamMatches(data, team, matchSearch.value)
             }
-            if (!maintainedTeamPageSettings.showMatches) matchSearch.classList.toggle("hidden")
+            if (!maintainedTeamPageSettings.showMatches) matchSearch.classList.add("hidden")
             teamInfo.appendChild(matchSearch)
         }
     }
 
     let matches = document.createElement("div")
-    if (!maintainedTeamPageSettings.showMatches) matches.classList.add("hidden")
     matches.className = "matches"
+    if (!maintainedTeamPageSettings.showMatches) matches.classList.add("hidden")
     teamInfo.appendChild(matches)
 
     //#endregion
@@ -1411,18 +1416,27 @@ function openTeam(team, comparisons, hiddenCompares) {
         document.body.addEventListener("mousemove", bodyMove)
         document.body.addEventListener("mouseup", bodyUp)
         function bodyMove(e) {
-            teamInfoWidth = startW - (startX - e.x)
+            teamInfoWidth = Math.min(startW - (startX - e.x), window.innerWidth / 2)
             teamInfo.style.width = teamInfoWidth + "px"
             teamInfoWidth = teamInfo.offsetWidth
             maintainedTeamPageSettings["teamInfoWidth"] = teamInfoWidth
             saveGeneralSettings()
+            window.getSelection().removeAllRanges()
+            restrictTable()
         }
         function bodyUp() {
             document.body.removeEventListener("mousemove", bodyMove)
             document.body.removeEventListener("mouseup", bodyUp)
+            window.getSelection().removeAllRanges()
+            restrictTable()
         }
     })
     holder.insertBefore(teamInfoDrag, teamData)
+
+    function restrictTable() {
+        teamTable.style.maxWidth = teamTableHead.style.maxWidth = (window.innerWidth - teamInfoWidth - 32) + "px"
+    }
+    restrictTable()
 
     graphHolder.style.width = graphHolder.style.height = graphHeight + "px"
     if (commentsEnabled) commentsHolder.style.maxHeight = Math.max(graphHeight, 374) + "px"
@@ -1437,7 +1451,7 @@ function openTeam(team, comparisons, hiddenCompares) {
         graphHolder.innerHTML = ""
         e.preventDefault()
         function bodyMove(e) {
-            graphHeight = startH - (startY - e.y)
+            graphHeight = Math.min(startH - (startY - e.y), window.innerHeight - document.querySelector(".sticky-header").clientHeight - 100)
             commentsHolder.style.maxHeight = graphHolder.style.width = graphHolder.style.height = graphHeight + "px"
             if (!usingDesmos) commentsHolder.style.minHeight = Math.max(graphHeight, 374) + "px"
             if (usingDesmos) graphHeight = graphHolder.offsetHeight
@@ -1445,6 +1459,7 @@ function openTeam(team, comparisons, hiddenCompares) {
             maintainedTeamPageSettings["graphHeight"] = graphHeight
             saveGeneralSettings()
             e.preventDefault()
+            window.getSelection().removeAllRanges()
         }
         function bodyUp(e) {
             document.body.removeEventListener("mousemove", bodyMove)
@@ -1452,6 +1467,7 @@ function openTeam(team, comparisons, hiddenCompares) {
             addGraph()
             saveGeneralSettings()
             e.preventDefault()
+            window.getSelection().removeAllRanges()
         }
     })
     teamData.insertBefore(graphDrag, teamTableHead)
@@ -1475,6 +1491,10 @@ function openTeam(team, comparisons, hiddenCompares) {
     generateTeamMatches(data, team, "")
     setHeader()
     regenTable()
+
+    document.querySelector(".table.team-table").addEventListener("scroll", (e) => {
+        document.querySelector(".table-head.team-table").scrollLeft = document.querySelector(".table.team-table").scrollLeft
+    })
 }
 function closeTeam() {
     document.querySelector(".table.main-table").classList.remove("hidden")
