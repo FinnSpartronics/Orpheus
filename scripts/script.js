@@ -533,7 +533,6 @@ function processData() {
         }
     }
 
-
     // Pit data
     for (let pit of pit_data) {
         let team = getPitTeam(pit)
@@ -2039,15 +2038,23 @@ function sort(team) {
         let index = arr.indexOf(team)
         if (sortDirection === -1) index = 10000 - index
 
-        return starOffset + (index)
+        return ignoreOffset + starOffset + (index)
     } else { // Number
-        let max = -100000
-        for (let x of Object.keys(team_data))
-            if (team_data[x][selectedSort] >= max) max = team_data[x][selectedSort]
+        let arr = []
+        for (let i of Object.keys(team_data)) {
+            arr.push(i)
+        }
+        arr.sort(function(a, b) {
+            if (isNaN(team_data[a][selectedSort]) && isNaN(team_data[b][selectedSort])) return 0
+            if (isNaN(team_data[a][selectedSort])) return -1
+            if (isNaN(team_data[b][selectedSort])) return 1
+            return team_data[a][selectedSort] - team_data[b][selectedSort]
+        })
 
-        let index = isNaN(team_data[team][selectedSort]) || team_data[team][selectedSort] == undefined ? sortDirection * -10000 : team_data[team][selectedSort] /max
-        if (sortDirection === 1) index = 1-index
-        return ignoreOffset + starOffset + Math.floor(10000*index)
+        let index = arr.indexOf(team)
+        if (sortDirection !== -1) index = 10000 - index
+
+        return ignoreOffset + starOffset + (index)
     }
 }
 function changeSort(to) {
