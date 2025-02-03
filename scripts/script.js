@@ -257,9 +257,9 @@ document.querySelector("#top_pit").onclick = function() {
             else if (type === "json") pit_data = JSON.parse(result) // Parses json
             else return // If none of the above, then can't process data
         }
-        //columns = JSON.parse(JSON.stringify(defaultColumns))
-        //hiddenColumns = JSON.parse(JSON.stringify(defaultHiddenColumns))
-        //if (mapping !== undefined) processData()
+        columns = JSON.parse(JSON.stringify(defaultColumns))
+        hiddenColumns = JSON.parse(JSON.stringify(defaultHiddenColumns))
+        if (mapping !== undefined) processData()
         window.localStorage.setItem(PIT, JSON.stringify(pit_data))
         document.querySelector("#top_pit_download").disabled = false
         if (doingInitialSetup) window.location.reload()
@@ -290,6 +290,10 @@ function handleMapping() {
         if (mapping["data"][x]["hidden"]) hiddenColumns.push(x)
         else columns.push(x)
     }
+    for (let x in mapping["pit_scouting"]["data"]) {
+        if (mapping["pit_scouting"]["data"][x]["hidden"]) hiddenColumns.push(x)
+        else columns.push(x)
+    }
     if (mapping["match"]["notes"] === undefined || mapping["match"]["scouter_name_key"] === undefined) { // If no notes, then cannot toggle names
         document.querySelector("#top_show_hide_comment_names").disabled = true
         showNamesInTeamComments = false
@@ -297,7 +301,7 @@ function handleMapping() {
     setHeader()
     saveColumns()
 }
-// Processes scouting_data based on information from mapping
+// Processes scouting_data and pit_data based on information from mapping
 function processData() {
     let data = {}
 
@@ -330,6 +334,17 @@ function processData() {
 
     function getTeam(match) {
         let team = match[mapping["team"]["key"]]
+        if (teamFormat === "frc#") team = team.splice(0, 3)
+        if (teamFormat === "name") {
+            for (let teamKey of Object.keys(team_data)) {
+                if (team_data[teamKey].Name.trim().toLowerCase() === name.trim().toLowerCase()) team = teamKey
+            }
+        }
+        return team
+    }
+    function getPitTeam(pit) {
+        let team = pit[mapping["pit_scouting"]["team"]["key"]]
+        let teamFormat = mapping["pit_scouting"]["team"]["format"]
         if (teamFormat === "frc#") team = team.splice(0, 3)
         if (teamFormat === "name") {
             for (let teamKey of Object.keys(team_data)) {
@@ -518,6 +533,22 @@ function processData() {
         }
     }
 
+
+    // Pit data
+    for (let pit of pit_data) {
+        let team = getPitTeam(pit)
+        data[team]["pit_data"] = pit
+
+        // Columns
+        for (let column of Object.keys(mapping["pit_scouting"]["data"])) {
+            if (typeof mapping["pit_scouting"]["data"][column]["display"] !== "undefined")
+                data[team][column] = evaluate(Object.assign({}, data[team]["variables"], pit), constants, mapping["pit_scouting"]["data"][column].value)
+            else {
+                data[team][column] = pit[mapping["pit_scouting"]["data"][column].value]
+            }
+        }
+    }
+
     // Adds data to team_data
     for (let t of Object.keys(data)) {
         team_data[t]["graphs"] = data[t]["graphs"]
@@ -569,6 +600,9 @@ function processData() {
                     team_data[t][column] = "Missing Format"
             }
         }
+        for (let column of Object.keys(mapping["pit_scouting"]["data"])) {
+            team_data[t][column] = data[t][column]
+        }
     }
 
     // Handles all "display string" cases
@@ -578,6 +612,17 @@ function processData() {
                 let value = team_data[t][column]
                 team_data[t][column] = NaN
                 let vars = Object.assign({}, data[t]["variables"], {"value": value})
+                for (let x of Object.keys(mapping["data"][column]["display"])) {
+                    if (evaluate(vars, constants, mapping["data"][column]["display"][x]))
+                        team_data[t][column] = x
+                }
+            }
+        }
+        for (let column of Object.keys(mapping["pit_scouting"]["data"])) {
+            if (typeof mapping["pit_scouting"]["data"][column]["display"] === "object") {
+                let value = team_data[t][column]
+                team_data[t][column] = NaN
+                let vars = Object.assign({}, data[t]["variables"], {"value": value}, data[t]["pit_data"])
                 for (let x of Object.keys(mapping["data"][column]["display"])) {
                     if (evaluate(vars, constants, mapping["data"][column]["display"][x]))
                         team_data[t][column] = x
@@ -823,7 +868,15 @@ function element(team) {
         if (mapping !== undefined && mapping["data"][column] !== undefined) {
             if (mapping["data"][column]["display"] !== undefined) {
                 if (mapping["data"][column]["display"] === "percentage" || mapping["data"][column]["display"] === "percent" || mapping["data"][column]["display"] === "%")
-                    columnEl.innerText = (100 * Math.round(rounding * parseFloat(team_data[team][column])) / rounding) + "%"
+                    if (isNaN((100 * Math.round(rounding * parseFloat(team_data[team][column])) / rounding))) columnEl.innerText = "-"
+                    else columnEl.innerText = (100 * Math.round(rounding * parseFloat(team_data[team][column])) / rounding) + "%"
+            }
+        }
+        if (mapping !== undefined && mapping["pit_scouting"]["data"][column] !== undefined) {
+            if (mapping["pit_scouting"]["data"][column]["display"] !== undefined) {
+                if (mapping["pit_scouting"]["data"][column]["display"] === "percentage" || mapping["pit_scouting"]["data"][column]["display"] === "percent" || mapping["pit_scouting"]["data"][column]["display"] === "%")
+                    if (isNaN((100 * Math.round(rounding * parseFloat(team_data[team][column])) / rounding))) columnEl.innerText = "-"
+                    else columnEl.innerText = (100 * Math.round(rounding * parseFloat(team_data[team][column])) / rounding) + "%"
             }
         }
         if (isNaN(team_data[team][column]) && typeof team_data[team][column] === "number") {
@@ -904,7 +957,7 @@ function regenTable() {
 
 }
 
-document.querySelector(".table.main-table").addEventListener("scroll", (e) => {
+document.querySelector(".table.main-table").addEventListener("scroll", () => {
     document.querySelector(".table-head.main-table").scrollLeft = document.querySelector(".table.main-table").scrollLeft
 })
 
@@ -992,7 +1045,6 @@ function openTeam(team, comparisons, hiddenCompares) {
                     if (team_data[teamKey].Name.trim().toLowerCase() === teamNum.trim().toLowerCase()) teamNum = teamKey
                 }
             }
-            console.log(teamNum)
             if (teamNum != team) continue
 
             if (typeof mapping["pit_scouting"]["image"] === "object") {
@@ -1491,7 +1543,7 @@ function openTeam(team, comparisons, hiddenCompares) {
     setHeader()
     regenTable()
 
-    document.querySelector(".table.team-table").addEventListener("scroll", (e) => {
+    document.querySelector(".table.team-table").addEventListener("scroll", () => {
         document.querySelector(".table-head.team-table").scrollLeft = document.querySelector(".table.team-table").scrollLeft
     })
 }

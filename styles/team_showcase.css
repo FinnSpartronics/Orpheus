@@ -206,6 +206,9 @@
 .pit-data-holder {
     width: 100%;
 }
+.pit-data-holder:empty:before {
+    content: "No pit data :("
+}
 
 .pit-data-title, .comments-title {
     font-size: 1.5rem;
