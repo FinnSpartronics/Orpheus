@@ -308,12 +308,9 @@ function processData() {
 
     const teamFormat = mapping["team"]["format"]
 
-    let constants = {
-        "pi": Math.PI,
-        "e": Math.E,
-        "true": 1,
-        "false": 0,
-    }
+    let thisYearConstants = {}
+    if (yearConstants[year] !== undefined) thisYearConstants = yearConstants[year]
+    let constants = Object.assign(thisYearConstants, yearConstants.default)
     for (let konstant of Object.keys(mapping["constants"])) {
         constants[konstant] = evaluate({}, constants, "" + mapping["constants"][konstant])
     }
@@ -2115,12 +2112,9 @@ function set_ignore(team, to) {
     saveTeams()
 }
 function autoIgnore() {
-    let constants = {
-        "pi": Math.PI,
-        "e": Math.E,
-        "true": 1,
-        "false": 0,
-    }
+    let thisYearConstants = {}
+    if (yearConstants[year] !== undefined) thisYearConstants = yearConstants[year]
+    let constants = Object.assign(thisYearConstants, yearConstants.default)
     for (let konstant of Object.keys(mapping["constants"])) {
         constants[konstant] = evaluate({}, constants, "" + mapping["constants"][konstant])
     }
