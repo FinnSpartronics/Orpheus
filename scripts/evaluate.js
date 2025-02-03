@@ -71,6 +71,9 @@ let functions = {
 }
 
 function ev(data, constants, expression) {
+    expression = (""+expression).trim()
+    if (expression.startsWith("-")) expression = "0" + expression
+
     let tmpVars = {}
     for (let x of Object.keys(data)) {
         if (data[x] === "") data[x] = 0
@@ -257,5 +260,3 @@ function evaluate(data, constants, exp) {
     }
     return parseFloat(ev(data, constants, finalExp))
 }
-
-// Todo: Fix stuff breaking when doing -num instead 0-num
