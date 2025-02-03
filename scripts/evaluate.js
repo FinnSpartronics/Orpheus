@@ -5,7 +5,7 @@ let functions = {
         for (let x = 1; x <= a[0]; x++) result *= x;
         return result;
     },
-    //#region Math. functions
+    //#region Math. functions - Generated with ChatGPT
     abs: (a) => Math.abs(a[0]),
     acos: (a) => Math.acos(a[0]),
     acosh: (a) => Math.acosh(a[0]),
@@ -66,6 +66,86 @@ let functions = {
         if (a[0]) return a[1];
         if (a[2] === undefined) return 0;
         return a[2];
+    },
+    //#endregion
+    //#region String functions - Generated with ChatGPT
+    concat: (a) => {
+        return ("" + a[0]).replaceAll("'","").trim().concat(("" + a[1]).replaceAll("'","").trim());
+    },
+    includes: (a) => {
+        return ("" + a[0]).replaceAll("'","").trim().includes(("" + a[1]).replaceAll("'","").trim()) ? 1 : 0;
+    },
+    indexOf: (a) => {
+        return ("" + a[0]).replaceAll("'","").trim().indexOf(("" + a[1]).replaceAll("'","").trim());
+    },
+    lastIndexOf: (a) => {
+        return ("" + a[0]).replaceAll("'","").trim().lastIndexOf(("" + a[1]).replaceAll("'","").trim());
+    },
+    replace: (a) => {
+        return ("" + a[0]).replaceAll("'","").trim().replace(("" + a[1]).replaceAll("'","").trim(), ("" + a[2]).replaceAll("'","").trim());
+    },
+    replaceAll: (a) => {
+        return ("" + a[0]).replaceAll("'","").trim().replaceAll(("" + a[1]).replaceAll("'","").trim(), ("" + a[2]).replaceAll("'","").trim());
+    },
+    slice: (a) => {
+        return ("" + a[0]).replaceAll("'","").trim().slice(a[1], a[2]);
+    },
+    split: (a) => {
+        return ("" + a[0]).replaceAll("'","").trim().split(("" + a[1]).replaceAll("'","").trim());
+    },
+    toLowerCase: (a) => {
+        return ("" + a[0]).replaceAll("'","").trim().toLowerCase();
+    },
+    toUpperCase: (a) => {
+        return ("" + a[0]).replaceAll("'","").trim().toUpperCase();
+    },
+    trim: (a) => {
+        return ("" + a[0]).replaceAll("'","").trim();
+    },
+    charAt: (a) => {
+        return ("" + a[0]).replaceAll("'","").trim().charAt(a[1]);
+    },
+    charCodeAt: (a) => {
+        return ("" + a[0]).replaceAll("'","").trim().charCodeAt(a[1]);
+    },
+    repeat: (a) => {
+        return ("" + a[0]).replaceAll("'","").trim().repeat(a[1]);
+    },
+    startsWith: (a) => {
+        return ("" + a[0]).replaceAll("'","").trim().startsWith(("" + a[1]).replaceAll("'","").trim()) ? 1 : 0;
+    },
+    endsWith: (a) => {
+        return ("" + a[0]).replaceAll("'","").trim().endsWith(("" + a[1]).replaceAll("'","").trim()) ? 1 : 0;
+    },
+    substr: (a) => {
+        return ("" + a[0]).replaceAll("'","").trim().substr(a[1], a[2]);
+    },
+    valueOf: (a) => {
+        return ("" + a[0]).replaceAll("'","").trim().valueOf();
+    },
+    codePointAt: (a) => {
+        return ("" + a[0]).replaceAll("'","").trim().codePointAt(a[1]);
+    },
+    normalize: (a) => {
+        return ("" + a[0]).replaceAll("'","").trim().normalize(a[1]);
+    },
+    padStart: (a) => {
+        return ("" + a[0]).replaceAll("'","").trim().padStart(a[1], ("" + a[2]).replaceAll("'","").trim());
+    },
+    padEnd: (a) => {
+        return ("" + a[0]).replaceAll("'","").trim().padEnd(a[1], ("" + a[2]).replaceAll("'","").trim());
+    },
+    trimStart: (a) => {
+        return ("" + a[0]).replaceAll("'","").trimStart();
+    },
+    trimEnd: (a) => {
+        return ("" + a[0]).replaceAll("'","").trimEnd();
+    },
+    toLocaleLowerCase: (a) => {
+        return ("" + a[0]).replaceAll("'","").trim().toLocaleLowerCase(a[1]);
+    },
+    toLocaleUpperCase: (a) => {
+        return ("" + a[0]).replaceAll("'","").trim().toLocaleUpperCase(a[1]);
     }
     //#endregion
 }
