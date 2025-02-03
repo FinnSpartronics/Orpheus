@@ -37,7 +37,7 @@ let showIgnoredTeams
 
 let loading = 0
 
-let showTeamIcons = true
+let showTeamIcons
 const defaultColumns = ["Team_Number"]
 let columns = JSON.parse(JSON.stringify(defaultColumns))
 const defaultHiddenColumns = ["TBA", "Icon", "graphs", "matches"]
@@ -1870,6 +1870,7 @@ function setColumnEditPanel() {
         iconCheckbox.checked = showTeamIcons
         iconCheckbox.addEventListener("change", () => {
             showTeamIcons = iconCheckbox.checked
+            saveGeneralSettings()
             setHeader()
         })
         let iconCheckboxLabel = document.createElement("label")
@@ -2017,6 +2018,8 @@ document.addEventListener("keyup", (e) => {
 })
 document.querySelector("#top_column_reset").addEventListener("click", () => {
     handleMapping()
+    showTeamIcons = true
+    saveGeneralSettings()
 })
 //#endregion
 
@@ -2283,6 +2286,7 @@ document.addEventListener("contextmenu", (e) => {
     if (context === "icon-column") {
         optionEl("Hide icons", () => {
             showTeamIcons = false
+            saveGeneralSettings()
             setHeader()
         })
     }
@@ -2332,7 +2336,8 @@ function saveGeneralSettings() {
         "showIgnoredTeams": showIgnoredTeams,
         "rounding": roundingDigits,
         "teamPageSettings": maintainedTeamPageSettings,
-        "graphSettings": graphSettings
+        "graphSettings": graphSettings,
+        "showTeamIcons": showTeamIcons,
     }))
 }
 function saveTeams() {
@@ -2366,7 +2371,8 @@ function exportSettings() {
             "showIgnoredTeams": showIgnoredTeams,
             "rounding": roundingDigits,
             "teamPageSettings": maintainedTeamPageSettings,
-            "graphSettings": graphSettings
+            "graphSettings": graphSettings,
+            "showTeamIcons": showTeamIcons,
         },
         team: {
             "starred": starred,
@@ -2402,6 +2408,7 @@ function importSettings(settings) {
     roundingDigits = settings.general.rounding
     rounding = Math.pow(10, roundingDigits)
     maintainedTeamPageSettings = settings.general.teamPageSettings
+    showTeamIcons = settings.general.showTeamIcons
     graphSettings = settings.general.graphSettings
     starred = settings.team.starred
     ignored = settings.team.ignored
@@ -2466,7 +2473,8 @@ if (window.localStorage.getItem(SETTINGS) === null) {
             x: "relative", // relative or absolute
             points: true,
             bestfit: true,
-        }
+        },
+        "showTeamIcons": true,
     }))
 }
 let generalSettings = JSON.parse(window.localStorage.getItem(SETTINGS))
@@ -2479,6 +2487,7 @@ document.querySelector("#top_show_hide_ignored").innerText = "Ignored Teams: " +
 roundingDigits = generalSettings.rounding
 rounding = Math.pow(10, roundingDigits)
 setRoundingEl()
+showTeamIcons = generalSettings.showTeamIcons
 
 maintainedTeamPageSettings = generalSettings.teamPageSettings
 
@@ -2565,7 +2574,8 @@ if (!usingTBA) {
     document.querySelector("#top_toggle_use_tbamedia").innerText = "TBA API (Media): Disabled"
     document.querySelector("#top_toggle_use_tbamedia").disabled = true
 }
-showTeamIcons = (usingTBA && usingTBAMedia)
+showTeamIcons = showTeamIcons ? (usingTBA && usingTBAMedia) : false
+saveGeneralSettings()
 
 usingDesmos = apis.desmos
 document.querySelector("#top_toggle_use_desmos").innerText = "Desmos API: " + (usingDesmos ? "Enabled" : "Disabled")
