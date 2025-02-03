@@ -1002,7 +1002,6 @@ function openTeam(team, comparisons, hiddenCompares) {
             else if (x[mapping["pit_scouting"]["image"]]) pitImages.push(x[mapping["pit_scouting"]["image"]])
         }
     }
-    console.log(pitImages)
 
     let imageButton = document.createElement("button")
     imageButton.innerText = "View Media"
@@ -1349,7 +1348,7 @@ function openTeam(team, comparisons, hiddenCompares) {
         commentsHolder.appendChild(pitDataTitle)
 
         let pitDataHolder = document.createElement("div")
-        pitDataHolder.className = "comments-holder"
+        pitDataHolder.className = "pit-data-holder"
         commentsHolder.appendChild(pitDataHolder)
         if (!pitDataExpanded)
             pitDataHolder.classList.add("hidden")

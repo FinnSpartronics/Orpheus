@@ -203,6 +203,9 @@
     min-height: 374px;
     overflow-y: auto;
 }
+.pit-data-holder {
+    width: 100%;
+}
 
 .pit-data-title, .comments-title {
     font-size: 1.5rem;
