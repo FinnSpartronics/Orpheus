@@ -274,6 +274,7 @@ document.querySelector("#top_mapping").onclick = function() {
         hiddenColumns = JSON.parse(JSON.stringify(defaultHiddenColumns))
         handleMapping()
         if (scouting_data !== undefined) processData()
+        autoIgnore()
         if (doingInitialSetup) window.location.reload()
     })
 }
@@ -2113,6 +2114,32 @@ function set_ignore(team, to) {
     regenTable()
     saveTeams()
 }
+function autoIgnore() {
+    let constants = {
+        "pi": Math.PI,
+        "e": Math.E,
+        "true": 1,
+        "false": 0,
+    }
+    for (let konstant of Object.keys(mapping["constants"])) {
+        constants[konstant] = evaluate({}, constants, "" + mapping["constants"][konstant])
+    }
+
+    ignored = []
+    for (let team of Object.keys(team_data)) {
+        let vars = {}
+        for (let col of Object.keys(mapping["data"])) vars[col] = team_data[team][col]
+        for (let col of Object.keys(mapping["pit_scouting"]["data"])) vars[col] = team_data[team][col]
+        for (let condition of mapping["ignore"]) {
+            if (evaluate(vars, constants, condition)) {
+                ignored.push(team)
+                break
+            }
+        }
+    }
+    saveTeams()
+    regenTable()
+}
 
 document.querySelector("#top_show_hide_ignored").addEventListener("click", () => {
     showIgnoredTeams = !showIgnoredTeams
@@ -2276,11 +2303,13 @@ document.addEventListener("contextmenu", (e) => {
             optionEl("Hide ignored teams", () => {
                 showIgnoredTeams = false
                 regenTable()
+                saveGeneralSettings()
             })
         else
             optionEl("Show ignored teams", () => {
                 showIgnoredTeams = true
                 regenTable()
+                saveGeneralSettings()
             })
     }
     if (context === "icon-column") {
