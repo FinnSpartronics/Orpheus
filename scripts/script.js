@@ -869,6 +869,7 @@ function element(team) {
                     else columnEl.innerText = (100 * Math.round(rounding * parseFloat(team_data[team][column])) / rounding) + "%"
             }
         }
+        if (column === "Winrate") columnEl.innerText = (100 * Math.round(rounding * parseFloat(team_data[team][column])) / rounding) + "%"
         if (isNaN(team_data[team][column]) && typeof team_data[team][column] === "number") {
             columnEl.innerText = "-"
         }
@@ -2344,7 +2345,7 @@ function closeContextMenu() {
 }
 //#endregion
 
-//#region Save Settings, Load Config File
+//#region Save Settings, Load Config File, Credits Page
 function saveGeneralSettings() {
     window.localStorage.setItem(SETTINGS, JSON.stringify({
         "keyboardControls": keyboardControls,
@@ -2466,10 +2467,6 @@ document.querySelector("#top_import_settings").addEventListener("click", () => {
     })
 })
 
-//#endregion
-
-//#region Credits Page
-
 function closeCredits() {
     document.querySelector(".sticky-header").classList.remove("hidden")
     if (tableMode === "team")
@@ -2486,7 +2483,6 @@ document.querySelector("#top_credits").addEventListener("click", () => {
     document.querySelector(".team-page").classList.add("hidden")
     document.querySelector(".table.main-table").classList.add("hidden")
     document.querySelector(".table-head.main-table").classList.add("hidden")
-    document.querySelector(".settings").classList.add("hidden")
 
     document.querySelector(".credits").classList.remove("hidden")
 
