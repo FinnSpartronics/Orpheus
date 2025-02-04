@@ -2526,6 +2526,197 @@ document.querySelector("#close-credits").addEventListener("click", closeCredits)
 
 //#endregion
 
+//#region Notes
+
+let notes = {
+    x: 0,
+    y: 0,
+    activeTab: "Tab 1",
+    open: false,
+    tabs: {
+        "Tab 1": "",
+    }
+}
+
+function openNotes() {
+    let notebook = document.createElement("div")
+    notebook.className = "notebook"
+
+    let notebookNav = document.createElement("div")
+    notebookNav.className = "notebook-nav"
+    notebook.appendChild(notebookNav)
+
+    let notebookContents = document.createElement("textarea")
+    notebookContents.className = "notes"
+    notebookContents.value = notes.tabs[notes.activeTab]
+    notebookContents.style.width = "300px"
+    notebookContents.style.height = "200px"
+    notebookContents.addEventListener("focus", () => {
+        brieflyDisableKeyboard = true
+    })
+    notebookContents.addEventListener("blur", () => {
+        brieflyDisableKeyboard = false
+    })
+    notebookContents.addEventListener("change", () => {
+        notes.tabs[notes.activeTab] = notebookContents.value
+    })
+    notebookContents.addEventListener("mousemove", () => {
+        notebook.style.maxWidth = notebookContents.offsetWidth + "px"
+    })
+    notebook.appendChild(notebookContents)
+
+    let tabElements = []
+
+    let drag = document.createElement("span")
+    drag.className = "material-symbols-outlined notebook-drag"
+    drag.innerText = "drag_indicator"
+
+    let dragging = false
+    let dragScreenStart
+    let dragPositionStart
+
+    drag.addEventListener("mousedown", (e) => {
+        dragScreenStart = {x: e.clientX, y: e.clientY}
+        dragPositionStart = {x: notebook.offsetLeft, y: notebook.offsetTop}
+        dragging = true
+    })
+    document.body.addEventListener("mousemove", (e) => {
+        if (dragging) {
+            notebook.style.left = (dragPositionStart.x - (dragScreenStart.x - e.clientX)) + "px"
+            notebook.style.top = (dragPositionStart.y - (dragScreenStart.y - e.clientY)) + "px"
+        }
+    })
+    document.body.addEventListener("mouseup", (e) => {
+        dragging = false
+    })
+    notebookNav.appendChild(drag)
+
+    let addTab = document.createElement("span")
+    addTab.className = "material-symbols-outlined notebook-btn"
+    addTab.innerText = "add"
+    addTab.addEventListener("click", () => {
+        for (let otherEl of tabElements) otherEl.classList.remove("selected")
+
+        let tabEl = document.createElement("div")
+        tabEl.className = "notebook-tab selected"
+        let tab = "Tab " + (Object.keys(notes.tabs).length + 1)
+        tabEl.innerText = tab
+        notebookNav.appendChild(tabEl)
+        tabElements.push(tabEl)
+
+        notes.activeTab = tab
+        notes.tabs[tab] = ""
+        notebookContents.value = ""
+
+        tabEl.addEventListener("click", () => {
+            if (notes.activeTab === tab) {
+                tabEl.contentEditable = true
+                tabEl.focus()
+                brieflyDisableKeyboard = true
+            }
+
+            for (let otherEl of tabElements) otherEl.classList.remove("selected")
+            tabEl.classList.add("selected")
+
+            notes.activeTab = tab
+            notebookContents.value = notes.tabs[notes.activeTab]
+        })
+
+        tabEl.addEventListener("blur", () => {
+            brieflyDisableKeyboard = false
+            tabEl.contentEditable = false
+            if (tabEl.innerText === "\n") {
+                delete notes.tabs[notes.activeTab]
+                tabElements.splice(tabElements.indexOf(tabEl), 1)
+                tabEl.remove()
+                notes.activeTab = Object.keys(notes.tabs)[0]
+                notebookContents.value = notes.tabs[notes.activeTab]
+                tabElements[0].classList.add("selected")
+                console.log(tabElements)
+            }
+        })
+
+        tabEl.addEventListener("keyup", (e) => {
+            if (e.key === "Enter") {
+                e.preventDefault()
+                tabEl.innerText = notes.activeTab
+            }
+            let text = notes.tabs[tab]
+            delete notes.tabs[notes.activeTab]
+            notes.activeTab = tab = tabEl.innerText
+            notes.tabs[tab] = text
+        })
+
+        brieflyDisableKeyboard = true
+        tabEl.contentEditable = true
+        tabEl.focus()
+
+    })
+    notebookNav.appendChild(addTab)
+
+    for (let tab of Object.keys(notes.tabs)) {
+        let tabEl = document.createElement("div")
+        tabEl.className = "notebook-tab"
+        tabEl.innerText = tab
+        if (tab === notes.activeTab) tabEl.classList.add("selected")
+        notebookNav.appendChild(tabEl)
+        tabElements.push(tabEl)
+
+        tabEl.addEventListener("click", () => {
+            if (notes.activeTab === tab) {
+                tabEl.contentEditable = true
+                tabEl.focus()
+                brieflyDisableKeyboard = true
+            }
+
+            for (let otherEl of tabElements) otherEl.classList.remove("selected")
+            tabEl.classList.add("selected")
+
+            notes.activeTab = tab
+            notebookContents.value = notes.tabs[notes.activeTab]
+        })
+
+        tabEl.addEventListener("blur", () => {
+            brieflyDisableKeyboard = false
+            tabEl.contentEditable = false
+            if (tabEl.innerText === "\n") {
+                delete notes.tabs[notes.activeTab]
+                tabElements.splice(tabElements.indexOf(tabEl), 1)
+                tabEl.remove()
+                notes.activeTab = Object.keys(notes.tabs)[0]
+                notebookContents.value = notes.tabs[notes.activeTab]
+                tabElements[0].classList.add("selected")
+                console.log(tabElements)
+            }
+        })
+
+        tabEl.addEventListener("keyup", (e) => {
+            if (e.key === "Enter") {
+                e.preventDefault()
+                tabEl.innerText = notes.activeTab
+            }
+            let text = notes.tabs[tab]
+            delete notes.tabs[notes.activeTab]
+            notes.activeTab = tab = tabEl.innerText
+            notes.tabs[tab] = text
+        })
+    }
+
+    document.body.appendChild(notebook)
+    notebook.style.left = (window.innerWidth * .5) + "px"
+    notebook.style.top = (window.innerHeight * .2) + "px"
+    notebook.style.maxWidth = notebookContents.offsetWidth + "px"
+}
+
+document.querySelector("#top_notebook").addEventListener("click", () => {
+    if (notes.open) document.querySelector(".notebook").remove()
+    else openNotes()
+    notes.open = !notes.open
+    document.querySelector("#top_notebook").innerText = (notes.open ? "Close" : "Open") + " Notebook"
+})
+
+//#endregion
+
 //#region Init
 
 // Year

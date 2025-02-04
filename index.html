@@ -12,6 +12,7 @@
     <link rel="stylesheet" href="styles/context_menu.css"/>
     <link rel="stylesheet" href="styles/projector.css" title="projector" id="projector-styles" disabled/>
     <link rel="stylesheet" href="styles/credits.css"/>
+    <link rel="stylesheet" href="styles/notes.css"/>
     <link rel="stylesheet" href="styles/overrides.css"/>
     <script src="scripts/yearConstants.js"></script>
     <script src="scripts/evaluate.js"></script>
@@ -74,6 +75,11 @@
             <dialog class="top-control-dropdown" for="top-control-data">
                 <button id="top_columns">Edit Table Columns</button>
                 <button id="top_column_reset">Reset Table Columns</button>
+            </dialog>
+
+            <button id="top-control-notes" class="dropdown-button">Notes</button>
+            <dialog class="top-control-dropdown" for="top-control-notes">
+                <button id="top_notebook">Open Notebook</button>
             </dialog>
 
             <div style="flex-grow: 1"></div>
@@ -145,6 +151,9 @@
         <a href="https://www.thebluealliance.com/">Powered by The Blue Alliance</a>
         <div style="width: 1rem"></div>
         <a href="https://www.desmos.com/">Created with the Desmos API, used with permission from Desmos Studio PBC.</a>
+        <div style="width: 1rem"></div>
+        <a href="https://www.statbotics.io/">Thanks to Statbotics</a>
+
     </footer>
 
     <dialog class="edit-columns"></dialog>
