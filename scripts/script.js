@@ -40,7 +40,7 @@ let loading = 0
 let showTeamIcons
 const defaultColumns = ["Team_Number"]
 let columns = JSON.parse(JSON.stringify(defaultColumns))
-const defaultHiddenColumns = ["TBA", "Icon", "graphs", "matches"]
+const defaultHiddenColumns = ["TBA", "Icon", "graphs", "matches", "statbotics"]
 let hiddenColumns = JSON.parse(JSON.stringify(defaultHiddenColumns))
 
 let selectedSort = "Team_Number"
@@ -70,9 +70,9 @@ let usingTBA
 let usingTBAMatches
 let usingTBAMedia
 let usingDesmos
+let usingStatbotics
 
 let projectorMode = false
-
 
 //#endregion
 
@@ -200,14 +200,39 @@ function loadEvent() {
                         }
                     })
                 }
+                if (usingStatbotics) {
+                    loading++
+                    loadOther("https://api.statbotics.io/v3/team_event/" + team["team_number"] + "/" + year + window.localStorage.getItem(EVENT), function(data) {
+                        team_data[team["team_number"]]["statbotics"] = data
+                        team_data[team["team_number"]]["District Points"] = data["district_points"]
+                        team_data[team["team_number"]]["EPA"] = data["epa"]["total_points"]["mean"]
+                        team_data[team["team_number"]]["Auto EPA"] = data["epa"]["breakdown"]["auto_points"]
+                        team_data[team["team_number"]]["Teleop EPA"] = data["epa"]["breakdown"]["teleop_points"]
+                        team_data[team["team_number"]]["Endgame EPA"] = data["epa"]["breakdown"]["endgame_points"]
+                        loading--
+                        checkLoading()
+                    })
+                }
                 regenTable()
             }
             loading--
             checkLoading()
         })
         if (!usingTBAMatches) {
-            hiddenColumns.push("Winrate")
-            columns.splice(columns.indexOf("Winrate"), 1)
+            if (!hiddenColumns.includes("Winrate")) hiddenColumns.push("Winrate")
+            if (columns.includes("Winrate")) columns.splice(columns.indexOf("Winrate"), 1)
+        }
+        if (!usingStatbotics) {
+            if (!hiddenColumns.includes("District Points")) hiddenColumns.push("District Points")
+            if (columns.includes("District Points")) columns.splice(columns.indexOf("District Points"), 1)
+            if (!hiddenColumns.includes("EPA")) hiddenColumns.push("EPA")
+            if (columns.includes("EPA")) columns.splice(columns.indexOf("EPA"), 1)
+            if (!hiddenColumns.includes("Auto EPA")) hiddenColumns.push("Auto EPA")
+            if (columns.includes("Auto EPA")) columns.splice(columns.indexOf("Auto EPA"), 1)
+            if (!hiddenColumns.includes("Teleop EPA")) hiddenColumns.push("Teleop EPA")
+            if (columns.includes("Teleop EPA")) columns.splice(columns.indexOf("Teleop EPA"), 1)
+            if (!hiddenColumns.includes("Endgame EPA")) hiddenColumns.push("Endgame EPA")
+            if (columns.includes("Endgame EPA")) columns.splice(columns.indexOf("Endgame EPA"), 1)
         }
     }
     else {
@@ -2154,6 +2179,19 @@ async function load(sub, onload) {
         onload(data)
     })
 }
+async function loadOther(url, onload) {
+    loading++
+    await fetch(url).then(response => {
+        if (!response.ok) {
+            throw new Error('Network response was not ok')
+        }
+        loading--
+        checkLoading()
+        return response.json()
+    }).then(data => {
+        onload(data)
+    })
+}
 function checkLoading() {
     if (loading === 0) {
         document.querySelector("#loading").className = "hidden"
@@ -2187,17 +2225,11 @@ function download(filename, text) {
 }
 
 document.querySelector("#top_toggle_use_allapi").addEventListener("click", () => {
-    usingTBAMedia = true
-    usingTBAMatches = true
-    usingTBA = true
-    usingDesmos = true
+    usingTBAMedia = usingTBAMatches = usingTBA = usingDesmos = usingStatbotics = true
     setEnabledAPIS()
 })
 document.querySelector("#top_toggle_use_noneapi").addEventListener("click", () => {
-    usingTBAMedia = false
-    usingTBAMatches = false
-    usingTBA = false
-    usingDesmos = false
+    usingTBAMedia = usingTBAMatches = usingTBA = usingDesmos = usingStatbotics = false
     setEnabledAPIS()
 })
 document.querySelector("#top_toggle_use_tbaevent").addEventListener("click", () => {
@@ -2216,6 +2248,10 @@ document.querySelector("#top_toggle_use_desmos").addEventListener("click", () =>
     usingDesmos = !usingDesmos
     setEnabledAPIS()
 })
+document.querySelector("#top_toggle_use_statbotics").addEventListener("click", () => {
+    usingStatbotics = !usingStatbotics
+    setEnabledAPIS()
+})
 
 // Sets the localStorage enabled apis
 function setEnabledAPIS() {
@@ -2223,7 +2259,9 @@ function setEnabledAPIS() {
         tbaevent: usingTBA,
         tbamatch: usingTBAMatches,
         tbamedia: usingTBAMedia,
-        desmos: usingDesmos}))
+        desmos: usingDesmos,
+        statbotics: usingStatbotics
+    }))
     location.reload()
 }
 //#endregion
@@ -2583,8 +2621,8 @@ for (let el of document.querySelectorAll(".version"))
 // Apis
 let apis = window.localStorage.getItem(ENABLED_APIS)
 if (apis === null) {
-    window.localStorage.setItem(ENABLED_APIS, JSON.stringify({tbaevent: true, tbamatch: true, tbamedia: true, desmos: true}))
-    apis = {tbaevent: true, tbamatch: true, tbamedia: true, desmos: true,}
+    window.localStorage.setItem(ENABLED_APIS, JSON.stringify({tbaevent: true, tbamatch: true, tbamedia: true, desmos: true, statbotics: true}))
+    apis = {tbaevent: true, tbamatch: true, tbamedia: true, desmos: true, statbotics: true}
 } else apis = JSON.parse(apis)
 
 usingTBA = apis.tbaevent
@@ -2629,6 +2667,16 @@ if (usingDesmos) {
     })
 }
 // TODO: if desmos is disabled then disable the graph settings options
+
+usingStatbotics = apis.statbotics
+document.querySelector("#top_toggle_use_statbotics").innerText = "Statbotics: " + (usingStatbotics ? "Enabled" : "Disabled")
+if (usingStatbotics) {
+    defaultColumns.push("District Points")
+    defaultColumns.push("EPA")
+    defaultColumns.push("Auto EPA")
+    defaultColumns.push("Teleop EPA")
+    defaultColumns.push("Endgame EPA")
+}
 
 // Welcome Checklist
 doingInitialSetup = false
