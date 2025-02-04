@@ -632,13 +632,6 @@ function processData() {
 }
 
 // Adds button functionality to clear mappings and scouting data
-document.querySelector("#foot_clearDataMappings").onclick = function() {
-    if (confirm("Are you sure? This is irreversible")) {
-        window.localStorage.removeItem(SCOUTING_DATA)
-        window.localStorage.removeItem(MAPPING)
-        window.location.reload()
-    }
-}
 function csvToJson(csv) {
     let rawFields = csv.split("\n")[0]
 
@@ -2385,6 +2378,11 @@ function saveColumns() {
         "hidden": hiddenColumns
     }))
 }
+function saveAll() {
+    saveGeneralSettings()
+    saveTeams()
+    saveColumns()
+}
 
 function exportSettings() {
     let data = {
@@ -2470,9 +2468,10 @@ document.querySelector("#top_import_settings").addEventListener("click", () => {
 
 //#endregion
 
-//#region Settings & Credits
+//#region Credits Page
 
-function closeCreditsOrSettings() {
+function closeCredits() {
+    document.querySelector(".sticky-header").classList.remove("hidden")
     if (tableMode === "team")
         document.querySelector(".team-page").classList.remove("hidden")
     else {
@@ -2480,20 +2479,9 @@ function closeCreditsOrSettings() {
         document.querySelector(".table-head.main-table").classList.remove("hidden")
     }
 
-    document.querySelector(".settings").classList.add("hidden")
     document.querySelector(".credits").classList.add("hidden")
 }
 
-document.querySelector("#top_settings").addEventListener("click", () => {
-    document.querySelector(".team-page").classList.add("hidden")
-    document.querySelector(".table.main-table").classList.add("hidden")
-    document.querySelector(".table-head.main-table").classList.add("hidden")
-    document.querySelector(".credits").classList.add("hidden")
-
-    document.querySelector(".settings").classList.remove("hidden")
-
-    document.querySelector("#close-settings").innerText = "Return to " + (tableMode === "team" ? "team page" : "table")
-})
 document.querySelector("#top_credits").addEventListener("click", () => {
     document.querySelector(".team-page").classList.add("hidden")
     document.querySelector(".table.main-table").classList.add("hidden")
@@ -2504,8 +2492,7 @@ document.querySelector("#top_credits").addEventListener("click", () => {
 
     document.querySelector("#close-credits").innerText = "Return to " + (tableMode === "team" ? "team page" : "table")
 })
-document.querySelector("#close-credits").addEventListener("click", closeCreditsOrSettings)
-document.querySelector("#close-settings").addEventListener("click", closeCreditsOrSettings)
+document.querySelector("#close-credits").addEventListener("click", closeCredits)
 
 //#endregion
 
@@ -2590,15 +2577,6 @@ setHeader()
 updateTheme()
 document.querySelector("#projector-styles").removeAttribute("disabled")
 setProjectorModeSheet()
-
-document.querySelector("#foot_clearLocalStorage").onclick = function() {
-    let tmp = []
-    LOCAL_STORAGE_KEYS.forEach((i) => tmp.push(i.replace("scouting_4915_", "")))
-    if (confirm("This will clear the following: " + tmp)) {
-        for (let i of LOCAL_STORAGE_KEYS) window.localStorage.removeItem(i)
-        window.location.reload()
-    }
-}
 
 // Version and Title
 for (let el of document.querySelectorAll(".tool-name"))
