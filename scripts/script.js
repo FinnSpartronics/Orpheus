@@ -10,7 +10,7 @@ const ENABLED_APIS = "scouting_4915_apis"
 const SETTINGS = "scouting_4915_settings_general"
 const COLUMNS = "scouting_4915_settings_columns"
 const TEAM_SAVES = "scouting_4915_settings_starignore"
-const LOCAL_STORAGE_KEYS = [YEAR, PIT, TBA_KEY, EVENT, SCOUTING_DATA, MAPPING, THEME, ENABLED_APIS, SETTINGS, COLUMNS, TEAM_SAVES]
+const NOTES = "scouting_4915_settings_notes"
 //#endregion
 
 //#region Variables
@@ -2528,15 +2528,7 @@ document.querySelector("#close-credits").addEventListener("click", closeCredits)
 
 //#region Notes
 
-let notes = {
-    x: 0,
-    y: 0,
-    activeTab: "Tab 1",
-    open: false,
-    tabs: {
-        "Tab 1": "",
-    }
-}
+let notes
 
 function openNotes() {
     let notebook = document.createElement("div")
@@ -2559,6 +2551,7 @@ function openNotes() {
     })
     notebookContents.addEventListener("change", () => {
         notes.tabs[notes.activeTab] = notebookContents.value
+        saveNotes()
     })
     notebookContents.addEventListener("mousemove", () => {
         notebook.style.maxWidth = notebookContents.offsetWidth + "px"
@@ -2634,6 +2627,7 @@ function openNotes() {
                 tabElements[0].classList.add("selected")
                 console.log(tabElements)
             }
+            saveNotes()
         })
 
         tabEl.addEventListener("keyup", (e) => {
@@ -2645,6 +2639,7 @@ function openNotes() {
             delete notes.tabs[notes.activeTab]
             notes.activeTab = tab = tabEl.innerText
             notes.tabs[tab] = text
+            saveNotes()
         })
 
         brieflyDisableKeyboard = true
@@ -2688,6 +2683,7 @@ function openNotes() {
                 tabElements[0].classList.add("selected")
                 console.log(tabElements)
             }
+            saveNotes()
         })
 
         tabEl.addEventListener("keyup", (e) => {
@@ -2699,6 +2695,7 @@ function openNotes() {
             delete notes.tabs[notes.activeTab]
             notes.activeTab = tab = tabEl.innerText
             notes.tabs[tab] = text
+            saveNotes()
         })
     }
 
@@ -2714,6 +2711,20 @@ document.querySelector("#top_notebook").addEventListener("click", () => {
     notes.open = !notes.open
     document.querySelector("#top_notebook").innerText = (notes.open ? "Close" : "Open") + " Notebook"
 })
+
+document.querySelector("#top_notebook_clear").addEventListener("click", () => {
+    notes.activeTab = "Tab 1"
+    notes.tabs = {"Tab 1": ""}
+    if (notes.open) document.querySelector(".notebook").remove()
+    openNotes()
+})
+
+function saveNotes() {
+    let isOpen = notes.open
+    notes.open = false
+    window.localStorage.setItem(NOTES, JSON.stringify(notes))
+    notes.open = isOpen
+}
 
 //#endregion
 
@@ -2864,6 +2875,19 @@ if (usingStatbotics) {
     defaultColumns.push("Teleop EPA")
     defaultColumns.push("Endgame EPA")
 }
+
+// Notes
+if (window.localStorage.getItem(NOTES) == null) {
+    notes = {
+        activeTab: "Tab 1",
+        open: false,
+        tabs: {
+            "Tab 1": "",
+        }
+    }
+    saveNotes()
+}
+notes = JSON.parse(window.localStorage.getItem(NOTES))
 
 // Welcome Checklist
 doingInitialSetup = false
