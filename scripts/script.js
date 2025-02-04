@@ -160,6 +160,22 @@ document.querySelector("#top_clear_event").onclick = function() {
 }
 function loadEvent() {
     loading++
+    if (!usingTBAMatches) {
+        if (!hiddenColumns.includes("Winrate")) hiddenColumns.push("Winrate")
+        if (columns.includes("Winrate")) columns.splice(columns.indexOf("Winrate"), 1)
+    }
+    if (!usingStatbotics) {
+        if (!hiddenColumns.includes("District Points")) hiddenColumns.push("District Points")
+        if (columns.includes("District Points")) columns.splice(columns.indexOf("District Points"), 1)
+        if (!hiddenColumns.includes("EPA")) hiddenColumns.push("EPA")
+        if (columns.includes("EPA")) columns.splice(columns.indexOf("EPA"), 1)
+        if (!hiddenColumns.includes("Auto EPA")) hiddenColumns.push("Auto EPA")
+        if (columns.includes("Auto EPA")) columns.splice(columns.indexOf("Auto EPA"), 1)
+        if (!hiddenColumns.includes("Teleop EPA")) hiddenColumns.push("Teleop EPA")
+        if (columns.includes("Teleop EPA")) columns.splice(columns.indexOf("Teleop EPA"), 1)
+        if (!hiddenColumns.includes("Endgame EPA")) hiddenColumns.push("Endgame EPA")
+        if (columns.includes("Endgame EPA")) columns.splice(columns.indexOf("Endgame EPA"), 1)
+    }
     if (usingTBA) {
         load("event/" + year + window.localStorage.getItem(EVENT) + "/teams", function (data) {
             event_data = data
@@ -218,28 +234,8 @@ function loadEvent() {
             loading--
             checkLoading()
         })
-        if (!usingTBAMatches) {
-            if (!hiddenColumns.includes("Winrate")) hiddenColumns.push("Winrate")
-            if (columns.includes("Winrate")) columns.splice(columns.indexOf("Winrate"), 1)
-        }
-        if (!usingStatbotics) {
-            if (!hiddenColumns.includes("District Points")) hiddenColumns.push("District Points")
-            if (columns.includes("District Points")) columns.splice(columns.indexOf("District Points"), 1)
-            if (!hiddenColumns.includes("EPA")) hiddenColumns.push("EPA")
-            if (columns.includes("EPA")) columns.splice(columns.indexOf("EPA"), 1)
-            if (!hiddenColumns.includes("Auto EPA")) hiddenColumns.push("Auto EPA")
-            if (columns.includes("Auto EPA")) columns.splice(columns.indexOf("Auto EPA"), 1)
-            if (!hiddenColumns.includes("Teleop EPA")) hiddenColumns.push("Teleop EPA")
-            if (columns.includes("Teleop EPA")) columns.splice(columns.indexOf("Teleop EPA"), 1)
-            if (!hiddenColumns.includes("Endgame EPA")) hiddenColumns.push("Endgame EPA")
-            if (columns.includes("Endgame EPA")) columns.splice(columns.indexOf("Endgame EPA"), 1)
-        }
     }
     else {
-        hiddenColumns.push("Name")
-        hiddenColumns.push("Winrate")
-        columns.splice(columns.indexOf("Name"),1)
-        columns.splice(columns.indexOf("Winrate"),1)
         processData()
     }
 }
