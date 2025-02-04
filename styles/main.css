@@ -88,3 +88,7 @@ footer a {
     display: flex;
     align-items: center;
 }
+
+#top-controls {
+    display: flex;
+}

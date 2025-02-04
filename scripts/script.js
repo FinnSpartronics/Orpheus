@@ -79,7 +79,7 @@ let projectorMode = false
 //#region Init Header Controls
 let modalShowing = false
 for (let el of document.querySelector("#top-controls").children) {
-    if (el.tagName === "BUTTON") {
+    if (el.tagName === "BUTTON" && el.classList.contains("dropdown-button")) {
         el.onclick = function() {
             for (let el of document.getElementsByClassName("top-control-dropdown"))
                 el.close()
@@ -88,7 +88,7 @@ for (let el of document.querySelector("#top-controls").children) {
             modalShowing = false
             setTimeout(() => modalShowing = true, 0)
         }
-    } else {
+    } else if (el.tagName === "DIALOG") {
         el.onclick = function() {
             modalShowing = false
             setTimeout(() => modalShowing = true, 0)
@@ -2470,6 +2470,42 @@ document.querySelector("#top_import_settings").addEventListener("click", () => {
 
 //#endregion
 
+//#region Settings & Credits
+
+function closeCreditsOrSettings() {
+    if (tableMode === "team")
+        document.querySelector(".team-page").classList.remove("hidden")
+    else {
+        document.querySelector(".table.main-table").classList.remove("hidden")
+        document.querySelector(".table-head.main-table").classList.remove("hidden")
+    }
+
+    document.querySelector(".settings").classList.add("hidden")
+    document.querySelector(".credits").classList.add("hidden")
+}
+
+document.querySelector("#top_settings").addEventListener("click", () => {
+    document.querySelector(".team-page").classList.add("hidden")
+    document.querySelector(".table.main-table").classList.add("hidden")
+    document.querySelector(".table-head.main-table").classList.add("hidden")
+    document.querySelector(".credits").classList.add("hidden")
+
+    document.querySelector(".settings").classList.remove("hidden")
+})
+document.querySelector("#top_credits").addEventListener("click", () => {
+    document.querySelector(".team-page").classList.add("hidden")
+    document.querySelector(".table.main-table").classList.add("hidden")
+    document.querySelector(".table-head.main-table").classList.add("hidden")
+    document.querySelector(".settings").classList.add("hidden")
+
+    document.querySelector(".credits").classList.remove("hidden")
+
+    document.querySelector("#close-credits").innerText = "Return to " + (tableMode === "team" ? "team page" : "table")
+})
+document.querySelector("#close-credits").addEventListener("click", closeCreditsOrSettings)
+
+//#endregion
+
 //#region Init
 
 // Year
@@ -2562,9 +2598,10 @@ document.querySelector("#foot_clearLocalStorage").onclick = function() {
 }
 
 // Version and Title
-document.querySelector("title").innerText = toolName
-document.querySelector("#title").innerText = toolName
-document.querySelector("#version_slot").innerText = toolName + " v"+version
+for (let el of document.querySelectorAll(".tool-name"))
+    el.innerText = toolName
+for (let el of document.querySelectorAll(".version"))
+    el.innerText = toolName + " v"+version
 
 // Apis
 let apis = window.localStorage.getItem(ENABLED_APIS)
