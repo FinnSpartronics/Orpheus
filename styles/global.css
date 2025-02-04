@@ -30,7 +30,7 @@
     -webkit-text-stroke-color: var(--font);
 }
 
-:root {
+:root, .force-light {
     --bg: rgb(247, 247, 247);
     --line: rgb(214, 214, 214);
     --font: rgb(31,31,31);
@@ -45,7 +45,7 @@
     --yellow: rgb(245, 214, 153);
     --placeholder: rgb(133, 133, 133);
 }
-:root.dark {
+:root.dark, .force-dark {
     --bg: rgb(53, 55, 59);
     --line: rgb(122, 122, 122);
     --font: rgb(220,220,220);
@@ -60,7 +60,7 @@
     --yellow: rgb(159, 92, 10);
     --placeholder: rgb(152, 152, 152);
 }
-:root.spartronics_theme {
+:root.spartronics_theme, .force-spartronics {
     --bg: rgb(0, 103, 185);
     --line: rgb(122, 122, 122);
     --font: rgb(244, 228, 0);

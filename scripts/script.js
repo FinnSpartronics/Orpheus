@@ -2491,6 +2491,8 @@ document.querySelector("#top_settings").addEventListener("click", () => {
     document.querySelector(".credits").classList.add("hidden")
 
     document.querySelector(".settings").classList.remove("hidden")
+
+    document.querySelector("#close-settings").innerText = "Return to " + (tableMode === "team" ? "team page" : "table")
 })
 document.querySelector("#top_credits").addEventListener("click", () => {
     document.querySelector(".team-page").classList.add("hidden")
@@ -2503,6 +2505,7 @@ document.querySelector("#top_credits").addEventListener("click", () => {
     document.querySelector("#close-credits").innerText = "Return to " + (tableMode === "team" ? "team page" : "table")
 })
 document.querySelector("#close-credits").addEventListener("click", closeCreditsOrSettings)
+document.querySelector("#close-settings").addEventListener("click", closeCreditsOrSettings)
 
 //#endregion
 

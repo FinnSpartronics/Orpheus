@@ -103,7 +103,84 @@
     <div class="team-page hidden"></div>
 
     <div class="settings hidden">
+        <h2>Appearance</h2>
+        <div class="settings-theme-picker">
+            <div class="settings-theme force-light" onclick="changeThemeTo(0)">Light</div>
+            <div class="settings-theme force-dark" onclick="changeThemeTo(1)">Dark</div>
+            <div class="settings-theme force-spartronics" onclick="changeThemeTo(2)">Spartronics</div>
+        </div>
 
+        <div>
+            <input type="checkbox" id="settings-toggle-projector">
+            <label for="settings-toggle-projector">Projector Mode</label>
+        </div>
+
+        <h2>Event Settings</h2>
+
+        <h2>API Settings</h2>
+        <button id="settings-set-api-key">Set The Blue Alliance API key</button>
+        <details>
+            <summary>How do I get an API key?</summary>
+            Lorem ipsum dolor sit amet, consectetur adipisicing elit. Ab accusantium ad aspernatur beatae dolorem dolorum pariatur porro quasi quos reprehenderit!
+        </details>
+        <details>
+            <summary>Current API key</summary>
+            <div id="settings-api-key-display"></div>
+        </details>
+        <div>
+            <input type="checkbox" id="settings-toggle-tba">
+            <label for="settings-toggle-tba">The Blue Alliance API</label>
+        </div>
+        <div>
+            <input type="checkbox" id="settings-toggle-matches">
+            <label for="settings-toggle-matches">Matches</label>
+        </div>
+        <div>
+            <input type="checkbox" id="settings-toggle-media">
+            <label for="settings-toggle-media">Media</label>
+        </div>
+        <div>
+            <input type="checkbox" id="settings-toggle-desmos">
+            <label for="settings-toggle-desmos">Desmos</label>
+        </div>
+
+        <h2>Saved Data, Mapping Settings</h2>
+
+        <h2>Table Settings</h2>
+        <div>
+            <input type="number" id="settings-rounding">
+            <label for="settings-rounding">Rounding Digits</label>
+        </div>
+        <div>
+            <input type="checkbox" id="settings-toggle-keyboard">
+            <label for="settings-toggle-keyboard">Keyboard controls</label>
+        </div>
+        <div>
+            <input type="checkbox" id="settings-toggle-team-icons">
+            <label for="settings-toggle-team-icons">Team icons</label>
+        </div>
+
+        <h2>Stars and ignores</h2>
+
+        <h2>Team page Settings</h2>
+
+        <div>
+            <input type="checkbox" id="settings-toggle-comment-names">
+            <label for="settings-toggle-comment-names">Show names in team comments</label>
+        </div>
+
+        <div>
+            <select id="settings-graph">
+                <option>Points only</option>
+                <option>Line of best fit only</option>
+                <option>Both</option>
+            </select>
+            <label for="settings-graph">Display</label>
+        </div>
+
+        <h2>Import/Export Settings</h2>
+
+        <button class="big" id="close-settings">Return</button>
     </div>
 
     <div class="credits hidden">
