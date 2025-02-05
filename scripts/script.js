@@ -2413,13 +2413,10 @@ function saveColumns() {
         "hidden": hiddenColumns
     }))
 }
-function saveAll() {
-    saveGeneralSettings()
-    saveTeams()
-    saveColumns()
-}
 
 function exportSettings() {
+    let notesOpen = notes.open
+    notes.open = false
     let data = {
         general: {
             "keyboardControls": keyboardControls,
@@ -2452,8 +2449,10 @@ function exportSettings() {
         pit: pit_data,
         tbakey: window.localStorage.getItem(TBA_KEY),
         event: window.localStorage.getItem(EVENT),
-        theme: window.localStorage.getItem(THEME)
+        theme: window.localStorage.getItem(THEME),
+        notes: notes
     }
+    notes.open = notesOpen
     download("settings.orpheus", JSON.stringify(data))
 }
 function importSettings(settings) {
@@ -2488,6 +2487,8 @@ function importSettings(settings) {
     usingTBAMatches = settings.apis.tbamatch
     usingTBAMedia = settings.apis.tbamedia
     usingDesmos = settings.apis.desmos
+    notes = settings.notes
+    saveNotes()
     setEnabledAPIS()
     changeThemeTo(settings.theme)
     window.location.reload()
