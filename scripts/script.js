@@ -2107,6 +2107,7 @@ function set_star(team, to) {
     }
     regenTable()
     saveTeams()
+    setStarbook()
 }
 function ignore(i) {
     set_ignore(i, !ignored.includes(i))
@@ -2116,6 +2117,7 @@ function ignore_toggle() {
     document.querySelector("#select_ignore").classList.toggle("filled")
     regenTable()
     saveTeams()
+    setStarbook()
 }
 function set_ignore(team, to) {
     if (ignored.includes(team)) ignored.splice(ignored.indexOf(team), 1)
@@ -2148,6 +2150,7 @@ function autoIgnore() {
     }
     saveTeams()
     regenTable()
+    setStarbook()
 }
 
 document.querySelector("#top_show_hide_ignored").addEventListener("click", () => {
@@ -2527,9 +2530,15 @@ document.querySelector("#close-credits").addEventListener("click", closeCredits)
 
 //#endregion
 
-//#region Notes
+//#region Notes, Teamlist
 
 let notes
+let starbook = {
+    open: false,
+    stars: true,
+    ignored: false,
+    other: true,
+}
 
 function openNotes() {
     let notebook = document.createElement("div")
@@ -2725,6 +2734,101 @@ function saveNotes() {
     notes.open = false
     window.localStorage.setItem(NOTES, JSON.stringify(notes))
     notes.open = isOpen
+}
+
+document.querySelector("#top_stars").addEventListener("click", () => {
+    setStarbook()
+    document.querySelector(".notebook-stars").classList.toggle("hidden")
+    starbook.open = !starbook.open
+    document.querySelector("#top_stars").innerText = (starbook.open ? "Close" : "Open") + " team list"
+})
+document.querySelector(".notebook-stars").style.left = (window.innerWidth * .5) + "px"
+document.querySelector(".notebook-stars").style.top = (window.innerHeight * .2) + "px"
+
+function setStarbook() {
+    let starbookEl = document.querySelector(".notebook-stars")
+    starbookEl.innerHTML = ""
+
+    let notebookNav = document.createElement("div")
+    notebookNav.className = "notebook-nav"
+    starbookEl.appendChild(notebookNav)
+
+    //#region Drag
+    let drag = document.createElement("span")
+    drag.className = "material-symbols-outlined notebook-drag"
+    drag.innerText = "drag_indicator"
+
+    let dragging = false
+    let dragScreenStart
+    let dragPositionStart
+
+    drag.addEventListener("mousedown", (e) => {
+        dragScreenStart = {x: e.clientX, y: e.clientY}
+        dragPositionStart = {x: starbookEl.offsetLeft, y: starbookEl.offsetTop}
+        dragging = true
+    })
+    document.body.addEventListener("mousemove", (e) => {
+        if (dragging) {
+            starbookEl.style.left = (dragPositionStart.x - (dragScreenStart.x - e.clientX)) + "px"
+            starbookEl.style.top = (dragPositionStart.y - (dragScreenStart.y - e.clientY)) + "px"
+        }
+    })
+    document.body.addEventListener("mouseup", (e) => {
+        dragging = false
+    })
+    notebookNav.appendChild(drag)
+    //#endregion
+
+    let teamListTitle = document.createElement("div")
+    teamListTitle.innerText = "Team List"
+    notebookNav.appendChild(teamListTitle)
+
+    let remainingTeams = []
+    for (let team of Object.keys(team_data))
+        if (!ignored.includes(team) && !starred.includes(team))
+            remainingTeams.push(team)
+
+    function group(title, teams, showing) {
+        let toggler = document.createElement("div")
+        toggler.className = "starbook-toggler"
+        starbookEl.appendChild(toggler)
+
+        let dropdown = document.createElement("span")
+        dropdown.className = "material-symbols-outlined"
+        dropdown.innerText = showing ? "keyboard_arrow_down" : "keyboard_arrow_right"
+        toggler.appendChild(dropdown)
+
+        let titleEl = document.createElement("div")
+        titleEl.innerText = title
+        toggler.appendChild(titleEl)
+
+        if (showing) {
+            let teamHolder = document.createElement("div")
+            teamHolder.className = "starbook-team-list"
+            for (let team of teams) {
+                let teamEl = document.createElement("div")
+                teamEl.className = "starbook-team"
+                teamHolder.appendChild(teamEl)
+
+                teamEl.innerText = team + " " + team_data[team].Name
+            }
+            starbookEl.appendChild(teamHolder)
+        }
+
+        return toggler
+    }
+    group("Starred Teams", starred, starbook.stars).addEventListener("click", () => {
+        starbook.stars = !starbook.stars
+        setStarbook()
+    })
+    group("Ignored Teams", ignored, starbook.ignored).addEventListener("click", () => {
+        starbook.ignored = !starbook.ignored
+        setStarbook()
+    })
+    group("Remaining Teams", remainingTeams, starbook.other).addEventListener("click", () => {
+        starbook.other = !starbook.other
+        setStarbook()
+    })
 }
 
 //#endregion
