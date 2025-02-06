@@ -690,8 +690,9 @@ function csvToJson(csv) {
             current = current.trim()
             if (current.startsWith('"')) current = current.substring(1)
             if (current.endsWith('"')) current = current.substring(0, current.length - 1)
-            current = current.replaceAll('""', '"')
-            currentMatch[fields[Object.keys(currentMatch).length]] = current.trim()
+            current = current.replaceAll('""', '"').trim()
+            if (!isNaN(parseFloat(current.replaceAll(",", "")))) current = parseFloat(current.replaceAll(",", ""))
+            currentMatch[fields[Object.keys(currentMatch).length]] = current
 
             current = ""
             if (Object.keys(currentMatch).length === fields.length) {
@@ -701,6 +702,7 @@ function csvToJson(csv) {
         } else current = current + char
     }
 
+    console.log(json)
     return json
 }
 
