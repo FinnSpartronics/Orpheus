@@ -977,7 +977,7 @@ document.querySelector(".table.main-table").addEventListener("scroll", () => {
 
 //#endregion
 
-//#region Team Pages
+//#region Team Pages, Search
 let maintainedTeamPageSettings
 let openedTeam
 
@@ -1663,7 +1663,74 @@ function generateTeamMatches(data, team, teamsWith) {
     }
 }
 
-function search() {
+
+function search(input) {
+    input = input.replace(/\s/g, "").toLowerCase()
+
+    // Copied from geeksforgeeks.org implementation for Levenstein Distance using Iterative with the full matrix approach
+    function levenshtein(str1, str2) {
+        const m = str1.length;
+        const n = str2.length;
+
+        const dp = new Array(m + 1).fill(null).map(() => new Array(n + 1).fill(0));
+
+        // Initialize the first row
+        // and column of the matrix
+        for (let i = 0; i <= m; i++) {
+            dp[i][0] = i;
+        }
+        for (let j = 0; j <= n; j++) {
+            dp[0][j] = j;
+        }
+
+        for (let i = 1; i <= m; i++) {
+            for (let j = 1; j <= n; j++) {
+                if (str1[i - 1] === str2[j - 1]) {
+                    dp[i][j] = dp[i - 1][j - 1];
+                } else {
+                    dp[i][j] = 1 + Math.min(
+                        // Insert
+                        dp[i][j - 1],
+                        Math.min(
+                            // Remove
+                            dp[i - 1][j],
+                            // Replace
+                            dp[i - 1][j - 1]
+                        )
+                    );
+                }
+            }
+        }
+        return dp[m][n];
+    }
+
+    let distance = Math.pow(10, 10)
+    let team
+    for (let teamNum of Object.keys(team_data)) {
+        let teamName = team_data[teamNum].Name.replace(/\s/g, "").toLowerCase()
+        if (teamNum === input) {
+            team = teamNum
+            break
+        }
+        else if (teamName === input) {
+            team = teamNum
+            break
+        }
+        else {
+            let teamDistance = levenshtein(input, teamName)
+            if (teamDistance < distance) {
+                distance = teamDistance
+                team = teamNum
+            }
+        }
+    }
+
+    console.log(distance)
+
+    return team
+}
+
+function searchBar() {
     const chars = /[!@#$%^&*()\-=_+`~[\]{};'\\:"|,./<>?]/g
 
     let el = document.querySelector("#search4915")
@@ -1701,13 +1768,16 @@ function search() {
     el.value = ""
     openTeam(teamNumber)
 }
-document.querySelector("#search4915").addEventListener("keydown", (e) => {
-    if (e.code === "Enter") search()
+document.querySelector("#search-4915").addEventListener("keydown", (e) => {
+    if (e.code === "Enter") searchBar()
+
+    let winner = search(document.querySelector("#search-4915").value)
+    console.log(winner, team_data[winner].Name)
 })
-document.querySelector("#search4915").addEventListener("focus", () => {
+document.querySelector("#search-4915").addEventListener("focus", () => {
     brieflyDisableKeyboard = true
 })
-document.querySelector("#search4915").addEventListener("blur", () => {
+document.querySelector("#search-4915").addEventListener("blur", () => {
     brieflyDisableKeyboard = false
 })
 
