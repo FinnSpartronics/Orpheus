@@ -896,7 +896,7 @@ function element(team) {
         if (isNaN(team_data[team][column]) && typeof team_data[team][column] === "number") {
             columnEl.innerText = "-"
         }
-        if (columnEl.innerText.length > 10) columnEl.style.fontSize = Math.max(1.2 - ((.025) * (columnEl.innerText.length-10)), .7) + "rem"
+        columnEl.style.fontSize = "1.2rem"
         el.appendChild(columnEl)
     }
 
@@ -969,11 +969,20 @@ function regenTable() {
         else document.querySelector(".table.main-table").appendChild(el)
     }
 
+    for (let data of document.querySelectorAll(".data:not(.small)")) {
+        let tries = 0
+        while (data.scrollWidth > data.offsetWidth || data.scrollHeight > data.offsetHeight) {
+            data.style.fontSize = "calc(" + data.style.fontSize + " - .05rem)"
+            tries++
+            if (tries > 10) break
+        }
+    }
 }
 
 document.querySelector(".table.main-table").addEventListener("scroll", () => {
     document.querySelector(".table-head.main-table").scrollLeft = document.querySelector(".table.main-table").scrollLeft
 })
+window.addEventListener("resize", regenTable)
 
 //#endregion
 
@@ -2607,9 +2616,9 @@ document.querySelector("#close-credits").addEventListener("click", closeCredits)
 let notes
 let starbook = {
     open: false,
-    stars: true,
+    stars: false,
     ignored: false,
-    other: true,
+    other: false,
 }
 
 function openNotes() {

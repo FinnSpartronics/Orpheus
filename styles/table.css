@@ -75,7 +75,6 @@ div.icon {
 .data {
     font-weight: 900;
     font-style: normal;
-    font-size: 1.2rem;
     color: var(--font);
     width: 120px;
     min-width: 80px;
