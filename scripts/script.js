@@ -1190,6 +1190,12 @@ function openTeam(team, comparisons, hiddenCompares) {
 
         if (usingTBAMatches) {
             let matchSearch = document.createElement("input")
+            matchSearch.addEventListener("focus", () => {
+                brieflyDisableKeyboard = true
+            })
+            matchSearch.addEventListener("blur", () => {
+                brieflyDisableKeyboard = false
+            })
 
             let showMatchesEl = document.createElement("button")
             showMatchesEl.innerText = (maintainedTeamPageSettings.showMatches ? "Hide matches" : "Show Matches")
@@ -1203,7 +1209,7 @@ function openTeam(team, comparisons, hiddenCompares) {
             })
             teamInfo.appendChild(showMatchesEl)
 
-            matchSearch.placeholder = "Comma separated team numbers (names coming soon)"
+            matchSearch.placeholder = "Comma separated team search"
             matchSearch.onchange = matchSearch.onkeyup = matchSearch.oninput = function() {
                 generateTeamMatches(data, team, matchSearch.value)
             }
@@ -1585,8 +1591,15 @@ function generateTeamMatches(data, team, teamsWith) {
         document.querySelector(".matches").children[0].remove()
 
     let skipTeamCheck = (teamsWith === undefined || teamsWith.trim() === "")
-    if (!skipTeamCheck)
+    if (!skipTeamCheck) {
         teamsWith = teamsWith.trim().split(",")
+        let actualTeamsWith = []
+        for (let x of teamsWith) {
+            if (search(x).distance < 10) actualTeamsWith.push(search(x).result)
+        }
+        teamsWith = actualTeamsWith
+    }
+    console.log(teamsWith)
 
     if (usingTBA && usingTBAMatches) {
         let upcoming = false
@@ -1628,6 +1641,7 @@ function generateTeamMatches(data, team, teamsWith) {
             for (let t of matchData["alliances"][alliance]["team_keys"]) {
                 let tEl = document.createElement("div")
                 tEl.innerText = t.replace("frc", "")
+                if (teamsWith.includes(t.replace("frc", ""))) tEl.style.fontWeight = "bold"
                 if (t.replace("frc", "") === team) tEl.style.order = "-10000"
                 firstAlliance.appendChild(tEl)
             }
@@ -1637,6 +1651,7 @@ function generateTeamMatches(data, team, teamsWith) {
             secondAlliance.className = "match-alliance " + (alliance === "blue" ? "red" : "blue")
             for (let t of matchData["alliances"][(alliance === "blue" ? "red" : "blue")]["team_keys"]) {
                 let tEl = document.createElement("div")
+                if (teamsWith.includes(t.replace("frc", ""))) tEl.style.fontWeight = "bold"
                 tEl.innerText = t.replace("frc", "")
                 secondAlliance.appendChild(tEl)
             }
@@ -1671,124 +1686,6 @@ function generateTeamMatches(data, team, teamsWith) {
         document.querySelector(".matches").appendChild(mEl)
     }
 }
-
-
-function search(input) {
-    input = input.replace(/\s/g, "").toLowerCase()
-
-    // Copied from geeksforgeeks.org implementation for Levenstein Distance using Iterative with the full matrix approach
-    function levenshtein(str1, str2) {
-        const m = str1.length;
-        const n = str2.length;
-
-        const dp = new Array(m + 1).fill(null).map(() => new Array(n + 1).fill(0));
-
-        // Initialize the first row
-        // and column of the matrix
-        for (let i = 0; i <= m; i++) {
-            dp[i][0] = i;
-        }
-        for (let j = 0; j <= n; j++) {
-            dp[0][j] = j;
-        }
-
-        for (let i = 1; i <= m; i++) {
-            for (let j = 1; j <= n; j++) {
-                if (str1[i - 1] === str2[j - 1]) {
-                    dp[i][j] = dp[i - 1][j - 1];
-                } else {
-                    dp[i][j] = 1 + Math.min(
-                        // Insert
-                        dp[i][j - 1],
-                        Math.min(
-                            // Remove
-                            dp[i - 1][j],
-                            // Replace
-                            dp[i - 1][j - 1]
-                        )
-                    );
-                }
-            }
-        }
-        return dp[m][n];
-    }
-
-    let distance = Math.pow(10, 10)
-    let team
-    for (let teamNum of Object.keys(team_data)) {
-        let teamName = team_data[teamNum].Name.replace(/\s/g, "").toLowerCase()
-        if (teamNum === input) {
-            team = teamNum
-            break
-        }
-        else if (teamName === input) {
-            team = teamNum
-            break
-        }
-        else {
-            let teamDistance = levenshtein(input, teamName)
-            if (teamDistance < distance) {
-                distance = teamDistance
-                team = teamNum
-            }
-        }
-    }
-
-    console.log(distance)
-
-    return team
-}
-
-function searchBar() {
-    const chars = /[!@#$%^&*()\-=_+`~[\]{};'\\:"|,./<>?]/g
-
-    let el = document.querySelector("#search4915")
-    let val = el.value.toLowerCase().trim().replaceAll(chars, "")
-
-    if (val === "") {
-        if (el.value !== val)
-            alert("Cannot search for nothing \nWhitespace and the following characters are ignored:\n!@#$%^&*()-=_+`![]{};'\\:\"|,./<>?")
-        else
-            alert("Cannot search for nothing")
-        return
-    }
-
-    let teamNumber = undefined
-    if (team_data[val] !== undefined) teamNumber = val
-    else {
-        for (let t of Object.keys(team_data))
-            if (team_data[t].Name.toLowerCase().trim().replaceAll(chars, "") === val) teamNumber = t
-    }
-    if (teamNumber === undefined) {
-        for (let t of Object.keys(team_data))
-            if ((" " + team_data[t].Name.toLowerCase().trim().replaceAll(chars, "")).match(/\s./g, "").join("").trim().replaceAll(" ", "") === val)
-                if (confirm(`Did you mean team ${t} ${team_data[t].Name}?`)) teamNumber = t
-    }
-    if (teamNumber === undefined) {
-        for (let t of Object.keys(team_data))
-            if (team_data[t].Name.toLowerCase().trim().replaceAll(chars, "").startsWith(val))
-                if (confirm(`Did you mean team ${t} ${team_data[t].Name}?`)) teamNumber = t
-    }
-    if (teamNumber === undefined) {
-        alert(`Could not find team ${val} from the list of teams`)
-        return
-    }
-
-    el.value = ""
-    openTeam(teamNumber)
-}
-document.querySelector("#search-4915").addEventListener("keydown", (e) => {
-    if (e.code === "Enter") searchBar()
-
-    let winner = search(document.querySelector("#search-4915").value)
-    console.log(winner, team_data[winner].Name)
-})
-document.querySelector("#search-4915").addEventListener("focus", () => {
-    brieflyDisableKeyboard = true
-})
-document.querySelector("#search-4915").addEventListener("blur", () => {
-    brieflyDisableKeyboard = false
-})
 
 function graphElement(data, name, teams, width, height) {
     let el = document.createElement("div")
@@ -1926,6 +1823,122 @@ document.querySelector("#top_graph_display").addEventListener("click", () => {
     } else document.querySelector("#top_graph_display").innerText = "Graphs: Only lines of best fit"
 
     saveGeneralSettings()
+})
+
+function search(input) {
+    input = input.replace(/\s/g, "").toLowerCase()
+
+    // Copied from geeksforgeeks.org implementation for Levenstein Distance using Iterative with the full matrix approach
+    function levenshtein(str1, str2) {
+        const m = str1.length;
+        const n = str2.length;
+
+        const dp = new Array(m + 1).fill(null).map(() => new Array(n + 1).fill(0));
+
+        // Initialize the first row
+        // and column of the matrix
+        for (let i = 0; i <= m; i++) {
+            dp[i][0] = i;
+        }
+        for (let j = 0; j <= n; j++) {
+            dp[0][j] = j;
+        }
+
+        for (let i = 1; i <= m; i++) {
+            for (let j = 1; j <= n; j++) {
+                if (str1[i - 1] === str2[j - 1]) {
+                    dp[i][j] = dp[i - 1][j - 1];
+                } else {
+                    dp[i][j] = 1 + Math.min(
+                        // Insert
+                        dp[i][j - 1],
+                        Math.min(
+                            // Remove
+                            dp[i - 1][j],
+                            // Replace
+                            dp[i - 1][j - 1]
+                        )
+                    );
+                }
+            }
+        }
+        return dp[m][n];
+    }
+
+    let distance = Math.pow(10, 10)
+    let team
+    for (let teamNum of Object.keys(team_data)) {
+        let teamName = team_data[teamNum].Name.replace(/\s/g, "").toLowerCase()
+        if (teamNum === input) {
+            team = teamNum
+            distance = 0
+            break
+        }
+        else if (teamName === input) {
+            team = teamNum
+            distance = 0
+            break
+        }
+        else {
+            let teamDistance = levenshtein(input, teamName)
+            if (teamDistance < distance) {
+                distance = teamDistance
+                team = teamNum
+            }
+        }
+    }
+
+    return {
+        "result": team,
+        "distance": distance,
+        "input": input
+    }
+}
+
+document.querySelector("#search-4915").addEventListener("keyup", handleSearchbar)
+function handleSearchbar(event) {
+    let result = search(document.querySelector("#search-4915").value)
+    if (result.distance > 10 || result.input === "") {
+        document.querySelector("#search-4915-result").innerText = ""
+        document.querySelector("#search-open").hidden = true
+        document.querySelector("#search-star").hidden = true
+        document.querySelector("#search-ignore").hidden = true
+        return
+    }
+    document.querySelector("#search-open").hidden = false
+    document.querySelector("#search-star").hidden = false
+    document.querySelector("#search-star").innerText = starred.includes(result.result) ? "Unstar" : "Star"
+    document.querySelector("#search-ignore").hidden = false
+    document.querySelector("#search-ignore").innerText = ignored.includes(result.result) ? "Unignore" : "Ignore"
+    document.querySelector("#search-4915-result").innerText = team_data[result.result].Name
+
+    console.log(result.result, result.input)
+
+    if (event !== undefined && event.code === "Enter") {
+        openTeam(result.result)
+        document.querySelector("#search-4915").value = ""
+        handleSearchbar()
+    }
+}
+document.querySelector("#search-4915").addEventListener("focus", () => {
+    brieflyDisableKeyboard = true
+})
+document.querySelector("#search-4915").addEventListener("blur", () => {
+    brieflyDisableKeyboard = false
+})
+
+document.querySelector("#search-open").addEventListener("click", () => {
+    openTeam(search(document.querySelector("#search-4915").value).result)
+    document.querySelector("#search-4915").value = ""
+    handleSearchbar()
+})
+document.querySelector("#search-star").addEventListener("click", () => {
+    star(search(document.querySelector("#search-4915").value).result)
+    handleSearchbar()
+})
+document.querySelector("#search-ignore").addEventListener("click", () => {
+    ignore(search(document.querySelector("#search-4915").value).result)
+    handleSearchbar()
 })
 
 //#endregion
@@ -2804,6 +2817,7 @@ document.querySelector("#top_notebook").addEventListener("click", () => {
 })
 
 document.querySelector("#top_notebook_clear").addEventListener("click", () => {
+    if (!confirm("Are you sure? This cannot be undone.")) return
     notes.activeTab = "Tab 1"
     notes.tabs = {"Tab 1": ""}
     if (notes.open) document.querySelector(".notebook").remove()

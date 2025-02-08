@@ -92,3 +92,8 @@ footer a {
 #top-controls {
     display: flex;
 }
+
+.search-controls {
+    display: flex;
+    align-items: center;
+}
