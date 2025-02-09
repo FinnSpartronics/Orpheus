@@ -117,7 +117,7 @@ document.addEventListener("click", () => {
 //#endregion
 
 //#region API Key, Event Loading, Year setting
-document.querySelector("#top_setapi").onclick = function() {
+document.querySelector("#top-setapi").onclick = function() {
     let x = prompt("What is your TBA API key? 'get' to get it, leave blank to skip")
     if (x === "get") alert(window.localStorage.getItem(TBA_KEY))
     else if (x === "clear") {
@@ -129,7 +129,7 @@ document.querySelector("#top_setapi").onclick = function() {
         window.location.reload()
     }
 }
-document.querySelector("#top_load_event").onclick = function() {
+document.querySelector("#top-load-event'").onclick = function() {
     let x = prompt("What event code do you want?")
     if (x === "get") alert(window.localStorage.getItem(EVENT))
     else if (x === "clear") {
@@ -143,7 +143,7 @@ document.querySelector("#top_load_event").onclick = function() {
     }
 
 }
-document.querySelector("#top_year").onclick = function() {
+document.querySelector("#top-year").onclick = function() {
     let x = prompt("Change year").trim()
     if (x === "get") alert(window.localStorage.getItem(YEAR))
     else if (x !== "") {
@@ -152,7 +152,7 @@ document.querySelector("#top_year").onclick = function() {
         clearSavedTeams()
     }
 }
-document.querySelector("#top_clear_event").onclick = function() {
+document.querySelector("#top-clear-event").onclick = function() {
     clearSavedTeams()
     starred = []
     ignored = []
@@ -236,7 +236,7 @@ function checkTeamWonMatch(match, team) {
 
 //#region Data and Mappings
 // Import data button
-document.querySelector("#top_data").onclick = function() {
+document.querySelector("#top-data").onclick = function() {
     loadFile(".csv,.json", (result, filetype) => {
         if (filetype === "csv") scouting_data = csvToJson(result) // Converts CSV to JSON
         else if (filetype === "json") scouting_data = JSON.parse(result) // Parses json
@@ -249,11 +249,11 @@ document.querySelector("#top_data").onclick = function() {
         setColumnOptions()
         if (mapping !== undefined) processData()
         window.localStorage.setItem(SCOUTING_DATA, JSON.stringify(scouting_data))
-        document.querySelector("#top_data_download").disabled = false
+        document.querySelector("#top-data-download").disabled = false
         if (doingInitialSetup) window.location.reload()
     })
 }
-document.querySelector("#top_pit").onclick = function() {
+document.querySelector("#top-pit").onclick = function() {
     loadFile(".csv,.json", (result, filetype) => {
         if (filetype === "csv") pit_data = csvToJson(result) // Converts CSV to JSON
         else if (filetype === "json") pit_data = JSON.parse(result) // Parses json
@@ -266,12 +266,12 @@ document.querySelector("#top_pit").onclick = function() {
         setColumnOptions()
         if (mapping !== undefined) processData()
         window.localStorage.setItem(PIT, JSON.stringify(pit_data))
-        document.querySelector("#top_pit_download").disabled = false
+        document.querySelector("#top-pit-download").disabled = false
         if (doingInitialSetup) window.location.reload()
     })
 }
 // Import mapping button
-document.querySelector("#top_mapping").onclick = function() {
+document.querySelector("#top-mapping").onclick = function() {
     loadFile(".json", (result) => {
         mapping = JSON.parse(result)
         window.localStorage.setItem(MAPPING, JSON.stringify(mapping))
@@ -714,11 +714,11 @@ function csvToJson(csv) {
 }
 
 // Download buttons
-document.querySelector("#top_data_download").onclick = () => download("scouting_data.json", JSON.stringify(scouting_data))
-document.querySelector("#top_pit_download").onclick = () => download("pit_data.json", JSON.stringify(pit_data))
-document.querySelector("#top_mapping_download").onclick = () => download("mapping.json", JSON.stringify(mapping))
+document.querySelector("#top-data-download").onclick = () => download("scouting_data.json", JSON.stringify(scouting_data))
+document.querySelector("#top-pit-download").onclick = () => download("pit_data.json", JSON.stringify(pit_data))
+document.querySelector("#top-mapping-download").onclick = () => download("mapping.json", JSON.stringify(mapping))
 
-document.querySelector("#top_rounding").onclick = function() {
+document.querySelector("#top-rounding").onclick = function() {
     let x = prompt("Round to how many digits?")
     x = parseInt(x)
     if (isNaN(x)) return
@@ -729,7 +729,7 @@ document.querySelector("#top_rounding").onclick = function() {
     regenTable()
 }
 function setRoundingEl() {
-    document.querySelector("#top_rounding").innerText = "Rounding: " + (roundingDigits === 0 ? "Integer" : (roundingDigits === 16 ? "Float" : roundingDigits + " digits"))
+    document.querySelector("#top-rounding").innerText = "Rounding: " + (roundingDigits === 0 ? "Integer" : (roundingDigits === 16 ? "Float" : roundingDigits + " digits"))
 }
 
 function getPitScoutingImages(team) {
@@ -780,17 +780,17 @@ function changeThemeTo(theme) {
     window.localStorage.setItem(THEME, ""+theme)
 }
 // Theme toggle button
-document.querySelector("#top_theme").onclick = function() {
+document.querySelector("#top-theme").onclick = function() {
     window.localStorage.setItem(THEME, ""+((theme + 1) % 3))
     updateTheme()
 }
-document.querySelector("#top_projector").addEventListener("click", () => {
+document.querySelector("#top-projector").addEventListener("click", () => {
     projectorMode = !projectorMode
     setProjectorModeSheet()
 })
 
 function setProjectorModeSheet() {
-    document.querySelector("#top_projector").innerText = "Projector Mode: " + (projectorMode ? "Enabled" : "Disabled")
+    document.querySelector("#top-projector").innerText = "Projector Mode: " + (projectorMode ? "Enabled" : "Disabled")
     for (let stylesheet of document.styleSheets) {
         if (stylesheet.title === "projector") {
             stylesheet.disabled = !projectorMode
@@ -1798,22 +1798,22 @@ function graphElement(data, name, teams, width, height) {
     return el
 }
 
-document.querySelector("#top_show_hide_comment_names").onclick = function() {
+document.querySelector("#top-show-hide-comment-names").onclick = function() {
     showNamesInTeamComments = !showNamesInTeamComments
     if (openedTeam !== undefined) openTeam(openedTeam)
-    document.querySelector("#top_show_hide_comment_names").innerText = "Names in Comments: " + (showNamesInTeamComments ? "Shown" : "Hidden")
+    document.querySelector("#top-show-hide-comment-names").innerText = "Names in Comments: " + (showNamesInTeamComments ? "Shown" : "Hidden")
     saveGeneralSettings()
 }
 
-document.querySelector("#top_graph_x").addEventListener("click", () => {
+document.querySelector("#top-graph-x").addEventListener("click", () => {
     graphSettings.x = graphSettings.x === "relative" ? "absolute" : "relative"
 
-    document.querySelector("#top_graph_x").innerText = "X Axis: " + (graphSettings.x === "relative" ? "Relative" : "Absolute")
+    document.querySelector("#top-graph-x").innerText = "X Axis: " + (graphSettings.x === "relative" ? "Relative" : "Absolute")
 
     saveGeneralSettings()
 })
 
-document.querySelector("#top_graph_display").addEventListener("click", () => {
+document.querySelector("#top-graph-display").addEventListener("click", () => {
     if (graphSettings.points) {
         if (graphSettings.bestfit) {
             graphSettings.points = false
@@ -1826,9 +1826,9 @@ document.querySelector("#top_graph_display").addEventListener("click", () => {
     }
 
     if (graphSettings.points) {
-        if (graphSettings.bestfit) document.querySelector("#top_graph_display").innerText = "Graphs: Points & Lines"
-        else document.querySelector("#top_graph_display").innerText = "Graphs: Only Points"
-    } else document.querySelector("#top_graph_display").innerText = "Graphs: Only lines of best fit"
+        if (graphSettings.bestfit) document.querySelector("#top-graph-display").innerText = "Graphs: Points & Lines"
+        else document.querySelector("#top-graph-display").innerText = "Graphs: Only Points"
+    } else document.querySelector("#top-graph-display").innerText = "Graphs: Only lines of best fit"
 
     saveGeneralSettings()
 })
@@ -1954,9 +1954,9 @@ document.querySelector("#search-ignore").addEventListener("click", () => {
 //#region Column Changing, Keyboard Controls
 let controlPressed = false
 
-document.querySelector("#top_keyboard").onclick = function() {
+document.querySelector("#top-keyboard").onclick = function() {
     keyboardControls = !keyboardControls
-    document.querySelector("#top_keyboard").innerText = "Keyboard Controls: " + (keyboardControls ? "Enabled" : "Disabled")
+    document.querySelector("#top-keyboard").innerText = "Keyboard Controls: " + (keyboardControls ? "Enabled" : "Disabled")
     saveGeneralSettings()
 }
 document.addEventListener("keydown", (e) => {
@@ -2002,7 +2002,7 @@ document.addEventListener("keyup", (e) => {
     let key = e.key.toLowerCase()
     if (key === "control") controlPressed = false
 })
-document.querySelector("#top_column_reset").addEventListener("click", () => {
+document.querySelector("#top-column-reset").addEventListener("click", () => {
     setColumnOptions()
     columns = JSON.parse(JSON.stringify(availableColumns))
     showTeamIcons = true
@@ -2128,9 +2128,9 @@ function autoIgnore() {
     setStarbook()
 }
 
-document.querySelector("#top_show_hide_ignored").addEventListener("click", () => {
+document.querySelector("#top-show-hide-ignored").addEventListener("click", () => {
     showIgnoredTeams = !showIgnoredTeams
-    document.querySelector("#top_show_hide_ignored").innerText = "Ignored Teams: " + (showIgnoredTeams ? "Shown" : "Hidden")
+    document.querySelector("top-show-hide-ignored").innerText = "Ignored Teams: " + (showIgnoredTeams ? "Shown" : "Hidden")
     regenTable()
     saveGeneralSettings()
 })
@@ -2198,31 +2198,31 @@ function download(filename, text) {
     //document.removeChild(el)
 }
 
-document.querySelector("#top_toggle_use_allapi").addEventListener("click", () => {
+document.querySelector("#top-toggle-use-allapi").addEventListener("click", () => {
     usingTBAMedia = usingTBAMatches = usingTBA = usingDesmos = usingStatbotics = true
     setEnabledAPIS()
 })
-document.querySelector("#top_toggle_use_noneapi").addEventListener("click", () => {
+document.querySelector("#top-toggle-use-noneapi").addEventListener("click", () => {
     usingTBAMedia = usingTBAMatches = usingTBA = usingDesmos = usingStatbotics = false
     setEnabledAPIS()
 })
-document.querySelector("#top_toggle_use_tbaevent").addEventListener("click", () => {
+document.querySelector("#top-toggle-use-tbaevent").addEventListener("click", () => {
     usingTBA = !usingTBA
     setEnabledAPIS()
 })
-document.querySelector("#top_toggle_use_tbamatch").addEventListener("click", () => {
+document.querySelector("#top-toggle-use-tbamatch").addEventListener("click", () => {
     usingTBAMatches = !usingTBAMatches
     setEnabledAPIS()
 })
-document.querySelector("#top_toggle_use_tbamedia").addEventListener("click", () => {
+document.querySelector("#top-toggle-use-tbamedia").addEventListener("click", () => {
     usingTBAMedia = !usingTBAMedia
     setEnabledAPIS()
 })
-document.querySelector("#top_toggle_use_desmos").addEventListener("click", () => {
+document.querySelector("#top-toggle-use-desmos").addEventListener("click", () => {
     usingDesmos = !usingDesmos
     setEnabledAPIS()
 })
-document.querySelector("#top_toggle_use_statbotics").addEventListener("click", () => {
+document.querySelector("#top-toggle-use-statbotics").addEventListener("click", () => {
     usingStatbotics = !usingStatbotics
     setEnabledAPIS()
 })
@@ -2460,8 +2460,8 @@ function importSettings(settings) {
     window.location.reload()
 }
 
-document.querySelector("#top_export_settings").addEventListener("click", exportSettings)
-document.querySelector("#top_import_settings").addEventListener("click", () => {
+document.querySelector("#top-export-settings").addEventListener("click", exportSettings)
+document.querySelector("#top-import-settings").addEventListener("click", () => {
     loadFile(["orpheus"], (a) => {
         let data = JSON.parse(a)
         importSettings(data)
@@ -2480,7 +2480,7 @@ function closeCredits() {
     document.querySelector(".credits").classList.add("hidden")
 }
 
-document.querySelector("#top_credits").addEventListener("click", () => {
+document.querySelector("#top-credits").addEventListener("click", () => {
     document.querySelector(".team-page").classList.add("hidden")
     document.querySelector(".table.main-table").classList.add("hidden")
     document.querySelector(".table-head.main-table").classList.add("hidden")
@@ -2678,14 +2678,14 @@ function openNotes() {
     notebook.style.maxWidth = notebookContents.offsetWidth + "px"
 }
 
-document.querySelector("#top_notebook").addEventListener("click", () => {
+document.querySelector("#top-notebook").addEventListener("click", () => {
     if (notes.open) document.querySelector(".notebook").remove()
     else openNotes()
     notes.open = !notes.open
-    document.querySelector("#top_notebook").innerText = (notes.open ? "Close" : "Open") + " Notebook"
+    document.querySelector("#top-notebook").innerText = (notes.open ? "Close" : "Open") + " Notebook"
 })
 
-document.querySelector("#top_notebook_clear").addEventListener("click", () => {
+document.querySelector("#top-notebook-clear").addEventListener("click", () => {
     if (!confirm("Are you sure? This cannot be undone.")) return
     notes.activeTab = "Tab 1"
     notes.tabs = {"Tab 1": ""}
@@ -2700,11 +2700,11 @@ function saveNotes() {
     notes.open = isOpen
 }
 
-document.querySelector("#top_stars").addEventListener("click", () => {
+document.querySelector("#top-stars").addEventListener("click", () => {
     setStarbook()
     document.querySelector(".notebook-stars").classList.toggle("hidden")
     starbook.open = !starbook.open
-    document.querySelector("#top_stars").innerText = (starbook.open ? "Close" : "Open") + " team list"
+    document.querySelector("#top-stars").innerText = (starbook.open ? "Close" : "Open") + " team list"
 })
 document.querySelector(".notebook-stars").style.left = (window.innerWidth * .5) + "px"
 document.querySelector(".notebook-stars").style.top = (window.innerHeight * .2) + "px"
@@ -2807,7 +2807,7 @@ function hideRobotView() {
 
     document.querySelector(".robot-view").classList.add("hidden")
 }
-document.querySelector("#top_pictures").addEventListener("click", () => {
+document.querySelector("#top-pictures").addEventListener("click", () => {
     if (viewingRobots) hideRobotView()
     else {
         document.querySelector(".robot-view").classList.toggle("hidden")
@@ -2961,7 +2961,7 @@ if (year === null || year < 1992) {
     window.localStorage.setItem(YEAR, new Date().getFullYear().toString())
     window.location.reload()
 }
-document.querySelector("#top_year").innerText = year
+document.querySelector("#top-year").innerText = year
 
 // General Settings Setup
 if (window.localStorage.getItem(SETTINGS) === null) {
@@ -2985,11 +2985,11 @@ if (window.localStorage.getItem(SETTINGS) === null) {
 }
 let generalSettings = JSON.parse(window.localStorage.getItem(SETTINGS))
 keyboardControls = generalSettings.keyboardControls
-document.querySelector("#top_keyboard").innerText = "Keyboard Controls: " + (keyboardControls ? "Enabled" : "Disabled")
+document.querySelector("#top-keyboard").innerText = "Keyboard Controls: " + (keyboardControls ? "Enabled" : "Disabled")
 showNamesInTeamComments = generalSettings.showNamesInTeamComments
-document.querySelector("#top_show_hide_comment_names").innerText = "Names in Comments: " + (showNamesInTeamComments ? "Shown" : "Hidden")
+document.querySelector("#top-show-hide-comment-names").innerText = "Names in Comments: " + (showNamesInTeamComments ? "Shown" : "Hidden")
 showIgnoredTeams = generalSettings.showIgnoredTeams
-document.querySelector("#top_show_hide_ignored").innerText = "Ignored Teams: " + (showIgnoredTeams ? "Shown" : "Hidden")
+document.querySelector("#top-show-hide-ignored").innerText = "Ignored Teams: " + (showIgnoredTeams ? "Shown" : "Hidden")
 roundingDigits = generalSettings.rounding
 rounding = Math.pow(10, roundingDigits)
 setRoundingEl()
@@ -2998,11 +2998,11 @@ showTeamIcons = generalSettings.showTeamIcons
 maintainedTeamPageSettings = generalSettings.teamPageSettings
 
 graphSettings = generalSettings.graphSettings
-document.querySelector("#top_graph_x").innerText = "X Axis: " + (graphSettings.x === "relative" ? "Relative" : "Absolute")
+document.querySelector("#top-graph-x").innerText = "X Axis: " + (graphSettings.x === "relative" ? "Relative" : "Absolute")
 if (graphSettings.points) {
-    if (graphSettings.bestfit) document.querySelector("#top_graph_display").innerText = "Graphs: Points & Lines"
-    else document.querySelector("#top_graph_display").innerText = "Graphs: Only Points"
-} else document.querySelector("#top_graph_display").innerText = "Graphs: Only lines of best fit"
+    if (graphSettings.bestfit) document.querySelector("#top-graph-display").innerText = "Graphs: Points & Lines"
+    else document.querySelector("#top-graph-display").innerText = "Graphs: Only Points"
+} else document.querySelector("#top-graph-display").innerText = "Graphs: Only lines of best fit"
 
 // Stars and Ignore setup
 if (window.localStorage.getItem(TEAM_SAVES) === null) clearSavedTeams()
@@ -3015,13 +3015,13 @@ usingIgnore = teamSaves.usingIgnore
 // Loading saved mappings or data
 scouting_data = window.localStorage.getItem(SCOUTING_DATA)
 scouting_data = scouting_data == null ? undefined : JSON.parse(scouting_data)
-document.querySelector("#top_data_download").disabled = scouting_data === undefined
+document.querySelector("#top-data-download").disabled = scouting_data === undefined
 pit_data = window.localStorage.getItem(PIT)
 pit_data = pit_data == null ? undefined : JSON.parse(pit_data)
-document.querySelector("#top_pit_download").disabled = pit_data === undefined
+document.querySelector("#top-pit-download").disabled = pit_data === undefined
 mapping = window.localStorage.getItem(MAPPING)
 mapping = mapping == null ? undefined : JSON.parse(mapping)
-document.querySelector("#top_mapping_download").disabled = mapping === undefined
+document.querySelector("#top-mapping-download").disabled = mapping === undefined
 
 // Loading saved columns
 if (window.localStorage.getItem(COLUMNS) !== null) {
@@ -3046,28 +3046,28 @@ if (apis === null) {
 } else apis = JSON.parse(apis)
 
 usingTBA = apis.tbaevent
-document.querySelector("#top_toggle_use_tbaevent").innerText = "TBA API: " + (usingTBA ? "Enabled" : "Disabled")
+document.querySelector("#top-toggle-use-tbaevent").innerText = "TBA API: " + (usingTBA ? "Enabled" : "Disabled")
 
 usingTBAMatches = apis.tbamatch
-document.querySelector("#top_toggle_use_tbamatch").innerText = "TBA API (Matches): " + (usingTBAMatches ? "Enabled" : "Disabled")
+document.querySelector("#top-toggle-use-tbamatch").innerText = "TBA API (Matches): " + (usingTBAMatches ? "Enabled" : "Disabled")
 if (!usingTBA) {
     usingTBAMatches = false
-    document.querySelector("#top_toggle_use_tbamatch").innerText = "TBA API (Media): Disabled"
-    document.querySelector("#top_toggle_use_tbamatch").disabled = true
+    document.querySelector("#top-toggle-use-tbamatch").innerText = "TBA API (Media): Disabled"
+    document.querySelector("#top-toggle-use-tbamatch").disabled = true
 }
 
 usingTBAMedia = apis.tbamedia
-document.querySelector("#top_toggle_use_tbamedia").innerText = "TBA API (Media): " + (usingTBAMedia ? "Enabled" : "Disabled")
+document.querySelector("#top-toggle-use-tbamedia").innerText = "TBA API (Media): " + (usingTBAMedia ? "Enabled" : "Disabled")
 if (!usingTBA) {
     usingTBAMedia = false
-    document.querySelector("#top_toggle_use_tbamedia").innerText = "TBA API (Media): Disabled"
-    document.querySelector("#top_toggle_use_tbamedia").disabled = true
+    document.querySelector("#top-toggle-use-tbamedia").innerText = "TBA API (Media): Disabled"
+    document.querySelector("#top-toggle-use-tbamedia").disabled = true
 }
 showTeamIcons = showTeamIcons ? (usingTBA && usingTBAMedia) : false
 saveGeneralSettings()
 
 usingDesmos = apis.desmos
-document.querySelector("#top_toggle_use_desmos").innerText = "Desmos API: " + (usingDesmos ? "Enabled" : "Disabled")
+document.querySelector("#top-toggle-use-desmos").innerText = "Desmos API: " + (usingDesmos ? "Enabled" : "Disabled")
 if (usingDesmos) {
     let desmosScript = document.createElement("script")
     document.head.appendChild(desmosScript)
@@ -3083,7 +3083,7 @@ if (usingDesmos) {
 // TODO: if desmos is disabled then disable the graph settings options
 
 usingStatbotics = apis.statbotics
-document.querySelector("#top_toggle_use_statbotics").innerText = "Statbotics: " + (usingStatbotics ? "Enabled" : "Disabled")
+document.querySelector("#top-toggle-use-statbotics").innerText = "Statbotics: " + (usingStatbotics ? "Enabled" : "Disabled")
 
 // Notes
 if (window.localStorage.getItem(NOTES) == null) {
@@ -3100,7 +3100,7 @@ notes = JSON.parse(window.localStorage.getItem(NOTES))
 
 // View robots
 if (usingTBAMedia || (mapping["pit_scouting"] !== undefined && mapping["pit_scouting"]["image"] !== undefined)) {
-    document.querySelector("#top_pictures").disabled = false
+    document.querySelector("#top-pictures").disabled = false
 }
 
 // Welcome Checklist
@@ -3131,7 +3131,7 @@ if (!doingInitialSetup)
 setColumnOptions()
 selectedSort = columns[0]
 if (window.localStorage.getItem(EVENT) !== null)
-    document.querySelector("#top_load_event").innerText = window.localStorage.getItem(EVENT).toUpperCase()
+    document.querySelector("#top-load-event'").innerText = window.localStorage.getItem(EVENT).toUpperCase()
 if (usingTBA) {
     loading++
     checkLoading()
