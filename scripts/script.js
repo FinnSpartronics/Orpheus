@@ -38,12 +38,14 @@ let showIgnoredTeams
 let loading = 0
 
 let showTeamIcons
-const defaultColumns = ["Team_Number"]
-let columns = JSON.parse(JSON.stringify(defaultColumns))
-const defaultHiddenColumns = ["TBA", "Icon", "graphs", "matches", "statbotics"]
-let hiddenColumns = JSON.parse(JSON.stringify(defaultHiddenColumns))
+let columns = [{
+    "name": "Team_Number",
+    "display": "#"
+}]
+let availableColumns = []
+let systemColumns = ["TBA", "Icon", "graphs", "matches", "statbotics"]
 
-let selectedSort = "Team_Number"
+let selectedSort = columns[0]
 let sortDirection = 1
 
 let roundingDigits = 3
@@ -160,22 +162,6 @@ document.querySelector("#top_clear_event").onclick = function() {
 }
 function loadEvent() {
     loading++
-    if (!usingTBAMatches) {
-        if (!hiddenColumns.includes("Winrate")) hiddenColumns.push("Winrate")
-        if (columns.includes("Winrate")) columns.splice(columns.indexOf("Winrate"), 1)
-    }
-    if (!usingStatbotics) {
-        if (!hiddenColumns.includes("District Points")) hiddenColumns.push("District Points")
-        if (columns.includes("District Points")) columns.splice(columns.indexOf("District Points"), 1)
-        if (!hiddenColumns.includes("EPA")) hiddenColumns.push("EPA")
-        if (columns.includes("EPA")) columns.splice(columns.indexOf("EPA"), 1)
-        if (!hiddenColumns.includes("Auto EPA")) hiddenColumns.push("Auto EPA")
-        if (columns.includes("Auto EPA")) columns.splice(columns.indexOf("Auto EPA"), 1)
-        if (!hiddenColumns.includes("Teleop EPA")) hiddenColumns.push("Teleop EPA")
-        if (columns.includes("Teleop EPA")) columns.splice(columns.indexOf("Teleop EPA"), 1)
-        if (!hiddenColumns.includes("Endgame EPA")) hiddenColumns.push("Endgame EPA")
-        if (columns.includes("Endgame EPA")) columns.splice(columns.indexOf("Endgame EPA"), 1)
-    }
     if (usingTBA) {
         load("event/" + year + window.localStorage.getItem(EVENT) + "/teams", function (data) {
             event_data = data
@@ -260,8 +246,7 @@ document.querySelector("#top_data").onclick = function() {
             else if (type === "json") scouting_data = JSON.parse(result) // Parses json
             else return // If none of the above, then can't process data
         }
-        columns = JSON.parse(JSON.stringify(defaultColumns))
-        hiddenColumns = JSON.parse(JSON.stringify(defaultHiddenColumns))
+        setColumnOptions()
         if (mapping !== undefined) processData()
         window.localStorage.setItem(SCOUTING_DATA, JSON.stringify(scouting_data))
         document.querySelector("#top_data_download").disabled = false
@@ -278,8 +263,7 @@ document.querySelector("#top_pit").onclick = function() {
             else if (type === "json") pit_data = JSON.parse(result) // Parses json
             else return // If none of the above, then can't process data
         }
-        columns = JSON.parse(JSON.stringify(defaultColumns))
-        hiddenColumns = JSON.parse(JSON.stringify(defaultHiddenColumns))
+        setColumnOptions()
         if (mapping !== undefined) processData()
         window.localStorage.setItem(PIT, JSON.stringify(pit_data))
         document.querySelector("#top_pit_download").disabled = false
@@ -291,37 +275,60 @@ document.querySelector("#top_mapping").onclick = function() {
     loadFile(".json", (result) => {
         mapping = JSON.parse(result)
         window.localStorage.setItem(MAPPING, JSON.stringify(mapping))
-        columns = JSON.parse(JSON.stringify(defaultColumns))
-        hiddenColumns = JSON.parse(JSON.stringify(defaultHiddenColumns))
-        handleMapping()
+        setColumnOptions()
         if (scouting_data !== undefined) processData()
         autoIgnore()
         if (doingInitialSetup) window.location.reload()
     })
 }
 // Adds all the columns from the mapping to the columns list
-function handleMapping() {
-    document.querySelector("#top_mapping_download").disabled = false
-    columns = JSON.parse(JSON.stringify(defaultColumns)) // Clears columns to avoid duplicates
-    if (mapping["mapping_version"] !== 1) {
-        console.error("Mapping version " + mapping["mapping_version"] + " is not allowed. Allowed versions: 1")
-        alert("Mapping version " + mapping["mapping_version"] + " is not allowed. Allowed versions: 1")
-        return
+function setColumnOptions() {
+    availableColumns = []
+    availableColumns.push({
+        "name": "Team_Number",
+        "display": "#"
+    })
+    if (usingTBA) availableColumns.push({"name": "Name", "display": "string"})
+    if (usingTBAMatches) availableColumns.push({"name": "Winrate", "display": "%"})
+    if (usingStatbotics) {
+        availableColumns.push({"name": "District Points", "display": "#"})
+        availableColumns.push({"name": "EPA", "display": "#"})
+        availableColumns.push({"name": "Auto EPA", "display": "#"})
+        availableColumns.push({"name": "Teleop EPA", "display": "#"})
+        availableColumns.push({"name": "Endgame EPA", "display": "#"})
     }
-    for (let x in mapping["data"]) {
-        if (mapping["data"][x]["hidden"]) hiddenColumns.push(x)
-        else columns.push(x)
+
+    if (mapping !== undefined) {
+        if (mapping["data"] !== undefined)
+            for (let column of Object.keys(mapping["data"])) {
+                if (mapping["data"][column].hidden) continue
+                let display = "#"
+                if (typeof mapping["data"][column].display === "object") display = "string"
+                if (typeof mapping["data"][column].display === "string")
+                    if (mapping["data"][column].display === "%" || mapping["data"][column].display === "percent" || mapping["data"][column].display === "percentage")
+                        display = "%"
+                availableColumns.push({
+                    "name": column,
+                    display
+                })
+            }
+        if (mapping["pit_scouting"] !== undefined && mapping["pit_scouting"]["data"] !== undefined)
+            for (let column of Object.keys(mapping["pit_scouting"]["data"])) {
+                if (mapping["pit_scouting"]["data"][column].hidden) continue
+                let display = "string"
+                if (typeof mapping["pit_scouting"]["data"][column].display === "string")
+                    if (mapping["pit_scouting"]["data"][column].display === "%" || mapping["pit_scouting"]["data"][column].display === "percent" || mapping["pit_scouting"]["data"].display === "percentage")
+                        display = "%"
+                    else if (mapping["pit_scouting"]["data"][column].display === "#" || mapping["pit_scouting"]["data"][column].display === "num" || mapping["pit_scouting"]["data"][column].display === "number")
+                        display = "#"
+                availableColumns.push({
+                    "name": column,
+                    display
+                })
+            }
     }
-    for (let x in mapping["pit_scouting"]["data"]) {
-        if (mapping["pit_scouting"]["data"][x]["hidden"]) hiddenColumns.push(x)
-        else columns.push(x)
-    }
-    if (mapping["match"]["notes"] === undefined || mapping["match"]["scouter_name_key"] === undefined) { // If no notes, then cannot toggle names
-        document.querySelector("#top_show_hide_comment_names").disabled = true
-        showNamesInTeamComments = false
-    }
+
     setHeader()
-    saveColumns()
 }
 // Processes scouting_data and pit_data based on information from mapping
 function processData() {
@@ -835,7 +842,7 @@ function setHeader() {
     }
     for (let column of columns) {
         let el = document.createElement("div")
-        el.id = "select_" + column.replaceAll(/\W/g, "")
+        el.id = "select_" + column.name.replaceAll(/\W/g, "")
         el.classList.add("data")
         el.classList.add("small")
         if (column === selectedSort) {
@@ -844,7 +851,7 @@ function setHeader() {
             if (sortDirection === -1) el.classList.add("bottom")
         }
         el.addEventListener("click", () => changeSort(column))
-        el.innerText = column.replaceAll("_", " ")
+        el.innerText = column.name.replaceAll("_", " ")
         el.setAttribute("data-context", "column")
         el.setAttribute("data-context-index", columns.indexOf(column))
         header.appendChild(el)
@@ -903,26 +910,13 @@ function element(team) {
     for (let column of columns) {
         let columnEl = document.createElement("div")
         columnEl.className = "data"
-        // If undefined, leave empty. Else, display the data. If data is a float, round it. Else, leave as is.
-        columnEl.innerText = team_data[team][column] === undefined ? "" : (isNaN(parseFloat(team_data[team][column])) ? team_data[team][column] : Math.round(rounding * parseFloat(team_data[team][column])) / rounding)
-        if (mapping !== undefined && mapping["data"][column] !== undefined) {
-            if (mapping["data"][column]["display"] !== undefined) {
-                if (mapping["data"][column]["display"] === "percentage" || mapping["data"][column]["display"] === "percent" || mapping["data"][column]["display"] === "%")
-                    if (isNaN((100 * Math.round(rounding * parseFloat(team_data[team][column])) / rounding))) columnEl.innerText = "-"
-                    else columnEl.innerText = (100 * Math.round(rounding * parseFloat(team_data[team][column])) / rounding) + "%"
-            }
+        let value = team_data[team][column.name]
+        if (column.display === "#") value = Math.round(parseFloat(value) * rounding) / rounding
+        if (column.display === "%") value = (100 * Math.round(parseFloat(value) * rounding) / rounding) + "%"
+        if (isNaN(team_data[team][column.name]) && (column.display === "%" || column.display === "#")) {
+            value = "-"
         }
-        if (mapping !== undefined && mapping["pit_scouting"]["data"][column] !== undefined) {
-            if (mapping["pit_scouting"]["data"][column]["display"] !== undefined) {
-                if (mapping["pit_scouting"]["data"][column]["display"] === "percentage" || mapping["pit_scouting"]["data"][column]["display"] === "percent" || mapping["pit_scouting"]["data"][column]["display"] === "%")
-                    if (isNaN((100 * Math.round(rounding * parseFloat(team_data[team][column])) / rounding))) columnEl.innerText = "-"
-                    else columnEl.innerText = (100 * Math.round(rounding * parseFloat(team_data[team][column])) / rounding) + "%"
-            }
-        }
-        if (column === "Winrate") columnEl.innerText = (100 * Math.round(rounding * parseFloat(team_data[team][column])) / rounding) + "%"
-        if (isNaN(team_data[team][column]) && typeof team_data[team][column] === "number") {
-            columnEl.innerText = "-"
-        }
+        columnEl.innerText = value
         columnEl.style.fontSize = "1.2rem"
         el.appendChild(columnEl)
     }
@@ -1026,6 +1020,7 @@ let pitDataExpanded = true
 
 function openTeam(team, comparisons, hiddenCompares) {
     hideRobotView()
+    viewingRobots = false
     // Hiding table and showing team page element
     document.querySelector(".table.main-table").classList.add("hidden")
     document.querySelector(".table.main-table").innerText = ""
@@ -1959,134 +1954,6 @@ document.querySelector("#search-ignore").addEventListener("click", () => {
 //#region Column Changing, Keyboard Controls
 let controlPressed = false
 
-function getColumns() {
-    let validColumns = []
-    for (let team in team_data)
-        for (let col of Object.keys(team_data[team]))
-            if (!hiddenColumns.includes(col) && !validColumns.includes(col)) validColumns.push(col)
-    return validColumns
-}
-let columnEditButton = document.querySelector("#top_columns")
-columnEditButton.onclick = function() {
-    document.querySelector(".edit-columns").show()
-    setColumnEditPanel()
-}
-function setColumnEditPanel() {
-    let columnEditPanel = document.querySelector(".edit-columns")
-    columnEditPanel.style.top = columnEditButton.getBoundingClientRect().bottom + "px"
-    columnEditPanel.style.left = columnEditButton.getBoundingClientRect().left + "px"
-    columnEditPanel.innerHTML = ""
-
-    let button = document.createElement("button")
-    button.innerText = "Close"
-    button.addEventListener("click", () => columnEditPanel.close())
-    columnEditPanel.appendChild(button)
-    columnEditPanel.appendChild(document.createElement("margin"))
-
-    if (usingTBA && usingTBAMedia) {
-        let iconCheckbox = document.createElement("input")
-        iconCheckbox.type = "checkbox"
-        iconCheckbox.id = "checkbox_enableIcons"
-        iconCheckbox.checked = showTeamIcons
-        iconCheckbox.addEventListener("change", () => {
-            showTeamIcons = iconCheckbox.checked
-            saveGeneralSettings()
-            setHeader()
-        })
-        let iconCheckboxLabel = document.createElement("label")
-        iconCheckboxLabel.innerText = "Team Icons"
-        iconCheckboxLabel.setAttribute("for", iconCheckbox.id)
-
-        let icon = document.createElement("div")
-        icon.appendChild(iconCheckbox)
-        icon.appendChild(iconCheckboxLabel)
-        columnEditPanel.appendChild(icon)
-        columnEditPanel.appendChild(document.createElement("margin"))
-    }
-
-    let list = document.createElement("div")
-    list.class = "list"
-    for (let col of getColumns()) {
-        let order = document.createElement("input")
-        order.type = "number"
-        order.id = "order_"+col.replaceAll(".","")
-        order.disabled = columns.includes(col) ? "" : "true"
-        order.addEventListener("change", () => {
-            order.value = ""+(columns.indexOf(col)+(columns.indexOf(col)-parseInt(order.value)))
-            changeColumnOrder(col)
-        })
-        order.value = "" + (columns.includes(col) ? (columns.indexOf(col)) : "-1")
-
-        let checkbox = document.createElement("input")
-        checkbox.type = "checkbox"
-        checkbox.id = "checkbox_"+col.replaceAll(".","")
-        checkbox.checked = columns.includes(col) ? "true" : ""
-        checkbox.addEventListener("change", () => toggleColumn(col))
-
-        let label = document.createElement("label")
-        label.setAttribute("for", checkbox.id)
-        label.innerText = col.replaceAll("_", " ")
-
-        let el = document.createElement("div")
-        el.classList.add("columnEditItem")
-        el.appendChild(order)
-        el.appendChild(checkbox)
-        el.appendChild(label)
-        el.style.order = order.value === "-1" ? "1000" : order.value
-        list.appendChild(el)
-    }
-    columnEditPanel.appendChild(list)
-
-    columnEditPanel.appendChild(document.createElement("margin"))
-
-    let selectAllButton = document.createElement("button")
-    selectAllButton.innerText = "Select All"
-    selectAllButton.addEventListener("click", () => {
-        columns = getColumns()
-        setColumnEditPanel()
-        setHeader()
-    })
-    columnEditPanel.appendChild(selectAllButton)
-
-    let deselectAllButton = document.createElement("button")
-    deselectAllButton.innerText = "Deselect All"
-    deselectAllButton.addEventListener("click", () => {
-        columns = []
-        setColumnEditPanel()
-        setHeader()
-    })
-    columnEditPanel.appendChild(deselectAllButton)
-    saveColumns()
-}
-function toggleColumn(col) {
-    if (columns.includes(col))
-        columns.splice(columns.indexOf(col),1)
-    else columns.push(col)
-    setHeader()
-    setColumnEditPanel()
-    saveColumns()
-}
-function setColumnVisibility(index, to) {
-    if (to) columns.push(index)
-    else columns.splice(index, 1)
-    setHeader()
-    setColumnEditPanel()
-}
-function changeColumnOrder(col) {
-    let current = columns.indexOf(col)
-    let target = (Math.max(Math.min((parseInt(document.querySelector("#order_"+col.replaceAll(".","")).value)), columns.length-1), 0))
-    let direction = Math.sign(target-current)
-    while (columns.indexOf(col) !== target) {
-        let i = columns.indexOf(col)
-        columns[i] = columns[i+direction] + ""
-        columns[i+direction] = col + ""
-    }
-
-    setHeader()
-    setColumnEditPanel()
-    saveColumns()
-}
-
 document.querySelector("#top_keyboard").onclick = function() {
     keyboardControls = !keyboardControls
     document.querySelector("#top_keyboard").innerText = "Keyboard Controls: " + (keyboardControls ? "Enabled" : "Disabled")
@@ -2128,7 +1995,6 @@ document.addEventListener("keydown", (e) => {
     }
     setHeader()
     regenTable()
-    setColumnEditPanel()
     saveColumns()
 })
 document.addEventListener("keyup", (e) => {
@@ -2137,9 +2003,11 @@ document.addEventListener("keyup", (e) => {
     if (key === "control") controlPressed = false
 })
 document.querySelector("#top_column_reset").addEventListener("click", () => {
-    handleMapping()
+    setColumnOptions()
+    columns = JSON.parse(JSON.stringify(availableColumns))
     showTeamIcons = true
     saveGeneralSettings()
+    setHeader()
 })
 //#endregion
 
@@ -2147,14 +2015,14 @@ document.querySelector("#top_column_reset").addEventListener("click", () => {
 function sort(team) {
     let starOffset = ((starred.includes(team) && usingStar) ? -Math.pow(10,9) : 0)
     let ignoreOffset = ((ignored.includes(team) && usingIgnore) ? Math.pow(10,9) : 0)
-    if (typeof team_data[Object.keys(team_data)[0]][selectedSort] == "string") {
+    if (selectedSort.display === "string") {
         let arr = []
         for (let i of Object.keys(team_data)) {
             arr.push(i)
         }
         arr.sort(function(a, b) {
-            if (team_data[a][selectedSort].toString().toLowerCase() < team_data[b][selectedSort].toString().toLowerCase()) return -1
-            if (team_data[a][selectedSort].toString().toLowerCase() > team_data[b][selectedSort].toString().toLowerCase()) return 1
+            if (team_data[a][selectedSort.name].toString().toLowerCase() < team_data[b][selectedSort.name].toString().toLowerCase()) return -1
+            if (team_data[a][selectedSort.name].toString().toLowerCase() > team_data[b][selectedSort.name].toString().toLowerCase()) return 1
             return 0
         })
 
@@ -2168,10 +2036,10 @@ function sort(team) {
             arr.push(i)
         }
         arr.sort(function(a, b) {
-            if (isNaN(team_data[a][selectedSort]) && isNaN(team_data[b][selectedSort])) return 0
-            if (isNaN(team_data[a][selectedSort])) return -1
-            if (isNaN(team_data[b][selectedSort])) return 1
-            return team_data[a][selectedSort] - team_data[b][selectedSort]
+            if (isNaN(team_data[a][selectedSort.name]) && isNaN(team_data[b][selectedSort.name])) return 0
+            if (isNaN(team_data[a][selectedSort.name])) return -1
+            if (isNaN(team_data[b][selectedSort.name])) return 1
+            return team_data[a][selectedSort.name] - team_data[b][selectedSort.name]
         })
 
         let index = arr.indexOf(team)
@@ -2191,9 +2059,9 @@ function changeSort(to) {
     for (let el of document.getElementsByClassName("top")) el.classList.remove("top")
     for (let el of document.getElementsByClassName("bottom")) el.classList.remove("bottom")
 
-    document.querySelector("#select_" + to.replaceAll(/\W/g,"")).classList.add("highlighted")
-    if (sortDirection === 1) document.querySelector("#select_" + to.replaceAll(/\W/g,"")).classList.add("top")
-    if (sortDirection === -1) document.querySelector("#select_" + to.replaceAll(/\W/g,"")).classList.add("bottom")
+    document.querySelector("#select_" + to.name.replaceAll(/\W/g,"")).classList.add("highlighted")
+    if (sortDirection === 1) document.querySelector("#select_" + to.name.replaceAll(/\W/g,"")).classList.add("top")
+    if (sortDirection === -1) document.querySelector("#select_" + to.name.replaceAll(/\W/g,"")).classList.add("bottom")
 
     regenTable()
 }
@@ -2381,9 +2249,7 @@ document.addEventListener("contextmenu", (e) => {
         controlPressed = false // Opening context menu means the keyup event never happens so this fixes that
         return
     }
-    else {
-        e.preventDefault()
-    }
+    else e.preventDefault()
 
     contextMenu.style.left = e.pageX + "px"
     contextMenu.style.top = e.pageY + "px"
@@ -2398,7 +2264,11 @@ document.addEventListener("contextmenu", (e) => {
         let option = document.createElement("button")
         option.className = "context-option"
         option.innerText = name
-        option.addEventListener("click", action)
+        option.addEventListener("click", () => {
+            action()
+            saveColumns()
+            setHeader()
+        })
         options.appendChild(option)
     }
 
@@ -2448,36 +2318,29 @@ document.addEventListener("contextmenu", (e) => {
         optionEl("Hide icons", () => {
             showTeamIcons = false
             saveGeneralSettings()
-            setHeader()
         })
     }
     if (context === "column") {
         let column = parseInt(e.target.getAttribute("data-context-index"))
         optionEl("Hide column", () => {
-            setColumnVisibility(column, false)
+            columns.splice(column, 1)
         })
         if (column !== 0)
             optionEl("<- Move left", () => {
                 let c = columns[column - 1]
                 columns[column - 1] = columns[column]
                 columns[column] = c
-                setHeader()
-                setColumnEditPanel()
             })
         if (column !== columns.length - 1)
             optionEl("Move right ->", () => {
                 let c = columns[column + 1]
                 columns[column + 1] = columns[column]
                 columns[column] = c
-                setHeader()
-                setColumnEditPanel()
             })
     }
-    if (context === null) {
+    if (context === null && tableMode !== "team") {
         contextMenu.setAttribute("empty", "empty")
     }
-
-    saveColumns()
 })
 
 document.addEventListener("click", closeContextMenu)
@@ -2518,10 +2381,7 @@ function clearSavedTeams() {
     }))
 }
 function saveColumns() {
-    window.localStorage.setItem(COLUMNS, JSON.stringify({
-        "columns": columns,
-        "hidden": hiddenColumns
-    }))
+    window.localStorage.setItem(COLUMNS, JSON.stringify(columns))
 }
 
 function exportSettings() {
@@ -2543,10 +2403,7 @@ function exportSettings() {
             "usingStar": usingStar,
             "usingIgnore": usingIgnore
         },
-        columns: {
-            "columns": columns,
-            "hidden": hiddenColumns
-        },
+        columns: columns,
         mapping: mapping,
         scouting_data: scouting_data,
         year: year,
@@ -2579,8 +2436,7 @@ function importSettings(settings) {
     ignored = settings.team.ignored
     usingStar = settings.team.usingStar
     usingIgnore = settings.team.usingIgnore
-    columns = settings.columns.columns
-    hiddenColumns = settings.columns.hidden
+    columns = settings.columns
     saveColumns()
     saveGeneralSettings()
     saveTeams()
@@ -2941,7 +2797,6 @@ function setStarbook() {
 
 let viewingRobots = false
 function hideRobotView() {
-    viewingRobots = false
     document.querySelector(".sticky-header").classList.remove("hidden")
     if (tableMode === "team")
         document.querySelector(".team-page").classList.remove("hidden")
@@ -3170,12 +3025,9 @@ document.querySelector("#top_mapping_download").disabled = mapping === undefined
 
 // Loading saved columns
 if (window.localStorage.getItem(COLUMNS) !== null) {
-    let columnData = JSON.parse(window.localStorage.getItem(COLUMNS))
-    columns = columnData.columns
-    hiddenColumns = columnData.hidden
+    columns = JSON.parse(window.localStorage.getItem(COLUMNS))
 }
 
-setHeader()
 updateTheme()
 document.querySelector("#projector-styles").removeAttribute("disabled")
 setProjectorModeSheet()
@@ -3195,9 +3047,6 @@ if (apis === null) {
 
 usingTBA = apis.tbaevent
 document.querySelector("#top_toggle_use_tbaevent").innerText = "TBA API: " + (usingTBA ? "Enabled" : "Disabled")
-if (usingTBA) {
-    defaultColumns.push("Name")
-}
 
 usingTBAMatches = apis.tbamatch
 document.querySelector("#top_toggle_use_tbamatch").innerText = "TBA API (Matches): " + (usingTBAMatches ? "Enabled" : "Disabled")
@@ -3205,9 +3054,6 @@ if (!usingTBA) {
     usingTBAMatches = false
     document.querySelector("#top_toggle_use_tbamatch").innerText = "TBA API (Media): Disabled"
     document.querySelector("#top_toggle_use_tbamatch").disabled = true
-}
-if (usingTBAMatches) {
-    defaultColumns.push("Winrate")
 }
 
 usingTBAMedia = apis.tbamedia
@@ -3238,13 +3084,6 @@ if (usingDesmos) {
 
 usingStatbotics = apis.statbotics
 document.querySelector("#top_toggle_use_statbotics").innerText = "Statbotics: " + (usingStatbotics ? "Enabled" : "Disabled")
-if (usingStatbotics) {
-    defaultColumns.push("District Points")
-    defaultColumns.push("EPA")
-    defaultColumns.push("Auto EPA")
-    defaultColumns.push("Teleop EPA")
-    defaultColumns.push("Endgame EPA")
-}
 
 // Notes
 if (window.localStorage.getItem(NOTES) == null) {
@@ -3289,6 +3128,8 @@ if (!doingInitialSetup)
     document.querySelector(".welcome").remove()
 
 // Final Prep
+setColumnOptions()
+selectedSort = columns[0]
 if (window.localStorage.getItem(EVENT) !== null)
     document.querySelector("#top_load_event").innerText = window.localStorage.getItem(EVENT).toUpperCase()
 if (usingTBA) {

@@ -76,7 +76,6 @@ div.icon {
     max-width: 3.5rem;
     background-color: transparent;
     border: 1px solid transparent;
-    margin: 0 7px 0 0;
 }
 
 button.icon-holder {
@@ -154,4 +153,8 @@ h1 {
 .star-ignore-holder {
     display: flex;
     flex-direction: column;
+}
+
+.table-edit-message {
+    font-size: 3rem;
 }
