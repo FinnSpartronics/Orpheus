@@ -976,7 +976,7 @@ function regenTable() {
             el.className = "row divider"
             el.style.order = Math.pow(10,8)
 
-            el.style.width = document.querySelector(".row:not(.table-head)").scrollWidth + "px"
+            el.style.width = (document.querySelector(".row:not(.table-head)").scrollWidth - 4) + "px"
 
             if (tableMode === "team") document.querySelector(".table.team-table").appendChild(el)
             else document.querySelector(".table.main-table").appendChild(el)
@@ -988,7 +988,7 @@ function regenTable() {
         el.className = "row divider"
         el.style.order = -Math.pow(10,8)
 
-        el.style.width = document.querySelector(".row:not(.table-head)").scrollWidth + "px"
+        el.style.width = (document.querySelector(".row:not(.table-head)").scrollWidth - 4) + "px"
 
         if (tableMode === "team") document.querySelector(".table.team-table").appendChild(el)
         else document.querySelector(".table.main-table").appendChild(el)
