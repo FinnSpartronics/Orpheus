@@ -32,11 +32,10 @@
     height: 4rem;
     align-items: center;
     width: 100%;
-    border-bottom: 1px solid var(--line);
 }
 .row.b {
-    border-top: 1px solid var(--line);
     border-bottom: 1px solid var(--line);
+    border-top: 1px solid var(--line);
 }
 .row.selected-row {
     background: var(--highlight)
@@ -44,10 +43,18 @@
 .row-controls {
     display: flex;
     flex-direction: column;
+    border-radius: 0;
+    border-bottom: 1px solid var(--line);
+    height: 100%;
+    justify-content: center;
+    align-items: center;
+    box-sizing: border-box;
 }
 .row.ignoredlist {
     justify-content: center;
     gap: 1rem;
+    position: sticky;
+    left: 0;
 }
 .row.divider {
     height: 0;
@@ -72,6 +79,16 @@ div.icon {
     margin: 0 7px 0 0;
 }
 
+button.icon-holder {
+    border-radius: 0;
+    border-bottom: 1px solid var(--line);
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 0;
+}
+
 .data {
     font-weight: 900;
     font-style: normal;
@@ -82,7 +99,6 @@ div.icon {
     justify-content: center;
     align-items: center;
     height: 4rem;
-    border-radius: 8px;
 
     text-align: center;
 
@@ -95,10 +111,15 @@ div.icon {
 
     user-select: none;
     box-sizing: border-box;
+
+    border-radius: 0;
+    border-bottom: 1px solid var(--line);
 }
 .data.small {
     font-size: .8rem;
     font-weight: 700;
+    border: 0;
+    border-radius: 8px;
 }
 .data.highlighted {
     background: var(--highlight);
