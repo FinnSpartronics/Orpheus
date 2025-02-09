@@ -1021,6 +1021,7 @@ let commentsExpanded = true
 let pitDataExpanded = true
 
 function openTeam(team, comparisons, hiddenCompares) {
+    hideRobotView()
     // Hiding table and showing team page element
     document.querySelector(".table.main-table").classList.add("hidden")
     document.querySelector(".table.main-table").innerText = ""
@@ -2935,18 +2936,21 @@ function setStarbook() {
 }
 
 let viewingRobots = false
-document.querySelector("#top_pictures").addEventListener("click", () => {
-    if (viewingRobots) {
-        document.querySelector(".sticky-header").classList.remove("hidden")
-        if (tableMode === "team")
-            document.querySelector(".team-page").classList.remove("hidden")
-        else {
-            document.querySelector(".table.main-table").classList.remove("hidden")
-            document.querySelector(".table-head.main-table").classList.remove("hidden")
-        }
+function hideRobotView() {
+    viewingRobots = false
+    document.querySelector(".sticky-header").classList.remove("hidden")
+    if (tableMode === "team")
+        document.querySelector(".team-page").classList.remove("hidden")
+    else {
+        document.querySelector(".table.main-table").classList.remove("hidden")
+        document.querySelector(".table-head.main-table").classList.remove("hidden")
+    }
 
-        document.querySelector(".robot-view").classList.add("hidden")
-    } else {
+    document.querySelector(".robot-view").classList.add("hidden")
+}
+document.querySelector("#top_pictures").addEventListener("click", () => {
+    if (viewingRobots) hideRobotView()
+    else {
         document.querySelector(".robot-view").classList.toggle("hidden")
 
         document.querySelector(".team-page").classList.add("hidden")
@@ -2980,10 +2984,31 @@ document.querySelector("#top_pictures").addEventListener("click", () => {
             })
             teamEl.appendChild(image)
 
+            let teamDetails = document.createElement("div")
+            teamDetails.className = "robot-view-details"
+
+            let teamNameNumber = document.createElement("div")
+            teamNameNumber.className = "robot-view-name-number"
+            teamDetails.appendChild(teamNameNumber)
+
+            let teamNumber = document.createElement("div")
+            teamNumber.className = "robot-view-number"
+            teamNumber.innerText = team
+            teamNameNumber.appendChild(teamNumber)
+
+            let teamName = document.createElement("div")
+            teamName.className = "robot-view-name"
+            teamName.innerText = team_data[team].Name
+            teamNameNumber.appendChild(teamName)
+
+            teamEl.appendChild(teamDetails)
+
             let teamControls = document.createElement("div")
             teamControls.className = "robot-view-controls"
-            teamControls.innerText = team + " " + team_data[team].Name
-            teamEl.appendChild(teamControls)
+
+            let teamMainControls = document.createElement("div")
+            teamMainControls.className = "robot-view-control-section"
+            teamControls.appendChild(teamMainControls)
 
             let starEl = document.createElement("span")
             starEl.className = "material-symbols-outlined ar star"
@@ -2993,7 +3018,7 @@ document.querySelector("#top_pictures").addEventListener("click", () => {
                 starEl.classList.toggle("filled")
             }
             starEl.innerText = "star"
-            teamControls.appendChild(starEl)
+            teamMainControls.appendChild(starEl)
 
             let ignoreEl = document.createElement("span")
             ignoreEl.className = "material-symbols-outlined ar ignore"
@@ -3003,11 +3028,46 @@ document.querySelector("#top_pictures").addEventListener("click", () => {
                 ignoreEl.classList.toggle("filled")
             }
             ignoreEl.innerText = "block"
-            teamControls.appendChild(ignoreEl)
+            teamMainControls.appendChild(ignoreEl)
+
+            teamDetails.appendChild(teamControls)
 
             // Swap image
             let imageIndex = 0
-            setImage()
+
+            let leftButton = document.createElement("span")
+            leftButton.innerText = "arrow_back"
+            leftButton.className = "material-symbols-outlined"
+            leftButton.addEventListener("click", () => {
+                imageIndex--
+                setImage(-1)
+            })
+
+            let carouselProgress = document.createElement("span")
+
+            let rightButton = document.createElement("span")
+            rightButton.innerText = "arrow_forward"
+            rightButton.className = "material-symbols-outlined"
+            rightButton.addEventListener("click", () => {
+                imageIndex++
+                setImage(1)
+            })
+
+            let imageLength = 0
+            for (let image of images)
+                if (typeof image === "object") {
+                    if (image.type === "image") imageLength++
+                } else imageLength++
+
+            if (imageLength > 1) {
+                let imageCarouselControls = document.createElement("div")
+                imageCarouselControls.className = "robot-view-control-section"
+
+                imageCarouselControls.appendChild(leftButton)
+                imageCarouselControls.appendChild(carouselProgress)
+                imageCarouselControls.appendChild(rightButton)
+                teamControls.appendChild(imageCarouselControls)
+            }
 
             function setImage(direction) {
                 if (imageIndex < 0) imageIndex += images.length
@@ -3022,26 +3082,10 @@ document.querySelector("#top_pictures").addEventListener("click", () => {
                         setImage(direction)
                     }
                 } else image.src = images[imageIndex]
-            }
 
-            let leftButton = document.createElement("span")
-            leftButton.innerText = "arrow_back"
-            let rightButton = document.createElement("span")
-            rightButton.innerText = "arrow_forward"
-            leftButton.className = rightButton.className = "material-symbols-outlined"
-            leftButton.addEventListener("click", () => {
-                imageIndex--
-                setImage(-1)
-            })
-            rightButton.addEventListener("click", () => {
-                imageIndex++
-                setImage(1)
-            })
-            if (images.length > 1) {
-                teamControls.appendChild(leftButton)
-                teamControls.appendChild(rightButton)
+                carouselProgress.innerText = (imageIndex+1) + "/" + imageLength
             }
-
+            setImage()
 
             robotView.appendChild(teamEl)
         }
