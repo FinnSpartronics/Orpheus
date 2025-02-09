@@ -724,6 +724,33 @@ document.querySelector("#top_rounding").onclick = function() {
 function setRoundingEl() {
     document.querySelector("#top_rounding").innerText = "Rounding: " + (roundingDigits === 0 ? "Integer" : (roundingDigits === 16 ? "Float" : roundingDigits + " digits"))
 }
+
+function getPitScoutingImages(team) {
+    let pitImages = []
+    if (mapping["pit_scouting"] !== undefined && mapping["pit_scouting"]["image"] !== undefined && pit_data !== undefined) {
+        for (let x of pit_data) {
+            let teamNum = x[mapping["pit_scouting"]["team"]["key"]]
+            if (mapping["pit_scouting"]["format"] === "frc#") teamNum = teamNum.splice(0, 3)
+            if (mapping["pit_scouting"]["format"] === "name") {
+                for (let teamKey of Object.keys(team_data)) {
+                    if (team_data[teamKey].Name.trim().toLowerCase() === teamNum.trim().toLowerCase()) teamNum = teamKey
+                }
+            }
+            if (teamNum != team) continue
+
+            if (typeof mapping["pit_scouting"]["image"] === "object") {
+                for (let key of mapping["pit_scouting"]["image"])
+                    if (x[key] !== undefined && x[key] !== null)
+                        pitImages.push(x[key])
+            }
+            else if (x[mapping["pit_scouting"]["image"]])
+                if (x[mapping["pit_scouting"]["image"]] !== undefined && x[mapping["pit_scouting"]["image"]] !== null)
+                    pitImages.push(x[mapping["pit_scouting"]["image"]])
+        }
+    }
+    return pitImages
+}
+
 //#endregion
 
 //#region Theme, Projector Mode
@@ -1058,25 +1085,7 @@ function openTeam(team, comparisons, hiddenCompares) {
     teamName.title = data.Name
     teamDescription.appendChild(teamName)
 
-    let pitImages = []
-    if (mapping["pit_scouting"] !== undefined && mapping["pit_scouting"]["image"] !== undefined && pit_data !== undefined) {
-        for (let x of pit_data) {
-            let teamNum = x[mapping["pit_scouting"]["team"]["key"]]
-            if (mapping["pit_scouting"]["format"] === "frc#") teamNum = teamNum.splice(0, 3)
-            if (mapping["pit_scouting"]["format"] === "name") {
-                for (let teamKey of Object.keys(team_data)) {
-                    if (team_data[teamKey].Name.trim().toLowerCase() === teamNum.trim().toLowerCase()) teamNum = teamKey
-                }
-            }
-            if (teamNum != team) continue
-
-            if (typeof mapping["pit_scouting"]["image"] === "object") {
-                for (let key of mapping["pit_scouting"]["image"])
-                    pitImages.push(x[key])
-            }
-            else if (x[mapping["pit_scouting"]["image"]]) pitImages.push(x[mapping["pit_scouting"]["image"]])
-        }
-    }
+    let pitImages = getPitScoutingImages(team)
 
     let imageButton = document.createElement("button")
     imageButton.innerText = "View Media"
@@ -1599,7 +1608,6 @@ function generateTeamMatches(data, team, teamsWith) {
         }
         teamsWith = actualTeamsWith
     }
-    console.log(teamsWith)
 
     if (usingTBA && usingTBAMatches) {
         let upcoming = false
@@ -2624,7 +2632,7 @@ document.querySelector("#close-credits").addEventListener("click", closeCredits)
 
 //#endregion
 
-//#region Notes, Teamlist
+//#region Notes, Teamlist, View Robots
 
 let notes
 let starbook = {
@@ -2926,6 +2934,120 @@ function setStarbook() {
     })
 }
 
+let viewingRobots = false
+document.querySelector("#top_pictures").addEventListener("click", () => {
+    if (viewingRobots) {
+        document.querySelector(".sticky-header").classList.remove("hidden")
+        if (tableMode === "team")
+            document.querySelector(".team-page").classList.remove("hidden")
+        else {
+            document.querySelector(".table.main-table").classList.remove("hidden")
+            document.querySelector(".table-head.main-table").classList.remove("hidden")
+        }
+
+        document.querySelector(".robot-view").classList.add("hidden")
+    } else {
+        document.querySelector(".robot-view").classList.toggle("hidden")
+
+        document.querySelector(".team-page").classList.add("hidden")
+        document.querySelector(".table.main-table").classList.add("hidden")
+        document.querySelector(".table-head.main-table").classList.add("hidden")
+
+        document.querySelector(".robot-view").classList.remove("hidden")
+    }
+    viewingRobots = !viewingRobots
+
+    if (viewingRobots) {
+        let robotView = document.querySelector(".robot-view")
+        robotView.innerHTML = ""
+
+        for (let team of Object.keys(team_data)) {
+            let teamEl = document.createElement("div")
+            teamEl.className = "robot-view-team"
+
+            let images = [...getPitScoutingImages(team), ...team_data[team].TBA.images]
+            if (images.length === 0) continue
+
+            let doneFirstLoad = false
+
+            let image = document.createElement("img")
+            image.className = "robot-view-image"
+            image.src = images[0]
+            image.addEventListener("load", () => {
+                if (!doneFirstLoad)
+                    if (image.width > image.height) teamEl.style.order = "1"
+                doneFirstLoad = true
+            })
+            teamEl.appendChild(image)
+
+            let teamControls = document.createElement("div")
+            teamControls.className = "robot-view-controls"
+            teamControls.innerText = team + " " + team_data[team].Name
+            teamEl.appendChild(teamControls)
+
+            let starEl = document.createElement("span")
+            starEl.className = "material-symbols-outlined ar star"
+            if (starred.includes(team)) starEl.classList.add("filled")
+            starEl.onclick = () => {
+                star(team)
+                starEl.classList.toggle("filled")
+            }
+            starEl.innerText = "star"
+            teamControls.appendChild(starEl)
+
+            let ignoreEl = document.createElement("span")
+            ignoreEl.className = "material-symbols-outlined ar ignore"
+            if (ignored.includes(team)) ignoreEl.classList.add("filled")
+            ignoreEl.onclick = () => {
+                ignore(team)
+                ignoreEl.classList.toggle("filled")
+            }
+            ignoreEl.innerText = "block"
+            teamControls.appendChild(ignoreEl)
+
+            // Swap image
+            let imageIndex = 0
+            setImage()
+
+            function setImage(direction) {
+                if (imageIndex < 0) imageIndex += images.length
+                imageIndex = (imageIndex) % images.length
+
+                if (typeof images[imageIndex] === "object") {
+                    if (images[imageIndex].type === "image") {
+                        image.src = images[imageIndex].src
+                    }
+                    if (images[imageIndex].type === "youtube") {
+                        imageIndex += direction
+                        setImage(direction)
+                    }
+                } else image.src = images[imageIndex]
+            }
+
+            let leftButton = document.createElement("span")
+            leftButton.innerText = "arrow_back"
+            let rightButton = document.createElement("span")
+            rightButton.innerText = "arrow_forward"
+            leftButton.className = rightButton.className = "material-symbols-outlined"
+            leftButton.addEventListener("click", () => {
+                imageIndex--
+                setImage(-1)
+            })
+            rightButton.addEventListener("click", () => {
+                imageIndex++
+                setImage(1)
+            })
+            if (images.length > 1) {
+                teamControls.appendChild(leftButton)
+                teamControls.appendChild(rightButton)
+            }
+
+
+            robotView.appendChild(teamEl)
+        }
+    }
+})
+
 //#endregion
 
 //#region Init
@@ -3088,6 +3210,11 @@ if (window.localStorage.getItem(NOTES) == null) {
     saveNotes()
 }
 notes = JSON.parse(window.localStorage.getItem(NOTES))
+
+// View robots
+if (usingTBAMedia || (mapping["pit_scouting"] !== undefined && mapping["pit_scouting"]["image"] !== undefined)) {
+    document.querySelector("#top_pictures").disabled = false
+}
 
 // Welcome Checklist
 doingInitialSetup = false
