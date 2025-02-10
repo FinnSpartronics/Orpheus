@@ -1261,12 +1261,14 @@ function openTeam(team, comparisons, hiddenCompares) {
     let addComparisonBtn = document.createElement("button")
     addComparisonBtn.innerText = "Add Team"
     addComparisonBtn.addEventListener("click", () => {
+        console.clear()
         if (usingDesmos && comparisons.length >= desmosColors.length - 1) {
             alert("Cannot have more than " + (desmosColors.length - 1) + " teams in comparison. Sorry!")
             return
         }
-        let x = prompt("Enter a team number to add to comparison").trim()
+        let x = prompt("Search for a team").trim()
         if (x === null) return
+        x = search(x).result
         if (comparisons.includes(x) || x === team) return
         if (team_data[x] !== undefined) {
             comparisons.push(x)
