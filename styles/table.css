@@ -154,3 +154,43 @@ h1 {
     display: flex;
     flex-direction: column;
 }
+
+.edit-columns {
+    position: fixed;
+    z-index: 10000000;
+    padding: 8px;
+    border: 2px solid var(--font);
+    border-radius: 6px;
+    background-color: var(--bg);
+    width: 60%;
+    min-height: 300px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+.edit-columns-list {
+    display: flex;
+    flex-wrap: wrap;
+    min-height: 40px;
+    border: 1px solid var(--line);
+    padding: 4px;
+    border-radius: 4px;
+    gap: 4px;
+}
+.edit-column {
+    padding: 4px;
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    cursor: grab;
+    user-select: none;
+    background-color: var(--bg);
+    height: min-content;
+}
+.edit-column.dragging {
+    cursor: grabbing;
+    opacity: 50%;
+}
+.edit-column-buttons {
+    display: flex;
+    gap: 4px;
+}

@@ -129,7 +129,7 @@ document.querySelector("#top-setapi").onclick = function() {
         window.location.reload()
     }
 }
-document.querySelector("#top-load-event'").onclick = function() {
+document.querySelector("#top-load-event").onclick = function() {
     let x = prompt("What event code do you want?")
     if (x === "get") alert(window.localStorage.getItem(EVENT))
     else if (x === "clear") {
@@ -327,6 +327,17 @@ function setColumnOptions() {
                 })
             }
     }
+
+    let tmpColumns = []
+    for (let column of columns) {
+        for (let avColumn of availableColumns)
+            if (avColumn.name === column.name) {
+                tmpColumns.push(column)
+                continue
+            }
+    }
+    columns = tmpColumns
+    saveColumns()
 
     setHeader()
 }
@@ -1951,8 +1962,20 @@ document.querySelector("#search-ignore").addEventListener("click", () => {
 
 //#endregion
 
-//#region Column Changing, Keyboard Controls
+//#region Column edit panel, Keyboard Controls
 let controlPressed = false
+
+let columnEditOpen = false
+
+function resetColumns() {
+    setColumnOptions()
+    columns = JSON.parse(JSON.stringify(availableColumns))
+    selectedSort = columns[0]
+    showTeamIcons = usingTBAMedia
+    saveGeneralSettings()
+    saveColumns()
+    setHeader()
+}
 
 document.querySelector("#top-keyboard").onclick = function() {
     keyboardControls = !keyboardControls
@@ -2002,17 +2025,190 @@ document.addEventListener("keyup", (e) => {
     let key = e.key.toLowerCase()
     if (key === "control") controlPressed = false
 })
-document.querySelector("#top-column-reset").addEventListener("click", () => {
-    setColumnOptions()
-    columns = JSON.parse(JSON.stringify(availableColumns))
-    showTeamIcons = true
-    saveGeneralSettings()
-    setHeader()
+document.querySelector("#top-column-reset").addEventListener("click", resetColumns)
+document.querySelector("#top-columns").addEventListener("click", () => {
+    columnEditOpen = !columnEditOpen
+    document.querySelector(".edit-columns").classList.toggle("hidden")
+    if (columnEditOpen) columnEditPanel()
 })
+
+function columnEditPanel() {
+    setColumnOptions()
+
+    let columnPanel = document.querySelector(".edit-columns")
+    columnPanel.style.left = (window.innerWidth * .2) + "px"
+    columnPanel.style.top = (window.innerHeight * .3) + "px"
+    columnPanel.innerHTML = ""
+
+    let currentColumnsTitle = document.createElement("div")
+    currentColumnsTitle.className = "edit-columns-title"
+    currentColumnsTitle.innerText = "Table"
+    columnPanel.appendChild(currentColumnsTitle)
+
+    let currentColumns = document.createElement("div")
+    currentColumns.className = "edit-columns-list"
+    columnPanel.appendChild(currentColumns)
+
+    // https://stackoverflow.com/questions/74335612/drag-and-drop-when-using-flex-wrap
+    currentColumns.addEventListener("dragover", (e) => {
+        e.preventDefault();
+        const afterElement = getDragAfterElement(currentColumns, e.clientX, e.clientY);
+        const draggable = document.querySelector(".dragging");
+        if (afterElement == null) {
+            currentColumns.appendChild(draggable);
+        } else {
+            currentColumns.insertBefore(draggable, afterElement);
+        }
+    })
+
+    let unEnabledColumnsTitle = document.createElement("div")
+    unEnabledColumnsTitle.className = "edit-columns-title"
+    unEnabledColumnsTitle.innerText = "Unused Columns"
+    columnPanel.appendChild(unEnabledColumnsTitle)
+
+    let unEnabledColumns = document.createElement("div")
+    unEnabledColumns.className = "edit-columns-list"
+    columnPanel.appendChild(unEnabledColumns)
+    unEnabledColumns.addEventListener("dragover", (e) => {
+        e.preventDefault();
+        const afterElement = getDragAfterElement(unEnabledColumns, e.clientX, e.clientY);
+        const draggable = document.querySelector(".dragging");
+        if (afterElement == null) {
+            unEnabledColumns.appendChild(draggable);
+        } else {
+            unEnabledColumns.insertBefore(draggable, afterElement);
+        }
+    })
+
+    function getDragAfterElement(container, x, y) {
+        const draggableElements = [
+            ...container.querySelectorAll(".draggable:not(.dragging)")
+        ];
+        return draggableElements.reduce(
+            (closest, child, index) => {
+                const box = child.getBoundingClientRect();
+                const nextBox = draggableElements[index + 1] && draggableElements[index + 1].getBoundingClientRect();
+                const inRow = y - box.bottom <= 0 && y - box.top >= 0; // check if this is in the same row
+                const offset = x - (box.left + box.width / 2);
+                if (inRow) {
+                    if (offset < 0 && offset > closest.offset) {
+                        return {
+                            offset: offset,
+                            element: child
+                        };
+                    } else {
+                        if ( // handle row ends,
+                            nextBox && // there is a box after this one.
+                            y - nextBox.top <= 0 && // the next is in a new row
+                            closest.offset === Number.NEGATIVE_INFINITY // we didn't find a fit in the current row.
+                        ) {
+                            return {
+                                offset: 0,
+                                element: draggableElements[index + 1]
+                            };
+                        }
+                        return closest;
+                    }
+                } else {
+                    return closest;
+                }
+            }, {
+                offset: Number.NEGATIVE_INFINITY
+            }
+        ).element;
+    }
+
+    for (let column of availableColumns) {
+        let columnEl = document.createElement("div")
+        columnEl.className = "edit-column draggable"
+        columnEl.innerText = column.name.replaceAll("_", " ")
+        columnEl.draggable = true
+        columnEl.setAttribute("data-column-name", column.name)
+
+        let enabled = false
+        for (let x of columns)
+            if (column.name === x.name) enabled = true
+        if (enabled) currentColumns.appendChild(columnEl)
+        else unEnabledColumns.appendChild(columnEl)
+
+        columnEl.addEventListener("dragstart", () => {
+            columnEl.classList.add("dragging");
+        });
+        columnEl.addEventListener("dragend", () => {
+            columnEl.classList.remove("dragging");
+            updateColumns()
+        });
+    }
+
+    function updateColumns() {
+        columns = []
+        for (let child of currentColumns.children) {
+            for (let x of availableColumns)
+                if (x.name === child.getAttribute("data-column-name")) columns.push(x)
+        }
+        setHeader()
+        saveColumns()
+    }
+
+    let iconsDiv = document.createElement("div")
+    iconsDiv.className = "edit-column-buttons"
+    if (usingTBAMedia)
+        columnPanel.appendChild(iconsDiv)
+
+    let iconBox = document.createElement("input")
+    iconBox.type = "checkbox"
+    iconBox.checked = showTeamIcons
+    iconBox.id = "edit-column-icons-checkbox"
+    iconBox.addEventListener("change", () => {
+        showTeamIcons = iconBox.checked
+        saveGeneralSettings()
+        setHeader()
+    })
+    iconsDiv.appendChild(iconBox)
+
+    let iconLabel = document.createElement("label")
+    iconLabel.setAttribute("for", "edit-column-icons-checkbox")
+    iconLabel.innerText = "Show team icons"
+    iconsDiv.appendChild(iconLabel)
+
+    let buttons = document.createElement("div")
+    buttons.className = "edit-column-buttons"
+    columnPanel.appendChild(buttons)
+
+    let resetButton = document.createElement("button")
+    resetButton.innerText = "Enable All"
+    resetButton.addEventListener("click", () => {
+        resetColumns()
+        columnEditPanel()
+        saveColumns()
+    })
+    buttons.appendChild(resetButton)
+
+    let hideAll = document.createElement("button")
+    hideAll.innerText = "Hide All"
+    hideAll.addEventListener("click", () => {
+        columns = []
+        showTeamIcons = false
+        columnEditPanel()
+        setHeader()
+        saveColumns()
+    })
+    buttons.appendChild(hideAll)
+
+    let close = document.createElement("button")
+    close.innerText = "Close"
+    close.addEventListener("click", () => {
+        columnEditOpen = false
+        columnPanel.classList.add("hidden")
+    })
+    buttons.appendChild(close)
+}
+
 //#endregion
 
 //#region Sorting, Stars, Ignore
 function sort(team) {
+    if (columns.length === 0) return
     let starOffset = ((starred.includes(team) && usingStar) ? -Math.pow(10,9) : 0)
     let ignoreOffset = ((ignored.includes(team) && usingIgnore) ? Math.pow(10,9) : 0)
     if (selectedSort.display === "string") {
@@ -3131,7 +3327,7 @@ if (!doingInitialSetup)
 setColumnOptions()
 selectedSort = columns[0]
 if (window.localStorage.getItem(EVENT) !== null)
-    document.querySelector("#top-load-event'").innerText = window.localStorage.getItem(EVENT).toUpperCase()
+    document.querySelector("#top-load-event").innerText = window.localStorage.getItem(EVENT).toUpperCase()
 if (usingTBA) {
     loading++
     checkLoading()
