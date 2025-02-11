@@ -311,7 +311,7 @@ function setColumnOptions() {
                 availableColumns.push({
                     "name": column,
                     display,
-                    "size": 1
+                    "size": (mapping["data"][column].size !== undefined ? mapping["data"][column].size : 1)
                 })
             }
         if (mapping["pit_scouting"] !== undefined && mapping["pit_scouting"]["data"] !== undefined)
@@ -326,7 +326,7 @@ function setColumnOptions() {
                 availableColumns.push({
                     "name": column,
                     display,
-                    "size": 1
+                    "size": (mapping["pit_scouting"]["data"][column].size !== undefined ? mapping["pit_scouting"]["data"][column].display : 1)
                 })
             }
     }

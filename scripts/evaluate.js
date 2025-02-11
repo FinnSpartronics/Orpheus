@@ -189,6 +189,7 @@ function ev(data, constants, expression) {
             stack.push(x)
         }
     }
+
     return stack.pop()
 }
 
@@ -337,6 +338,8 @@ function evaluate(data, constants, exp) {
             else item = ""
         }
         index++
+        console.log(finalExp)
     }
+
     return parseFloat(ev(data, constants, finalExp))
 }
