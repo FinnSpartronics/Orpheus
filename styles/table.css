@@ -101,7 +101,8 @@ button.icon-holder {
 
     text-align: center;
 
-    inline-size: 114px;
+    padding: 4px;
+
     text-overflow: ellipsis;
     word-wrap: break-word;
     overflow-wrap: break-word;
@@ -114,7 +115,19 @@ button.icon-holder {
     border-radius: 0;
     border-bottom: 1px solid var(--line);
 }
-.data.small {
+.data.tiny {
+    width: 81px;
+    min-width: 54px;
+}
+.data.large {
+    width: 210px;
+    min-width: 140px;
+}
+.data.massive {
+    width: 300px;
+    min-width: 200px;
+}
+.data.header {
     font-size: .8rem;
     font-weight: 700;
     border: 0;
@@ -123,7 +136,7 @@ button.icon-holder {
 .data.highlighted {
     background: var(--highlight);
 }
-.data.small.highlighted {
+.data.header.highlighted {
     font-weight: 1000;
 }
 .data.top {

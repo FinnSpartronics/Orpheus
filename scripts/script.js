@@ -286,16 +286,17 @@ function setColumnOptions() {
     availableColumns = []
     availableColumns.push({
         "name": "Team_Number",
-        "display": "#"
+        "display": "#",
+        "size": 1,
     })
-    if (usingTBA) availableColumns.push({"name": "Name", "display": "string"})
-    if (usingTBAMatches) availableColumns.push({"name": "Winrate", "display": "%"})
+    if (usingTBA) availableColumns.push({"name": "Name", "display": "string", "size": 2})
+    if (usingTBAMatches) availableColumns.push({"name": "Winrate", "display": "%", "size": 0})
     if (usingStatbotics) {
-        availableColumns.push({"name": "District Points", "display": "#"})
-        availableColumns.push({"name": "EPA", "display": "#"})
-        availableColumns.push({"name": "Auto EPA", "display": "#"})
-        availableColumns.push({"name": "Teleop EPA", "display": "#"})
-        availableColumns.push({"name": "Endgame EPA", "display": "#"})
+        availableColumns.push({"name": "District Points", "display": "#", "size": 0})
+        availableColumns.push({"name": "EPA", "display": "#", "size": 1})
+        availableColumns.push({"name": "Auto EPA", "display": "#", "size": 1})
+        availableColumns.push({"name": "Teleop EPA", "display": "#", "size": 1})
+        availableColumns.push({"name": "Endgame EPA", "display": "#", "size": 1})
     }
 
     if (mapping !== undefined) {
@@ -309,7 +310,8 @@ function setColumnOptions() {
                         display = "%"
                 availableColumns.push({
                     "name": column,
-                    display
+                    display,
+                    "size": 1
                 })
             }
         if (mapping["pit_scouting"] !== undefined && mapping["pit_scouting"]["data"] !== undefined)
@@ -323,7 +325,8 @@ function setColumnOptions() {
                         display = "#"
                 availableColumns.push({
                     "name": column,
-                    display
+                    display,
+                    "size": 1
                 })
             }
     }
@@ -331,10 +334,8 @@ function setColumnOptions() {
     let tmpColumns = []
     for (let column of columns) {
         for (let avColumn of availableColumns)
-            if (avColumn.name === column.name) {
+            if (avColumn.name === column.name)
                 tmpColumns.push(column)
-                continue
-            }
     }
     columns = tmpColumns
     saveColumns()
@@ -855,7 +856,7 @@ function setHeader() {
         let el = document.createElement("div")
         el.id = "select_" + column.name.replaceAll(/\W/g, "")
         el.classList.add("data")
-        el.classList.add("small")
+        el.classList.add("header")
         if (column === selectedSort) {
             el.classList.add("highlighted")
             if (sortDirection === 1) el.classList.add("top")
@@ -865,6 +866,12 @@ function setHeader() {
         el.innerText = column.name.replaceAll("_", " ")
         el.setAttribute("data-context", "column")
         el.setAttribute("data-context-index", columns.indexOf(column))
+
+        if (column.size === 0) el.classList.add("tiny")
+        if (column.size === 1) {} // Regular
+        if (column.size === 2) el.classList.add("large")
+        if (column.size === 3) el.classList.add("massive")
+
         header.appendChild(el)
     }
     regenTable()
@@ -927,6 +934,12 @@ function element(team) {
         if (isNaN(team_data[team][column.name]) && (column.display === "%" || column.display === "#")) {
             value = "-"
         }
+
+        if (column.size === 0) columnEl.classList.add("tiny")
+        if (column.size === 1) {} // Regular
+        if (column.size === 2) columnEl.classList.add("large")
+        if (column.size === 3) columnEl.classList.add("massive")
+
         columnEl.innerText = value
         columnEl.style.fontSize = "1.2rem"
         el.appendChild(columnEl)
@@ -2535,6 +2548,47 @@ document.addEventListener("contextmenu", (e) => {
                 columns[column + 1] = columns[column]
                 columns[column] = c
             })
+
+        let makeTiny = document.createElement("button")
+        makeTiny.className = "context-option"
+        makeTiny.innerText = "Tiny"
+        makeTiny.addEventListener("click", () => {
+            columns[column].size = 0
+            saveColumns()
+            setHeader()
+        })
+        options.appendChild(makeTiny)
+
+        let makeRegular = document.createElement("button")
+        makeRegular.className = "context-option"
+        makeRegular.innerText = "Regular"
+        makeRegular.addEventListener("click", () => {
+            columns[column].size = 1
+            saveColumns()
+            setHeader()
+        })
+        options.appendChild(makeRegular)
+
+        let makeLarge = document.createElement("button")
+        makeLarge.className = "context-option"
+        makeLarge.innerText = "Large"
+        makeLarge.addEventListener("click", () => {
+            columns[column].size = 2
+            saveColumns()
+            setHeader()
+        })
+        options.appendChild(makeLarge)
+
+        let makeMassive = document.createElement("button")
+        makeMassive.className = "context-option"
+        makeMassive.innerText = "Massive"
+        makeMassive.addEventListener("click", () => {
+            columns[column].size = 3
+            saveColumns()
+            setHeader()
+        })
+        options.appendChild(makeMassive)
+
     }
     if (context === null && tableMode !== "team") {
         contextMenu.setAttribute("empty", "empty")
