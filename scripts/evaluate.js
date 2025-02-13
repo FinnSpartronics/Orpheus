@@ -163,6 +163,7 @@ function ev(data, constants, expression) {
 
     let postfix = toPostfix(expression)
     //console.log(postfix, variables)
+
     let stack = []
     for (let i = 0; i < postfix.length; i++) {
         let x = postfix[i]
@@ -214,7 +215,7 @@ function toPostfix(exp) {
         }
         else if (x === " " && current.trim() !== "") {
             if (infix.length > 0) {
-                let regex = /[a-z]|[A-Z]/g
+                let regex = /[a-z]|[A-Z]|[0-9]/g
                 if (regex.test(infix[infix.length - 1].replaceAll(/[\[,\]]/g, "")) && regex.test(current.replaceAll(/[\[,\]]/g, ""))) {
                     infix[infix.length - 1] += " " + current
                 }
@@ -338,7 +339,6 @@ function evaluate(data, constants, exp) {
             else item = ""
         }
         index++
-        console.log(finalExp)
     }
 
     return parseFloat(ev(data, constants, finalExp))

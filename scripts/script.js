@@ -250,6 +250,8 @@ document.querySelector("#top-data").onclick = function() {
         if (mapping !== undefined) processData()
         window.localStorage.setItem(SCOUTING_DATA, JSON.stringify(scouting_data))
         document.querySelector("#top-data-download").disabled = false
+        delete maintainedTeamPageSettings["graph"]
+        saveGeneralSettings()
         if (doingInitialSetup) window.location.reload()
     })
 }
@@ -267,6 +269,8 @@ document.querySelector("#top-pit").onclick = function() {
         if (mapping !== undefined) processData()
         window.localStorage.setItem(PIT, JSON.stringify(pit_data))
         document.querySelector("#top-pit-download").disabled = false
+        delete maintainedTeamPageSettings["graph"]
+        saveGeneralSettings()
         if (doingInitialSetup) window.location.reload()
     })
 }
@@ -278,6 +282,8 @@ document.querySelector("#top-mapping").onclick = function() {
         setColumnOptions()
         if (scouting_data !== undefined) processData()
         autoIgnore()
+        delete maintainedTeamPageSettings["graph"]
+        saveGeneralSettings()
         if (doingInitialSetup) window.location.reload()
     })
 }
@@ -572,19 +578,20 @@ function processData() {
     }
 
     // Pit data
-    for (let pit of pit_data) {
-        let team = getPitTeam(pit)
-        data[team]["pit_data"] = pit
+    if (pit_data !== undefined)
+        for (let pit of pit_data) {
+            let team = getPitTeam(pit)
+            data[team]["pit_data"] = pit
 
-        // Columns
-        for (let column of Object.keys(mapping["pit_scouting"]["data"])) {
-            if (typeof mapping["pit_scouting"]["data"][column]["display"] !== "undefined")
-                data[team][column] = evaluate(Object.assign({}, data[team]["variables"], pit), constants, mapping["pit_scouting"]["data"][column].value)
-            else {
-                data[team][column] = pit[mapping["pit_scouting"]["data"][column].value]
+            // Columns
+            for (let column of Object.keys(mapping["pit_scouting"]["data"])) {
+                if (typeof mapping["pit_scouting"]["data"][column]["display"] !== "undefined")
+                    data[team][column] = evaluate(Object.assign({}, data[team]["variables"], pit), constants, mapping["pit_scouting"]["data"][column].value)
+                else {
+                    data[team][column] = pit[mapping["pit_scouting"]["data"][column].value]
+                }
             }
         }
-    }
 
     // Adds data to team_data
     for (let t of Object.keys(data)) {
@@ -931,7 +938,7 @@ function element(team) {
         let value = team_data[team][column.name]
         if (column.display === "#") value = Math.round(parseFloat(value) * rounding) / rounding
         if (column.display === "%") value = (100 * Math.round(parseFloat(value) * rounding) / rounding) + "%"
-        if (isNaN(team_data[team][column.name]) && (column.display === "%" || column.display === "#")) {
+        if ((isNaN(team_data[team][column.name]) && (column.display === "%" || column.display === "#")) || team_data[team][column.name] === undefined) {
             value = "-"
         }
 
@@ -1111,6 +1118,8 @@ function openTeam(team, comparisons, hiddenCompares) {
 
     let pitImages = getPitScoutingImages(team)
 
+    let tbaImageLength = usingTBAMedia ? data.TBA.images.length : 0
+
     let imageButton = document.createElement("button")
     imageButton.innerText = "View Media"
     imageButton.addEventListener("click", () => {
@@ -1133,10 +1142,10 @@ function openTeam(team, comparisons, hiddenCompares) {
         let imageIndex = 0
 
         function updateImage() {
-            imageCycleCounter.innerText = "(" + (imageIndex+1) + "/" + (data.TBA.images.length+pitImages.length) + ")"
+            imageCycleCounter.innerText = "(" + (imageIndex+1) + "/" + (tbaImageLength+pitImages.length) + ")"
             imageDisplay.innerHTML = ""
-            let media = imageIndex >= data.TBA.images.length ? pitImages[imageIndex - data.TBA.images.length] : data.TBA.images[imageIndex]
-            if (imageIndex >= data.TBA.images.length) {
+            let media = imageIndex >= tbaImageLength ? pitImages[imageIndex - tbaImageLength] : data.TBA.images[imageIndex]
+            if (imageIndex >= tbaImageLength) {
                 let mediaHolder = document.createElement("img")
                 mediaHolder.src = media
                 imageDisplay.appendChild(mediaHolder)
@@ -1156,7 +1165,7 @@ function openTeam(team, comparisons, hiddenCompares) {
             }
         }
 
-        if ((data.TBA.images.length + pitImages.length) > 1) {
+        if ((tbaImageLength + pitImages.length) > 1) {
             let leftButton = document.createElement("span")
             leftButton.innerText = "arrow_back"
             let rightButton = document.createElement("span")
@@ -1164,11 +1173,11 @@ function openTeam(team, comparisons, hiddenCompares) {
             leftButton.className = rightButton.className = "material-symbols-outlined"
             leftButton.addEventListener("click", () => {
                 imageIndex--
-                if (imageIndex < 0) imageIndex += data.TBA.images.length + pitImages.length
+                if (imageIndex < 0) imageIndex += tbaImageLength + pitImages.length
                 updateImage()
             })
             rightButton.addEventListener("click", () => {
-                imageIndex = (imageIndex + 1) % (data.TBA.images.length + pitImages.length)
+                imageIndex = (imageIndex + 1) % (tbaImageLength + pitImages.length)
                 updateImage()
             })
             panel.appendChild(leftButton)
@@ -1189,7 +1198,7 @@ function openTeam(team, comparisons, hiddenCompares) {
         bg.appendChild(closeImages)
     })
 
-    if ((usingTBAMedia && data.TBA.images.length > 0) || pitImages.length > 0)
+    if ((usingTBAMedia && tbaImageLength > 0) || pitImages.length > 0)
         teamDescription.appendChild(imageButton)
 
     let starEl = document.createElement("span")
@@ -1603,7 +1612,8 @@ function openTeam(team, comparisons, hiddenCompares) {
     tableTeams.push(team)
     for (let x of hiddenCompares)
         tableTeams.splice(tableTeams.indexOf(x), 1)
-    generateTeamMatches(data, team, "")
+    if (usingTBAMatches)
+        generateTeamMatches(data, team, "")
     setHeader()
     regenTable()
 
@@ -1736,6 +1746,7 @@ function graphElement(data, name, teams, width, height) {
     let minY = 0
     let maxY = 0
     let maxX = 0
+    console.log(data)
     for (let team of data)
         if (graphSettings.x === "relative") {
             let teamKeys = Object.keys(team)

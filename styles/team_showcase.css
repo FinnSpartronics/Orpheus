@@ -205,6 +205,9 @@
 }
 .pit-data-holder {
     width: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
 }
 .pit-data-holder:empty:before {
     content: "No pit data :("
@@ -234,7 +237,6 @@
     border-radius: 4px;
     width: fit-content;
     padding: 4px;
-    display: flex;
     margin-top: 4px;
     gap: 16px;
 }
