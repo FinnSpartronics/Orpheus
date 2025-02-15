@@ -583,6 +583,7 @@ function processData() {
     if (pit_data !== undefined)
         for (let pit of pit_data) {
             let team = getPitTeam(pit)
+            if (data[team] === undefined) continue
             data[team]["pit_data"] = pit
 
             // Columns

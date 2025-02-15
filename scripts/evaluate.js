@@ -44,13 +44,13 @@ let functions = {
     //#region Logic
     equal: (a) => {
         if (isNaN(parseFloat(a[0]))) {
-            return (""+a[0]).trim().replaceAll("'","") == (""+a[1]).trim().replaceAll("'","") ? 1 : 0;
+            return (""+a[0]) == (""+a[1]) ? 1 : 0;
         }
         return a[0] == a[1] ? 1 : 0;
     },
     equals: (a) => {
         if (isNaN(parseFloat(a[0]))) {
-            return (""+a[0]).trim().replaceAll("'","") == (""+a[1]).trim().replaceAll("'","") ? 1 : 0;
+            return (""+a[0]) == (""+a[1]) ? 1 : 0;
         }
         return a[0] == a[1] ? 1 : 0;
     },
@@ -70,70 +70,70 @@ let functions = {
     //#endregion
     //#region String functions - Generated with ChatGPT
     concat: (a) => {
-        return ("" + a[0]).trim().replaceAll("'","").concat(("" + a[1]).trim().replaceAll("'",""));
+        return ("" + a[0]).concat(("" + a[1]));
     },
     includes: (a) => {
-        return ("" + a[0]).trim().replaceAll("'","").includes(("" + a[1]).trim().replaceAll("'","")) ? 1 : 0;
+        return ("" + a[0]).includes(("" + a[1])) ? 1 : 0;
     },
     indexOf: (a) => {
-        return ("" + a[0]).trim().replaceAll("'","").indexOf(("" + a[1]).trim().replaceAll("'",""));
+        return ("" + a[0]).indexOf(("" + a[1]));
     },
     lastIndexOf: (a) => {
-        return ("" + a[0]).trim().replaceAll("'","").lastIndexOf(("" + a[1]).trim().replaceAll("'",""));
+        return ("" + a[0]).lastIndexOf(("" + a[1]));
     },
     replace: (a) => {
-        return ("" + a[0]).trim().replaceAll("'","").replace(("" + a[1]).trim().replaceAll("'",""), ("" + a[2]).trim().replaceAll("'",""));
+        return ("" + a[0]).replace(("" + a[1]), ("" + a[2]));
     },
     replaceAll: (a) => {
-        return ("" + a[0]).trim().replaceAll("'","").replaceAll(("" + a[1]).trim().replaceAll("'",""), ("" + a[2]).trim().replaceAll("'",""));
+        return ("" + a[0]).replaceAll(("" + a[1]), ("" + a[2]));
     },
     slice: (a) => {
-        return ("" + a[0]).trim().replaceAll("'","").slice(a[1], a[2]);
+        return ("" + a[0]).slice(a[1], a[2]);
     },
     split: (a) => {
-        return ("" + a[0]).trim().replaceAll("'","").split(("" + a[1]).trim().replaceAll("'",""));
+        return ("" + a[0]).split(("" + a[1]));
     },
     toLowerCase: (a) => {
-        return ("" + a[0]).trim().replaceAll("'","").toLowerCase();
+        return ("" + a[0]).toLowerCase();
     },
     toUpperCase: (a) => {
-        return ("" + a[0]).trim().replaceAll("'","").toUpperCase();
+        return ("" + a[0]).toUpperCase();
     },
     trim: (a) => {
-        return ("" + a[0]).trim().replaceAll("'","");
+        return ("" + a[0]);
     },
     charAt: (a) => {
-        return ("" + a[0]).trim().replaceAll("'","").charAt(a[1]);
+        return ("" + a[0]).charAt(a[1]);
     },
     charCodeAt: (a) => {
-        return ("" + a[0]).trim().replaceAll("'","").charCodeAt(a[1]);
+        return ("" + a[0]).charCodeAt(a[1]);
     },
     repeat: (a) => {
-        return ("" + a[0]).trim().replaceAll("'","").repeat(a[1]);
+        return ("" + a[0]).repeat(a[1]);
     },
     startsWith: (a) => {
-        return ("" + a[0]).trim().replaceAll("'","").startsWith(("" + a[1]).trim().replaceAll("'","")) ? 1 : 0;
+        return ("" + a[0]).startsWith(("" + a[1])) ? 1 : 0;
     },
     endsWith: (a) => {
-        return ("" + a[0]).trim().replaceAll("'","").endsWith(("" + a[1]).trim().replaceAll("'","")) ? 1 : 0;
+        return ("" + a[0]).endsWith(("" + a[1])) ? 1 : 0;
     },
     substr: (a) => {
-        return ("" + a[0]).trim().replaceAll("'","").substr(a[1], a[2]);
+        return ("" + a[0]).substr(a[1], a[2]);
     },
     valueOf: (a) => {
-        return ("" + a[0]).trim().replaceAll("'","").valueOf();
+        return ("" + a[0]).valueOf();
     },
     codePointAt: (a) => {
-        return ("" + a[0]).trim().replaceAll("'","").codePointAt(a[1]);
+        return ("" + a[0]).codePointAt(a[1]);
     },
     normalize: (a) => {
-        return ("" + a[0]).trim().replaceAll("'","").normalize(a[1]);
+        return ("" + a[0]).normalize(a[1]);
     },
     padStart: (a) => {
-        return ("" + a[0]).trim().replaceAll("'","").padStart(a[1], ("" + a[2]).trim().replaceAll("'",""));
+        return ("" + a[0]).padStart(a[1], ("" + a[2]));
     },
     padEnd: (a) => {
-        return ("" + a[0]).trim().replaceAll("'","").padEnd(a[1], ("" + a[2]).trim().replaceAll("'",""));
+        return ("" + a[0]).padEnd(a[1], ("" + a[2]));
     },
     trimStart: (a) => {
         return ("" + a[0]).replaceAll("'","").trimStart();
@@ -142,17 +142,18 @@ let functions = {
         return ("" + a[0]).replaceAll("'","").trimEnd();
     },
     toLocaleLowerCase: (a) => {
-        return ("" + a[0]).trim().replaceAll("'","").toLocaleLowerCase(a[1]);
+        return ("" + a[0]).toLocaleLowerCase(a[1]);
     },
     toLocaleUpperCase: (a) => {
-        return ("" + a[0]).trim().replaceAll("'","").toLocaleUpperCase(a[1]);
+        return ("" + a[0]).toLocaleUpperCase(a[1]);
     },
     //#endregion
     count: (a) => {
-        return (""+a[0]).trim().replaceAll("'","").split((""+a[1]).trim().replaceAll("'","")).length - 1;
+        return (""+a[0]).split((""+a[1])).length - 1;
     },
     length: (a) => {
-        return (""+a[0]).trim().replaceAll("'","").length
+        if (a[0] === 0) return 0
+        return (""+a[0]).length
     }
 }
 
@@ -309,23 +310,48 @@ function evaluate(data, constants, exp) {
 
             if (outerFunction) {
                 let params = []
-                for (let x of finalExp.substring(beginIndex,endIndex).split(",")) {
-                    if (isNaN(parseFloat(ev(data,constants,x)))) {
-                        let tmpVars = {}
-                        for (let x of Object.keys(data)) {
-                            if (data[x] === "") data[x] = 0
-                            tmpVars["["+x+"]"] = data[x]
-                        }
-                        let variables = tmpVars
-                        if (Object.keys(constants).includes(x)) {
-                            x = constants[x]
-                        } else if (Object.keys(variables).includes(x)) {
-                            x = variables[x]
-                        }
-                        params.push(x)
+                let inQuotes = false
+                let current = ""
+                for (let i = beginIndex; i < endIndex; i++) {
+                    if ((finalExp[i] === "'" || finalExp === '"') && finalExp[i-1] !== "\\") {
+                        inQuotes = !inQuotes
                     }
-                    else params.push(parseFloat(ev(data,constants,x)))
+                    else if (!inQuotes && finalExp[i] === ",") {
+                        current = current.trim()
+                        if (isNaN(parseFloat(ev(data, constants, current)))) {
+                            let tmpVars = {}
+                            for (let x of Object.keys(data)) {
+                                if (data[x] === "") data[x] = 0
+                                tmpVars["[" + x + "]"] = data[x]
+                            }
+                            let variables = tmpVars
+                            if (Object.keys(constants).includes(current)) {
+                                current = constants[current]
+                            } else if (Object.keys(variables).includes(current)) {
+                                current = variables[current]
+                            }
+                            params.push(current)
+                        } else params.push(parseFloat(ev(data, constants, current)))
+                        current = ""
+                    } else if (finalExp[i-1] !== "\\") current = current + finalExp[i]
                 }
+
+                current = current.trim()
+                if (isNaN(parseFloat(ev(data, constants, current)))) {
+                    let tmpVars = {}
+                    for (let x of Object.keys(data)) {
+                        if (data[x] === "") data[x] = 0
+                        tmpVars["[" + x + "]"] = data[x]
+                    }
+                    let variables = tmpVars
+                    if (Object.keys(constants).includes(current)) {
+                        current = constants[current]
+                    } else if (Object.keys(variables).includes(current)) {
+                        current = variables[current]
+                    }
+                    params.push(current)
+                } else params.push(parseFloat(ev(data, constants, current)))
+
                 let simplified = ev(data, constants, functions[outerFunction.trim()](params))
                 finalExp = finalExp.substring(0, beginIndex-1 - outerFunction.length) + simplified + finalExp.substring(endIndex+1, finalExp.length)
             } else {
