@@ -44,13 +44,15 @@ let functions = {
     //#region Logic
     equal: (a) => {
         if (isNaN(parseFloat(a[0]))) {
-            return (""+a[0]).replaceAll("'","").trim() == (""+a[1]).replaceAll("'","").trim() ? 1 : 0;
+            return (""+a[0]).trim().replaceAll("'","")
+ == (""+a[1]).trim().replaceAll("'","")
+ ? 1 : 0;
         }
         return a[0] == a[1] ? 1 : 0;
     },
     equals: (a) => {
         if (isNaN(parseFloat(a[0]))) {
-            return (""+a[0]).replaceAll("'","").trim() == (""+a[1]).replaceAll("'","").trim() ? 1 : 0;
+            return (""+a[0]).trim().replaceAll("'","") == (""+a[1]).trim().replaceAll("'","") ? 1 : 0;
         }
         return a[0] == a[1] ? 1 : 0;
     },
@@ -70,70 +72,105 @@ let functions = {
     //#endregion
     //#region String functions - Generated with ChatGPT
     concat: (a) => {
-        return ("" + a[0]).replaceAll("'","").trim().concat(("" + a[1]).replaceAll("'","").trim());
+        return ("" + a[0]).trim().replaceAll("'","")
+.concat(("" + a[1]).trim().replaceAll("'","")
+);
     },
     includes: (a) => {
-        return ("" + a[0]).replaceAll("'","").trim().includes(("" + a[1]).replaceAll("'","").trim()) ? 1 : 0;
+        return ("" + a[0]).trim().replaceAll("'","")
+.includes(("" + a[1]).trim().replaceAll("'","")
+) ? 1 : 0;
     },
     indexOf: (a) => {
-        return ("" + a[0]).replaceAll("'","").trim().indexOf(("" + a[1]).replaceAll("'","").trim());
+        return ("" + a[0]).trim().replaceAll("'","")
+.indexOf(("" + a[1]).trim().replaceAll("'","")
+);
     },
     lastIndexOf: (a) => {
-        return ("" + a[0]).replaceAll("'","").trim().lastIndexOf(("" + a[1]).replaceAll("'","").trim());
+        return ("" + a[0]).trim().replaceAll("'","")
+.lastIndexOf(("" + a[1]).trim().replaceAll("'","")
+);
     },
     replace: (a) => {
-        return ("" + a[0]).replaceAll("'","").trim().replace(("" + a[1]).replaceAll("'","").trim(), ("" + a[2]).replaceAll("'","").trim());
+        return ("" + a[0]).trim().replaceAll("'","")
+.replace(("" + a[1]).trim().replaceAll("'","")
+, ("" + a[2]).trim().replaceAll("'","")
+);
     },
     replaceAll: (a) => {
-        return ("" + a[0]).replaceAll("'","").trim().replaceAll(("" + a[1]).replaceAll("'","").trim(), ("" + a[2]).replaceAll("'","").trim());
+        return ("" + a[0]).trim().replaceAll("'","")
+.replaceAll(("" + a[1]).trim().replaceAll("'","")
+, ("" + a[2]).trim().replaceAll("'","")
+);
     },
     slice: (a) => {
-        return ("" + a[0]).replaceAll("'","").trim().slice(a[1], a[2]);
+        return ("" + a[0]).trim().replaceAll("'","")
+.slice(a[1], a[2]);
     },
     split: (a) => {
-        return ("" + a[0]).replaceAll("'","").trim().split(("" + a[1]).replaceAll("'","").trim());
+        return ("" + a[0]).trim().replaceAll("'","")
+.split(("" + a[1]).trim().replaceAll("'","")
+);
     },
     toLowerCase: (a) => {
-        return ("" + a[0]).replaceAll("'","").trim().toLowerCase();
+        return ("" + a[0]).trim().replaceAll("'","")
+.toLowerCase();
     },
     toUpperCase: (a) => {
-        return ("" + a[0]).replaceAll("'","").trim().toUpperCase();
+        return ("" + a[0]).trim().replaceAll("'","")
+.toUpperCase();
     },
     trim: (a) => {
-        return ("" + a[0]).replaceAll("'","").trim();
+        return ("" + a[0]).trim().replaceAll("'","")
+;
     },
     charAt: (a) => {
-        return ("" + a[0]).replaceAll("'","").trim().charAt(a[1]);
+        return ("" + a[0]).trim().replaceAll("'","")
+.charAt(a[1]);
     },
     charCodeAt: (a) => {
-        return ("" + a[0]).replaceAll("'","").trim().charCodeAt(a[1]);
+        return ("" + a[0]).trim().replaceAll("'","")
+.charCodeAt(a[1]);
     },
     repeat: (a) => {
-        return ("" + a[0]).replaceAll("'","").trim().repeat(a[1]);
+        return ("" + a[0]).trim().replaceAll("'","")
+.repeat(a[1]);
     },
     startsWith: (a) => {
-        return ("" + a[0]).replaceAll("'","").trim().startsWith(("" + a[1]).replaceAll("'","").trim()) ? 1 : 0;
+        return ("" + a[0]).trim().replaceAll("'","")
+.startsWith(("" + a[1]).trim().replaceAll("'","")
+) ? 1 : 0;
     },
     endsWith: (a) => {
-        return ("" + a[0]).replaceAll("'","").trim().endsWith(("" + a[1]).replaceAll("'","").trim()) ? 1 : 0;
+        return ("" + a[0]).trim().replaceAll("'","")
+.endsWith(("" + a[1]).trim().replaceAll("'","")
+) ? 1 : 0;
     },
     substr: (a) => {
-        return ("" + a[0]).replaceAll("'","").trim().substr(a[1], a[2]);
+        return ("" + a[0]).trim().replaceAll("'","")
+.substr(a[1], a[2]);
     },
     valueOf: (a) => {
-        return ("" + a[0]).replaceAll("'","").trim().valueOf();
+        return ("" + a[0]).trim().replaceAll("'","")
+.valueOf();
     },
     codePointAt: (a) => {
-        return ("" + a[0]).replaceAll("'","").trim().codePointAt(a[1]);
+        return ("" + a[0]).trim().replaceAll("'","")
+.codePointAt(a[1]);
     },
     normalize: (a) => {
-        return ("" + a[0]).replaceAll("'","").trim().normalize(a[1]);
+        return ("" + a[0]).trim().replaceAll("'","")
+.normalize(a[1]);
     },
     padStart: (a) => {
-        return ("" + a[0]).replaceAll("'","").trim().padStart(a[1], ("" + a[2]).replaceAll("'","").trim());
+        return ("" + a[0]).trim().replaceAll("'","")
+.padStart(a[1], ("" + a[2]).trim().replaceAll("'","")
+);
     },
     padEnd: (a) => {
-        return ("" + a[0]).replaceAll("'","").trim().padEnd(a[1], ("" + a[2]).replaceAll("'","").trim());
+        return ("" + a[0]).trim().replaceAll("'","")
+.padEnd(a[1], ("" + a[2]).trim().replaceAll("'","")
+);
     },
     trimStart: (a) => {
         return ("" + a[0]).replaceAll("'","").trimStart();
@@ -142,12 +179,17 @@ let functions = {
         return ("" + a[0]).replaceAll("'","").trimEnd();
     },
     toLocaleLowerCase: (a) => {
-        return ("" + a[0]).replaceAll("'","").trim().toLocaleLowerCase(a[1]);
+        return ("" + a[0]).trim().replaceAll("'","")
+.toLocaleLowerCase(a[1]);
     },
     toLocaleUpperCase: (a) => {
-        return ("" + a[0]).replaceAll("'","").trim().toLocaleUpperCase(a[1]);
-    }
+        return ("" + a[0]).trim().replaceAll("'","")
+.toLocaleUpperCase(a[1]);
+    },
     //#endregion
+    count: (a) => {
+        return (""+a[0]).trim().replaceAll("'","").split((""+a[1]).trim().replaceAll("'","")).length - 1;
+    }
 }
 
 function ev(data, constants, expression) {

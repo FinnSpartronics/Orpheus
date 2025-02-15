@@ -1016,7 +1016,7 @@ function regenTable() {
         }
     }
 
-    if (starred.length > 0 && usingStar && document.querySelector(".row:not(.table-head)").scrollWidth !== undefined) {
+    if (starred.length > 0 && usingStar && document.querySelector(".row:not(.table-head)") !== null) {
         let el = document.createElement("div")
         el.className = "row divider"
         el.style.order = -Math.pow(10,8)
