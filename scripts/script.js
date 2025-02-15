@@ -290,7 +290,7 @@ document.querySelector("#top-mapping").onclick = function() {
     })
 }
 // Adds all the columns from the mapping to the columns list
-function setColumnOptions() {
+function setColumnOptions(init = false) {
     availableColumns = []
     availableColumns.push({
         "name": "Team_Number",
@@ -1016,7 +1016,7 @@ function regenTable() {
         }
     }
 
-    if (starred.length > 0 && usingStar) {
+    if (starred.length > 0 && usingStar && document.querySelector(".row:not(.table-head)").scrollWidth !== undefined) {
         let el = document.createElement("div")
         el.className = "row divider"
         el.style.order = -Math.pow(10,8)

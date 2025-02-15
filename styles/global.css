@@ -46,7 +46,7 @@
     --placeholder: rgb(133, 133, 133);
 }
 :root.dark, .force-dark {
-    --bg: rgb(53, 55, 59);
+    --bg: rgb(29, 30, 31);
     --line: rgb(122, 122, 122);
     --font: rgb(220,220,220);
     --highlight: rgb(134, 81, 159);
