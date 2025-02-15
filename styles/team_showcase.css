@@ -170,6 +170,13 @@
     display: flex;
 }
 
+.graph-holder.no-desmos {
+    width: 20px;
+    overflow: hidden;
+    border: 0;
+    opacity: 0;
+}
+
 .graph-controls {
     display: flex;
     gap: 4px;

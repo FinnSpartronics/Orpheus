@@ -222,6 +222,8 @@ function loadEvent() {
         })
     }
     else {
+        loading--
+        checkLoading()
         processData()
     }
 }
@@ -938,7 +940,7 @@ function element(team) {
         let value = team_data[team][column.name]
         if (column.display === "#") value = Math.round(parseFloat(value) * rounding) / rounding
         if (column.display === "%") value = (100 * Math.round(parseFloat(value) * rounding) / rounding) + "%"
-        if ((isNaN(team_data[team][column.name]) && (column.display === "%" || column.display === "#")) || team_data[team][column.name] === undefined) {
+        if ((isNaN(team_data[team][column.name]) && (column.display === "%" || column.display === "#")) || team_data[team][column.name] === undefined || team_data[team][column.name] === null) {
             value = "-"
         }
 
@@ -1384,7 +1386,6 @@ function openTeam(team, comparisons, hiddenCompares) {
     teamData.appendChild(graphCommentsHolder)
 
     let graphOverallHolder = document.createElement("div")
-    graphOverallHolder.className = "graph-holder"
     if (usingDesmos)
         graphCommentsHolder.appendChild(graphOverallHolder)
 
@@ -1612,8 +1613,7 @@ function openTeam(team, comparisons, hiddenCompares) {
     tableTeams.push(team)
     for (let x of hiddenCompares)
         tableTeams.splice(tableTeams.indexOf(x), 1)
-    if (usingTBAMatches)
-        generateTeamMatches(data, team, "")
+    generateTeamMatches(data, team, "")
     setHeader()
     regenTable()
 
@@ -1724,7 +1724,7 @@ function generateTeamMatches(data, team, teamsWith) {
         mEl.innerText = "Matches: "
         mEl.className = "match"
         for (let match of Object.keys(data.matches)) {
-            mEl.innerText += data.matches[match][mapping["match"]["number"]] + ", "
+            mEl.innerText += data.matches[match][mapping["match"]["number_key"]] + ", "
         }
         mEl.innerText = mEl.innerText.substring(0, mEl.innerText.length - 2)
         document.querySelector(".matches").appendChild(mEl)
@@ -1746,7 +1746,6 @@ function graphElement(data, name, teams, width, height) {
     let minY = 0
     let maxY = 0
     let maxX = 0
-    console.log(data)
     for (let team of data)
         if (graphSettings.x === "relative") {
             let teamKeys = Object.keys(team)
@@ -1913,18 +1912,20 @@ function search(input) {
     let distance = Math.pow(10, 10)
     let team
     for (let teamNum of Object.keys(team_data)) {
-        let teamName = team_data[teamNum].Name.replace(/\s/g, "").toLowerCase()
+        let teamName
+        if (usingTBA)
+            teamName = team_data[teamNum].Name.replace(/\s/g, "").toLowerCase()
         if (teamNum === input) {
             team = teamNum
             distance = 0
             break
         }
-        else if (teamName === input) {
+        else if (usingTBA && teamName === input) {
             team = teamNum
             distance = 0
             break
         }
-        else {
+        else if (usingTBA) {
             let teamDistance = levenshtein(input, teamName)
             if (teamDistance < distance) {
                 distance = teamDistance
@@ -1955,9 +1956,8 @@ function handleSearchbar(event) {
     document.querySelector("#search-star").innerText = starred.includes(result.result) ? "Unstar" : "Star"
     document.querySelector("#search-ignore").hidden = false
     document.querySelector("#search-ignore").innerText = ignored.includes(result.result) ? "Unignore" : "Ignore"
-    document.querySelector("#search-4915-result").innerText = team_data[result.result].Name
-
-    console.log(result.result, result.input)
+    if (usingTBA)
+        document.querySelector("#search-4915-result").innerText = team_data[result.result].Name
 
     if (event !== undefined && event.code === "Enter") {
         openTeam(result.result)
@@ -3091,7 +3091,7 @@ document.querySelector("#top-pictures").addEventListener("click", () => {
             let teamEl = document.createElement("div")
             teamEl.className = "robot-view-team"
 
-            let images = [...getPitScoutingImages(team), ...team_data[team].TBA.images]
+            let images = [...getPitScoutingImages(team), ...(usingTBAMedia ? team_data[team].TBA.images : [])]
             if (images.length === 0) continue
 
             let doneFirstLoad = false
