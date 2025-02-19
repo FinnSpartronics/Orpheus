@@ -1023,7 +1023,8 @@ function regenTable() {
             el.className = "row divider"
             el.style.order = Math.pow(10,8)
 
-            el.style.width = (document.querySelector(".row:not(.table-head)").scrollWidth - 4) + "px"
+            let rowWidth = document.querySelector(".row:not(.table-head)") === null ? 0 : document.querySelector(".row:not(.table-head)").scrollWidth - 4;
+            el.style.width = rowWidth + "px"
 
             if (tableMode === "team") document.querySelector(".table.team-table").appendChild(el)
             else document.querySelector(".table.main-table").appendChild(el)
@@ -2018,6 +2019,7 @@ function resetColumns() {
     saveGeneralSettings()
     saveColumns()
     setHeader()
+    if (columnEditOpen) columnEditPanel()
 }
 
 document.querySelector("#top-keyboard").onclick = function() {
@@ -2059,8 +2061,11 @@ document.addEventListener("keydown", (e) => {
         projectorMode = !projectorMode
         setProjectorModeSheet()
     }
+    if (key === "1") selectedSort.size = 0
+    if (key === "2") selectedSort.size = 1
+    if (key === "3") selectedSort.size = 2
+    if (key === "4") selectedSort.size = 3
     setHeader()
-    regenTable()
     saveColumns()
 })
 document.addEventListener("keyup", (e) => {
