@@ -1682,10 +1682,22 @@ function generateTeamMatches(data, team, teamsWith) {
             }
 
             //#region Children
+
             let matchNumber = document.createElement("div")
             matchNumber.className = "match-number"
-            matchNumber.innerText = match
             mEl.appendChild(matchNumber)
+            if (data.TBA.matches[match]["videos"].length > 0 && data.TBA.matches[match]["videos"][0].type === "youtube") {
+                let matchNumberText = document.createElement("a")
+                matchNumberText.innerText = match
+                matchNumberText.setAttribute("target", "_blank")
+                matchNumberText.setAttribute("rel", "noopener noreferrer")
+                matchNumberText.href = "https://www.youtube.com/watch?v=" + data.TBA.matches[match]["videos"][0]["key"]
+                matchNumber.appendChild(matchNumberText)
+            } else {
+                let matchNumberText = document.createElement("div")
+                matchNumberText.innerText = match
+                matchNumber.appendChild(matchNumberText)
+            }
 
             let icon = "skull" // Lose
             if (upcoming) icon = "schedule"
