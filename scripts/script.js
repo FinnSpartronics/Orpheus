@@ -984,6 +984,7 @@ function clearTable() {
 // Regenerates the table
 function regenTable() {
     clearTable()
+    sortTeams()
     if (tableMode === "team") for (let team of tableTeams) element(team)
     else for (let team of Object.keys(team_data)) element(team)
 
@@ -2249,10 +2250,9 @@ function columnEditPanel() {
 //#endregion
 
 //#region Sorting, Stars, Ignore
-function sort(team) {
+let sortedTeams = []
+function sortTeams() {
     if (columns.length === 0) return
-    let starOffset = ((starred.includes(team) && usingStar) ? -Math.pow(10,9) : 0)
-    let ignoreOffset = ((ignored.includes(team) && usingIgnore) ? Math.pow(10,9) : 0)
     if (selectedSort.display === "string") {
         let arr = []
         for (let i of Object.keys(team_data)) {
@@ -2263,11 +2263,7 @@ function sort(team) {
             if ((""+team_data[a][selectedSort.name]).toString().toLowerCase() > (""+team_data[b][selectedSort.name]).toString().toLowerCase()) return 1
             return 0
         })
-
-        let index = arr.indexOf(team)
-        if (sortDirection === -1) index = 10000 - index
-
-        return ignoreOffset + starOffset + (index)
+        sortedTeams = arr
     } else { // Number
         let arr = []
         for (let i of Object.keys(team_data)) {
@@ -2279,12 +2275,16 @@ function sort(team) {
             if (isNaN(team_data[b][selectedSort.name])) return 1
             return team_data[a][selectedSort.name] - team_data[b][selectedSort.name]
         })
-
-        let index = arr.indexOf(team)
-        if (sortDirection !== -1) index = 10000 - index
-
-        return ignoreOffset + starOffset + (index)
+        sortedTeams = arr
     }
+}
+
+function sort(team) {
+    let starOffset = ((starred.includes(team) && usingStar) ? -Math.pow(10,9) : 0)
+    let ignoreOffset = ((ignored.includes(team) && usingIgnore) ? Math.pow(10,9) : 0)
+    let index = sortedTeams.indexOf(team)
+    if (sortDirection !== -1) index = 10000 - index
+    return ignoreOffset + starOffset + (index)
 }
 function changeSort(to) {
     if (selectedSort === to) sortDirection *= -1
