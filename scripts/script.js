@@ -413,8 +413,8 @@ function processData() {
         return false
     }
 
-    // Setup Loop
     if (scouting_data !== undefined) {
+        // Setup Loop
         for (let match of scouting_data) {
             let team = getTeam(match)
 
@@ -2329,13 +2329,13 @@ function star_toggle() {
     regenTable()
     saveTeams()
 }
-function set_star(team, to) {
+function set_star(team, to, regen=true) {
     if (starred.includes(team)) starred.splice(starred.indexOf(team), 1)
     if (to) {
         starred.push(team)
         set_ignore(team, false)
     }
-    regenTable()
+    if (regen) regenTable()
     saveTeams()
     setStarbook()
 }
@@ -2349,13 +2349,13 @@ function ignore_toggle() {
     saveTeams()
     setStarbook()
 }
-function set_ignore(team, to) {
+function set_ignore(team, to, regen=true) {
     if (ignored.includes(team)) ignored.splice(ignored.indexOf(team), 1)
     if (to) {
         ignored.push(team)
         set_star(team, false)
     }
-    regenTable()
+    if (regen) regenTable()
     saveTeams()
 }
 function autoIgnore() {
@@ -2525,6 +2525,7 @@ document.addEventListener("contextmenu", (e) => {
             action()
             saveColumns()
             setHeader()
+            regenTable()
         })
         options.appendChild(option)
     }
@@ -2535,10 +2536,10 @@ document.addEventListener("contextmenu", (e) => {
     let context = e.target.getAttribute("data-context")
     if (context === "star") {
         optionEl("Star All", () => {
-            for (let x in team_data) set_star(x, true)
+            for (let x in team_data) set_star(x, true, false)
         })
         optionEl("Unstar All", () => {
-            for (let x in team_data) set_star(x, false)
+            for (let x in team_data) set_star(x, false, false)
         })
         optionEl("Flip starred teams", () => {
             for (let x in team_data) star(x)
@@ -2550,10 +2551,10 @@ document.addEventListener("contextmenu", (e) => {
     }
     if (context === "ignore") {
         optionEl("Ignore All", () => {
-            for (let x in team_data) set_ignore(x, true)
+            for (let x in team_data) set_ignore(x, true, false)
         })
         optionEl("Unignore All", () => {
-            for (let x in team_data) set_ignore(x, false)
+            for (let x in team_data) set_ignore(x, false, false)
         })
         optionEl("Flip ignored teams", () => {
             for (let x in team_data) ignore(x)
