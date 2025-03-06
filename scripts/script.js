@@ -900,7 +900,7 @@ function setHeader() {
 }
 // Creates the element for a row in the table for the given team
 function element(team) {
-    if (ignored.includes(team) && !showIgnoredTeams && tableMode !== "team") return
+    if (ignored.includes(team) && !showIgnoredTeams && !(tableMode === "team" || !usingIgnore)) return
 
     let el = document.createElement("div")
     el.classList.add("row")
@@ -989,7 +989,7 @@ function regenTable() {
     else for (let team of Object.keys(team_data)) element(team)
 
     if (ignored.length > 0) {
-        if (!showIgnoredTeams) {
+        if (!showIgnoredTeams && usingIgnore) {
             let el = document.createElement("div")
             el.className = "row ignoredlist"
             el.style.order = Math.pow(10,20)
@@ -2562,6 +2562,7 @@ document.addEventListener("contextmenu", (e) => {
         if (showIgnoredTeams)
             optionEl("Hide ignored teams", () => {
                 showIgnoredTeams = false
+                usingIgnore = true
                 regenTable()
                 saveGeneralSettings()
             })
