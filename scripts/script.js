@@ -2272,12 +2272,14 @@ function sortTeams() {
     if (columns.length === 0) return
     if (selectedSort.display === "string") {
         let arr = []
+        let values = {}
         for (let i of Object.keys(team_data)) {
             arr.push(i)
+            values[i] = (""+team_data[i][selectedSort.name]).toString().toLowerCase()
         }
         arr.sort(function(a, b) {
-            if ((""+team_data[a][selectedSort.name]).toString().toLowerCase() < (""+team_data[b][selectedSort.name]).toString().toLowerCase()) return -1
-            if ((""+team_data[a][selectedSort.name]).toString().toLowerCase() > (""+team_data[b][selectedSort.name]).toString().toLowerCase()) return 1
+            if (values[a] < values[b]) return -1
+            if (values[a] > values[b]) return 1
             return 0
         })
         sortedTeams = arr
