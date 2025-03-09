@@ -77,6 +77,10 @@ let usingStatbotics
 
 let projectorMode = false
 
+let usingOffline = false
+let starUnicode = String.fromCodePoint(9733)
+let crossOutUnicode = "X"
+
 //#endregion
 
 //#region Init Header Controls
@@ -853,7 +857,7 @@ function setHeader() {
     starToggle.id = "select_star"
     starToggle.className = "material-symbols-outlined ar star"
     if (usingStar) starToggle.classList.add("filled")
-    starToggle.innerText = "star"
+    starToggle.innerText = usingOffline ? starUnicode : "star"
     starToggle.addEventListener("click", star_toggle)
     starToggle.setAttribute("data-context", "star")
     starIgnoreHolder.appendChild(starToggle)
@@ -862,7 +866,7 @@ function setHeader() {
     ignoreToggle.id = "select_ignore"
     ignoreToggle.className = "material-symbols-outlined ar ignore"
     if (usingIgnore) ignoreToggle.classList.add("filled")
-    ignoreToggle.innerText = "block"
+    ignoreToggle.innerText = usingOffline ? crossOutUnicode : "block"
     ignoreToggle.addEventListener("click", ignore_toggle)
     ignoreToggle.setAttribute("data-context", "ignore")
     starIgnoreHolder.appendChild(ignoreToggle)
@@ -913,14 +917,14 @@ function element(team) {
     starEl.className = "material-symbols-outlined ar star"
     if (starred.includes(team)) starEl.classList.add("filled")
     starEl.onclick = () => star(team)
-    starEl.innerText = "star"
+    starEl.innerText = usingOffline ? starUnicode : "star"
     controls.appendChild(starEl)
 
     let ignoreEl = document.createElement("span")
     ignoreEl.className = "material-symbols-outlined ar ignore"
     if (ignored.includes(team)) ignoreEl.classList.add("filled")
     ignoreEl.onclick = () => ignore(team)
-    ignoreEl.innerText = "block"
+    ignoreEl.innerText = usingOffline ? crossOutUnicode : "block"
     controls.appendChild(ignoreEl)
 
     el.appendChild(controls)
@@ -1226,7 +1230,7 @@ function openTeam(team, comparisons, hiddenCompares) {
         if (starred.includes(team)) starEl.classList.add("filled")
         else starEl.classList.remove("filled")
     }
-    starEl.innerText = "star"
+    starEl.innerText = usingOffline ? starUnicode : "star"
     teamName.appendChild(starEl)
 
     let ignoreEl = document.createElement("span")
@@ -1237,7 +1241,7 @@ function openTeam(team, comparisons, hiddenCompares) {
         if (ignored.includes(team)) ignoreEl.classList.add("filled")
         else ignoreEl.classList.remove("filled")
     }
-    ignoreEl.innerText = "block"
+    ignoreEl.innerText = usingOffline ? crossOutUnicode : "block"
     teamName.appendChild(ignoreEl)
 
     if (usingTBA) {
@@ -1348,7 +1352,7 @@ function openTeam(team, comparisons, hiddenCompares) {
             if (starred.includes(c)) starEl.classList.add("filled")
             else starEl.classList.remove("filled")
         }
-        starEl.innerText = "star"
+        starEl.innerText = usingOffline ? starUnicode : "star"
         compareEl.appendChild(starEl)
 
         let ignoreEl = document.createElement("span")
@@ -1359,7 +1363,7 @@ function openTeam(team, comparisons, hiddenCompares) {
             if (ignored.includes(team)) ignoreEl.classList.add("filled")
             else ignoreEl.classList.remove("filled")
         }
-        ignoreEl.innerText = "block"
+        ignoreEl.innerText = usingOffline ? crossOutUnicode : "block"
         compareEl.appendChild(ignoreEl)
 
         let compareTeamName = document.createElement("div")
@@ -3180,7 +3184,7 @@ document.querySelector("#top-pictures").addEventListener("click", () => {
                 star(team)
                 starEl.classList.toggle("filled")
             }
-            starEl.innerText = "star"
+            starEl.innerText = usingOffline ? starUnicode : "star"
             teamMainControls.appendChild(starEl)
 
             let ignoreEl = document.createElement("span")
@@ -3190,7 +3194,7 @@ document.querySelector("#top-pictures").addEventListener("click", () => {
                 ignore(team)
                 ignoreEl.classList.toggle("filled")
             }
-            ignoreEl.innerText = "block"
+            ignoreEl.innerText = usingOffline ? crossOutUnicode : "block"
             teamMainControls.appendChild(ignoreEl)
 
             teamDetails.appendChild(teamControls)
@@ -3336,9 +3340,15 @@ updateTheme()
 document.querySelector("#projector-styles").removeAttribute("disabled")
 setProjectorModeSheet()
 
+if (!navigator.onLine) {
+    document.querySelector(":root").classList.add("offline")
+    console.log("No Internet")
+    usingOffline = true
+}
+
 // Version and Title
 for (let el of document.querySelectorAll(".tool-name"))
-    el.innerText = toolName
+    el.innerText = toolName + (usingOffline ? " (Offline)" : "")
 for (let el of document.querySelectorAll(".version"))
     el.innerText = toolName + " v"+version
 
@@ -3348,6 +3358,8 @@ if (apis === null) {
     window.localStorage.setItem(ENABLED_APIS, JSON.stringify({tbaevent: true, tbamatch: true, tbamedia: true, desmos: true, statbotics: true}))
     apis = {tbaevent: true, tbamatch: true, tbamedia: true, desmos: true, statbotics: true}
 } else apis = JSON.parse(apis)
+
+if (usingOffline) apis = {tbaevent: false, tbamatch: false, tbamedia: false, desmos: false, statbotics: false}
 
 usingTBA = apis.tbaevent
 document.querySelector("#top-toggle-use-tbaevent").innerText = "TBA API: " + (usingTBA ? "Enabled" : "Disabled")
