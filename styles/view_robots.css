@@ -19,9 +19,20 @@
     justify-content: space-between;
 }
 
+.robot-view-top-controls {
+    width: 100%;
+    order: -1000;
+    display: flex;
+    justify-content: space-around;
+    gap: 8px;
+    flex-wrap: nowrap;
+    flex-direction: row;
+}
+
 .robot-view-image {
     max-width: 100%;
     max-height: 100%;
+    cursor: pointer;
 }
 
 .robot-view-details {
