@@ -11,6 +11,7 @@ const SETTINGS = "scouting_4915_settings_general"
 const COLUMNS = "scouting_4915_settings_columns"
 const TEAM_SAVES = "scouting_4915_settings_starignore"
 const NOTES = "scouting_4915_settings_notes"
+const SAVED_API_DATA = "scouting_4915_api_saved"
 const LOCAL_STORAGE_KEYS = [YEAR, TBA_KEY, EVENT, SCOUTING_DATA, PIT, MAPPING, THEME, ENABLED_APIS, SETTINGS, COLUMNS, TEAM_SAVES, NOTES]
 //#endregion
 
@@ -26,6 +27,7 @@ let event_data
 let scouting_data
 let pit_data = {}
 let team_data = {}
+let api_data = {}
 let mapping
 
 let theme = 0
@@ -2410,8 +2412,13 @@ document.querySelector("#top-show-hide-ignored").addEventListener("click", () =>
 //#region File and API loading functions (+ download, API Toggles)
 // Loads data from TheBlueAlliance
 async function load(sub, onload) {
-    loading++
     let url = (`https://www.thebluealliance.com/api/v3/${sub}?X-TBA-Auth-Key=${window.localStorage.getItem(TBA_KEY)}`)
+    if (usingOffline) {
+        onload(api_data[url])
+        return api_data[url]
+    }
+
+    loading++
     await fetch(url).then(response => {
         if (!response.ok) {
             throw new Error('Network response was not ok')
@@ -2421,9 +2428,16 @@ async function load(sub, onload) {
         return response.json()
     }).then(data => {
         onload(data)
+        api_data[url] = data
+        saveAPIData()
     })
 }
 async function loadOther(url, onload) {
+    if (usingOffline) {
+        onload(api_data[url])
+        return api_data[url]
+    }
+
     loading++
     await fetch(url).then(response => {
         if (!response.ok) {
@@ -2434,6 +2448,8 @@ async function loadOther(url, onload) {
         return response.json()
     }).then(data => {
         onload(data)
+        api_data[url] = data
+        saveAPIData()
     })
 }
 function checkLoading() {
@@ -2697,6 +2713,19 @@ function clearSavedTeams() {
 function saveColumns() {
     window.localStorage.setItem(COLUMNS, JSON.stringify(columns))
 }
+function saveAPIData() {
+    api_data["lastSaved"] = new Date().toLocaleString([], {year: 'numeric', month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit'})
+    api_data["apis"] = {
+        tbaevent: usingTBA,
+        tbamatch: usingTBAMatches,
+        tbamedia: usingTBAMedia,
+        desmos: false,
+        statbotics: usingStatbotics
+    }
+    document.querySelector("#top-last-saved-apis").innerText = "Last Saved for offline use: \n" + api_data["lastSaved"]
+
+    window.localStorage.setItem(SAVED_API_DATA, JSON.stringify(api_data))
+}
 
 function exportSettings() {
     let notesOpen = notes.open
@@ -2727,6 +2756,7 @@ function exportSettings() {
             tbamatch: usingTBAMatches,
             tbamedia: usingTBAMedia,
             desmos: usingDesmos,
+            statbotics: usingStatbotics
         },
         pit: pit_data,
         tbakey: window.localStorage.getItem(TBA_KEY),
@@ -2767,6 +2797,7 @@ function importSettings(settings) {
     usingTBA = settings.apis.tbaevent
     usingTBAMatches = settings.apis.tbamatch
     usingTBAMedia = settings.apis.tbamedia
+    usingStatbotics = settings.apis.statbotics
     usingDesmos = settings.apis.desmos
     notes = settings.notes
     saveNotes()
@@ -3399,6 +3430,8 @@ updateTheme()
 document.querySelector("#projector-styles").removeAttribute("disabled")
 setProjectorModeSheet()
 
+api_data = JSON.parse(window.localStorage.getItem(SAVED_API_DATA))
+if (api_data === null) api_data = {}
 if (!navigator.onLine) {
     document.querySelector(":root").classList.add("offline")
     console.log("No Internet")
@@ -3418,7 +3451,10 @@ if (apis === null) {
     apis = {tbaevent: true, tbamatch: true, tbamedia: true, desmos: true, statbotics: true}
 } else apis = JSON.parse(apis)
 
-if (usingOffline) apis = {tbaevent: false, tbamatch: false, tbamedia: false, desmos: false, statbotics: false}
+if (usingOffline) {
+    apis = api_data.apis
+}
+document.querySelector("#top-last-saved-apis").innerText = "Last Saved for offline use: \n" + api_data["lastSaved"]
 
 usingTBA = apis.tbaevent
 document.querySelector("#top-toggle-use-tbaevent").innerText = "TBA API: " + (usingTBA ? "Enabled" : "Disabled")
@@ -3476,6 +3512,11 @@ notes = JSON.parse(window.localStorage.getItem(NOTES))
 // View robots
 if (usingTBAMedia || (mapping["pit_scouting"] !== undefined && mapping["pit_scouting"]["image"] !== undefined)) {
     document.querySelector("#top-pictures").disabled = false
+}
+
+// Saved API Data
+if (!usingOffline) {
+    saveAPIData()
 }
 
 // Welcome Checklist
