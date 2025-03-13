@@ -777,12 +777,13 @@ function getPitScoutingImages(team) {
             if (teamNum != team) continue
 
             if (typeof mapping["pit_scouting"]["image"] === "object") {
-                for (let key of mapping["pit_scouting"]["image"])
-                    if (x[key] !== undefined && x[key] !== null)
+                for (let key of mapping["pit_scouting"]["image"]) {
+                    if (x[key] !== undefined && x[key] !== null && x[key] !== "")
                         pitImages.push(x[key])
+                }
             }
             else if (x[mapping["pit_scouting"]["image"]])
-                if (x[mapping["pit_scouting"]["image"]] !== undefined && x[mapping["pit_scouting"]["image"]] !== null)
+                if (x[mapping["pit_scouting"]["image"]] !== undefined && x[mapping["pit_scouting"]["image"]] !== null && x[mapping["pit_scouting"]["image"]] !== "")
                     pitImages.push(x[mapping["pit_scouting"]["image"]])
         }
     }
@@ -1457,7 +1458,7 @@ function openTeam(team, comparisons, hiddenCompares) {
         teams.unshift(team)
         graphHolder.innerText = ""
         graphHolder.classList.remove("initial")
-        
+
         // noinspection JSSuspiciousNameCombination
         graphHolder.appendChild(graphElement(graphData, graph.replaceAll("_", " "), graphTeams, graphHeight, graphHeight))
     }
@@ -1504,7 +1505,7 @@ function openTeam(team, comparisons, hiddenCompares) {
             pitDataExpanded = !pitDataExpanded
             pitDataHolder.classList.toggle("hidden")
         })
-        
+
         for (let x of pit_data) {
             let teamNum = x[mapping["pit_scouting"]["team"]["key"]]
             if (mapping["pit_scouting"]["format"] === "frc#") teamNum = teamNum.splice(0, 3)
@@ -3243,6 +3244,7 @@ document.querySelector("#top-pictures").addEventListener("click", () => {
                 if (typeof images[imageIndex] === "object") {
                     if (images[imageIndex].type === "image") {
                         image.src = images[imageIndex].src
+                        image.alt = images[imageIndex].src
                     }
                     if (images[imageIndex].type === "youtube") {
                         imageIndex += direction
