@@ -188,15 +188,23 @@ function loadEvent() {
                 if (usingTBAMatches) {
                     loading++
                     load("team/frc" + team["team_number"] + "/event/" + year + window.localStorage.getItem(EVENT) + "/matches", function (data) {
+                        console.log(data)
                         loading--
                         checkLoading()
                         let matchesWon = 0
+                        let fouls = 0
                         for (let match of data) {
+                            let alliance = "red"
+                            if (match["alliances"]["blue"]["team_keys"].includes(team)) alliance = "blue"
+
                             matchesWon += checkTeamWonMatch(match, team["team_number"])
-                            if (match["comp_level"] === "qm")
+                            fouls += match["score_breakdown"][alliance]["foulPoints"]
+                            if (match["comp_level"] === "qm") {
                                 team_data[team["team_number"]].TBA["matches"][match["match_number"]] = match
+                            }
                         }
                         team_data[team["team_number"]]["Winrate"] = (matchesWon / data.length)
+                        team_data[team["team_number"]]["Average Alliance Penalties"] = (fouls / data.length)
                         regenTable()
                     })
                 }
@@ -314,7 +322,7 @@ function setColumnOptions() {
         "size": 1,
     })
     if (usingTBA) availableColumns.push({"name": "Name", "display": "string", "size": 2})
-    if (usingTBAMatches) availableColumns.push({"name": "Winrate", "display": "%", "size": 0})
+    if (usingTBAMatches) availableColumns.push({"name": "Winrate", "display": "%", "size": 0}, {"name": "Average Alliance Penalties", "display": "#", "size": 1})
     if (usingStatbotics) {
         availableColumns.push({"name": "District Points", "display": "#", "size": 0})
         availableColumns.push({"name": "EPA", "display": "#", "size": 1})
