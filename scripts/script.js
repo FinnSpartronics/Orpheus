@@ -194,8 +194,8 @@ function loadEvent() {
                         let matchesWon = 0
                         let fouls = 0
                         for (let match of data) {
-                            let alliance = "red"
-                            if (match["alliances"]["blue"]["team_keys"].includes(team)) alliance = "blue"
+                            let alliance = "blue"
+                            if (match["alliances"]["blue"]["team_keys"].includes(team)) alliance = "red"
 
                             matchesWon += checkTeamWonMatch(match, team["team_number"])
                             fouls += match["score_breakdown"][alliance]["foulPoints"]
