@@ -7,11 +7,24 @@ body {
 }
 
 
+.data.tiny {
+    width: 121.5px;
+    min-width: 81px;
+}
 .data {
-    width: 240px;
+    width: 180px;
+    min-width: 120px;
+}
+.data.large {
+    width: 315px;
+    min-width: 210px;
+}
+.data.massive {
+    width: 450px;
+    min-width: 300px;
 }
 
-.star {
+.star, .ignore {
     font-size: 1.75rem;
 }
 

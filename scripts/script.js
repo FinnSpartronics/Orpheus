@@ -858,6 +858,14 @@ function setProjectorModeSheet() {
         }
     }
     console.error("Couldn't find a projector mode stylesheet")
+    setGraphColors()
+}
+
+function setGraphColors() {
+    if (projectorMode)
+        desmosColors = ["#ff0000","#00ff00","#0000ff","#000000","#dd00ff","#00ffee"]
+    else
+        desmosColors = [Desmos.Colors.RED, Desmos.Colors.BLUE, Desmos.Colors.GREEN, Desmos.Colors.PURPLE, Desmos.Colors.ORANGE, Desmos.Colors.BLACK]
 }
 //#endregion
 
@@ -1793,6 +1801,8 @@ function graphElement(data, name, teams, width, height) {
     el.style.height = height === undefined ? "500px" : height + "px"
     let calc = Desmos.GraphingCalculator(el, {expressions: false, settingsMenu: false, xAxisLabel: "Matches", yAxisLabel: name, zoomButtons: false, lockViewport: false, })
 
+    setGraphColors()
+
     function numArrToStrArr(numArr) {
         let strArr = []
         for (let n of numArr) strArr.push(n.toString())
@@ -1858,10 +1868,12 @@ function graphElement(data, name, teams, width, height) {
 
         expressions.push({latex: "y_{" + i + "}\\sim a_{" + i + "}x_{" + i + "} + b_{" + i + "}", hidden: true})
 
+        let pointOffset = projectorMode ? .1 : .05
+
         if (graphSettings.bestfit)
             expressions.push({latex: "a_{" + i + "}" + "x + " + "b_{" + i + "}" + " = y", color: desmosColors[i], lineWidth: (projectorMode ? 12 : 6), lineOpacity: (projectorMode ? .8 : .6), label: teams[i] + " " + teamName})
         expressions.push({
-            latex: "(T_{eamListX},T_{eamListY}-" + (i * .05 * maxY) + ")",
+            latex: "(T_{eamListX},T_{eamListY}-" + (i * pointOffset * maxY) + ")",
             label: teams[i] + " " + teamName.substring(0, 20) + (teamName.length >= 20 ? "..." : ""),
             showLabel: true,
             labelOrientation: Desmos.LabelOrientations.LEFT,
@@ -1871,7 +1883,7 @@ function graphElement(data, name, teams, width, height) {
             dragMode: Desmos.DragModes.NONE
         })
         expressions.push({
-            latex: "\\left(T_{eamListX},T_{eamListY}-" + (i * .05 * maxY) + "\\right)",
+            latex: "\\left(T_{eamListX},T_{eamListY}-" + (i * pointOffset * maxY) + "\\right)",
             pointOpacity: 0,
             color: Desmos.Colors.BLACK,
             dragMode: Desmos.DragModes.XY
@@ -3501,7 +3513,6 @@ if (usingDesmos) {
     desmosScript.addEventListener("load", () => {
         loading--
         checkLoading()
-        desmosColors = [Desmos.Colors.RED, Desmos.Colors.BLUE, Desmos.Colors.GREEN, Desmos.Colors.PURPLE, Desmos.Colors.ORANGE, Desmos.Colors.BLACK]
     })
 }
 // TODO: if desmos is disabled then disable the graph settings options
