@@ -3416,7 +3416,8 @@ rounding = Math.pow(10, roundingDigits)
 setRoundingEl()
 showTeamIcons = generalSettings.showTeamIcons
 
-robotViewScope = generalSettings.robotViewScope
+if (generalSettings.robotViewScope !== undefined)
+    robotViewScope = generalSettings.robotViewScope
 
 maintainedTeamPageSettings = generalSettings.teamPageSettings
 
