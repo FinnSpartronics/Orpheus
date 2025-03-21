@@ -2239,11 +2239,19 @@ function columnEditPanel() {
     }
 
     function updateColumns() {
-        columns = []
+        let newColumns = []
         for (let child of currentColumns.children) {
             for (let x of availableColumns)
-                if (x.name === child.getAttribute("data-column-name")) columns.push(x)
+                if (x.name === child.getAttribute("data-column-name")) {
+                    let size = x.size
+                    for (let col of columns) {
+                        if (col.name === x.name) size = col.size
+                    }
+                    newColumns.push(x)
+                    newColumns[newColumns.length-1].size = size
+                }
         }
+        columns = newColumns
         setHeader()
         saveColumns()
     }
