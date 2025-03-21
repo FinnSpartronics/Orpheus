@@ -2871,6 +2871,7 @@ document.querySelector("#top-credits").addEventListener("click", () => {
 document.querySelector("#close-credits").addEventListener("click", closeCredits)
 
 document.querySelector("#top-reset-preferences").addEventListener("click", () => {
+    if (!confirm("Are you sure? This will clear all saved data, preferences, columns, etc, and cannot be undone.")) return
     for (let key of LOCAL_STORAGE_KEYS) localStorage.removeItem(key)
     window.location.reload()
 })
