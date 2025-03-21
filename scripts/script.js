@@ -2756,7 +2756,7 @@ function saveAPIData() {
         statbotics: usingStatbotics
     }
     document.querySelector("#top-last-saved-apis").innerText = "Last Saved for offline use: \n" + api_data["lastSaved"]
-
+console.log(JSON.stringify(api_data).length)
     window.localStorage.setItem(SAVED_API_DATA, JSON.stringify(api_data))
 }
 
@@ -3470,6 +3470,9 @@ if (!navigator.onLine) {
     document.querySelector(":root").classList.add("offline")
     console.log("No Internet")
     usingOffline = true
+} else {
+    api_data = {}
+    saveAPIData()
 }
 
 // Version and Title
