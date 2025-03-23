@@ -197,10 +197,13 @@ function loadEvent() {
                             let alliance = "blue"
                             if (match["alliances"]["blue"]["team_keys"].includes(team)) alliance = "red"
 
-                            matchesWon += checkTeamWonMatch(match, team["team_number"])
-                            fouls += match["score_breakdown"][alliance]["foulPoints"]
+                            if (match["actual_time"] !== null)
 
-                            if (match["alliances"]["blue"]["score"] !== -1) matchesPlayed++
+                            if (match["alliances"]["blue"]["score"] !== -1) {
+                                matchesPlayed++
+                                fouls += match["score_breakdown"][alliance]["foulPoints"]
+                                matchesWon += checkTeamWonMatch(match, team["team_number"])
+                            }
 
                             if (match["comp_level"] === "qm") {
                                 team_data[team["team_number"]].TBA["matches"][match["match_number"]] = match
