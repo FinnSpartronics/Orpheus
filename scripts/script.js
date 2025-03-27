@@ -310,7 +310,7 @@ document.querySelector("#top-mapping").onclick = function() {
         mapping = JSON.parse(result)
         window.localStorage.setItem(MAPPING, JSON.stringify(mapping))
         setColumnOptions()
-        columns = JSON.parse(JSON.stringify(availableColumns))
+        //columns = JSON.parse(JSON.stringify(availableColumns))
         autoIgnore()
         processData()
         delete maintainedTeamPageSettings["graph"]
@@ -1871,7 +1871,7 @@ function graphElement(data, name, teams, width, height) {
 
         expressions.push({latex: "y_{" + i + "}\\sim a_{" + i + "}x_{" + i + "} + b_{" + i + "}", hidden: true})
 
-        let pointOffset = projectorMode ? .1 : .05
+        let pointOffset = projectorMode ? .075 : .05
 
         if (graphSettings.bestfit)
             expressions.push({latex: "a_{" + i + "}" + "x + " + "b_{" + i + "}" + " = y", color: desmosColors[i], lineWidth: (projectorMode ? 12 : 6), lineOpacity: (projectorMode ? .8 : .6), label: teams[i] + " " + teamName})
@@ -1883,6 +1883,7 @@ function graphElement(data, name, teams, width, height) {
             color: desmosColors[i],
             labelSize: (projectorMode ? "1.5" : "1"),
             pointSize: (projectorMode ? 24 : 16),
+            pointStyle: Desmos.Styles.OPEN,
             dragMode: Desmos.DragModes.NONE
         })
         expressions.push({
@@ -1986,7 +1987,7 @@ function search(input) {
         let teamName
         if (usingTBA)
             teamName = team_data[teamNum].Name.replace(/\s/g, "").toLowerCase()
-        if (teamNum === input) {
+        if (teamNum == input) {
             team = teamNum
             distance = 0
             break
@@ -2759,7 +2760,7 @@ function saveAPIData() {
         statbotics: usingStatbotics
     }
     document.querySelector("#top-last-saved-apis").innerText = "Last Saved for offline use: \n" + api_data["lastSaved"]
-console.log(JSON.stringify(api_data).length)
+
     window.localStorage.setItem(SAVED_API_DATA, JSON.stringify(api_data))
 }
 
@@ -2944,6 +2945,16 @@ function openNotes() {
     })
     notebookNav.appendChild(drag)
 
+    let close = document.createElement("span")
+    close.className = "material-symbols-outlined notebook-btn"
+    close.innerText = "close"
+    close.addEventListener("click", () => {
+        document.querySelector(".notebook").remove()
+        notes.open = !notes.open
+        document.querySelector("#top-notebook").innerText = (notes.open ? "Close" : "Open") + " Notebook"
+    })
+    notebookNav.appendChild(close)
+
     let addTab = document.createElement("span")
     addTab.className = "material-symbols-outlined notebook-btn"
     addTab.innerText = "add"
@@ -3076,6 +3087,7 @@ document.querySelector("#top-notebook-clear").addEventListener("click", () => {
     notes.tabs = {"Tab 1": ""}
     if (notes.open) document.querySelector(".notebook").remove()
     openNotes()
+    saveNotes()
 })
 
 function saveNotes() {
