@@ -209,6 +209,7 @@ function loadEvent() {
                                 team_data[team["team_number"]].TBA["matches"][match["match_number"]] = match
                             }
                         }
+                        team_data[team["team_number"]]["Matches Played"] = matchesPlayed
                         team_data[team["team_number"]]["Winrate"] = (matchesWon / matchesPlayed)
                         team_data[team["team_number"]]["Average Alliance Penalties"] = (fouls / matchesPlayed)
                         regenTable()
@@ -329,7 +330,7 @@ function setColumnOptions() {
         "size": 1,
     })
     if (usingTBA) availableColumns.push({"name": "Name", "display": "string", "size": 2})
-    if (usingTBAMatches) availableColumns.push({"name": "Winrate", "display": "%", "size": 1}, {"name": "Average Alliance Penalties", "display": "#", "size": 1})
+    if (usingTBAMatches) availableColumns.push({"name": "Winrate", "display": "%", "size": 1}, {"name": "Matches Played", "display": "#", "size": 1}, {"name": "Average Alliance Penalties", "display": "#", "size": 1})
     if (usingStatbotics) {
         availableColumns.push({"name": "District Points", "display": "#", "size": 1})
         availableColumns.push({"name": "EPA", "display": "#", "size": 1})
@@ -435,9 +436,13 @@ function processData() {
     // True if should be skipped, false if not
     function checkSkip(val, vars, match, expressions) {
         if (expressions === undefined) return false
-        for (let exp of expressions)
+        if (typeof expressions == "string") {
+            return evaluate(Object.assign({"value": val, "match": match[mapping["match"]["number_key"]]}, vars, match), constants, expressions)
+        }
+        for (let exp of expressions) {
             if(evaluate(Object.assign({"value": val, "match": match[mapping["match"]["number_key"]]}, vars, match), constants, exp))
                 return true
+        }
         return false
     }
 
@@ -486,7 +491,7 @@ function processData() {
             for (let column of ratioVars) {
                 let num = evaluate(Object.assign(Object.assign({"match": matchNum}, match), data[team]["variables"], match), constants, mapping["data"][column].value)
                 let den = evaluate(Object.assign(Object.assign({"match": matchNum}, match), data[team]["variables"], match), constants, mapping["data"][column].denominator)
-                if (!isNaN(num) && !isNaN(den) && !checkSkip(x, data[team]["variables"], match, mapping["data"][column]["skip"])) {
+                if (!isNaN(num) && !isNaN(den) && !checkSkip(num / den, data[team]["variables"], match, mapping["data"][column]["skip"])) {
                     data[team][column]["num"].push(num)
                     data[team][column]["den"].push(den)
 

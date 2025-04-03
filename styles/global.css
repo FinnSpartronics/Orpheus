@@ -33,6 +33,10 @@
     -webkit-text-stroke-color: var(--font);
 }
 
+html, body {
+    overscroll-behavior-x: none;
+}
+
 :root, .force-light {
     --bg: rgb(247, 247, 247);
     --line: rgb(214, 214, 214);
